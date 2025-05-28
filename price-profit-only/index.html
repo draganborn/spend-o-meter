@@ -1,0 +1,837 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      name="viewport"
+      content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>Сравнение цен</title>
+    <style>
+      :root {
+        --primary: #2e7d32;
+        --secondary: #e8f5e9;
+        --accent: #ffc107;
+        --text-dark: #212121;
+        --text-light: #fafafa;
+        --border-radius: 12px;
+        --transition-time: 0.3s;
+      }
+
+      body {
+        margin: 0;
+        padding: 0;
+        font-family: 'Segoe UI', sans-serif;
+        background: var(--secondary);
+        color: var(--text-dark);
+      }
+
+      .container {
+        max-width: 500px;
+        margin: 0 auto;
+        padding: 1rem;
+      }
+
+      .hidden {
+        display: none !important;
+      }
+
+      .category-select {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 2rem;
+      }
+
+      .category-btn {
+        background: var(--primary);
+        color: var(--text-light);
+        padding: 1.5rem;
+        font-size: 1.2rem;
+        font-weight: bold;
+        border: none;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-time) ease;
+      }
+
+      .category-btn:hover {
+        background: #1b5e20;
+        transform: scale(1.02);
+      }
+
+      .form-container {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        margin-top: 1rem;
+        transition: all var(--transition-time) ease;
+      }
+
+      .card {
+        display: flex;
+        background: white;
+        border-radius: var(--border-radius);
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+        padding: 1rem;
+        margin: 1rem 0;
+        transition: transform var(--transition-time);
+        flex-direction: column;
+        /* width: 100%; */
+        /* align-items: center; */
+      }
+
+      .card:hover {
+        transform: translateY(-2px);
+      }
+
+      .back-btn {
+        background: var(--accent);
+        color: var(--text-dark);
+        margin-top: 0.5rem;
+      }
+
+      .back-btn:hover {
+        background: #ffb300;
+      }
+
+      label {
+        font-weight: 600;
+        margin-bottom: 0.3rem;
+      }
+
+      input[type='text'],
+      input[type='number'],
+      select {
+        /* width: 100%; */
+        padding: 0.8rem;
+        border: 1px solid #ddd;
+        border-radius: var(--border-radius);
+        font-size: 1rem;
+        transition: all var(--transition-time) ease;
+      }
+
+      input:focus {
+        border-color: var(--primary);
+        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
+        outline: none;
+      }
+
+      .input-group {
+        display: flex;
+        flex-direction: column;
+      }
+
+      .btn-group {
+        display: flex;
+        gap: 1rem;
+        flex-wrap: wrap;
+        justify-content: space-between;
+      }
+
+      .main-btn {
+        flex: 1;
+        min-width: 120px;
+        padding: 1rem;
+        font-size: 1.1rem;
+        font-weight: bold;
+        border-radius: var(--border-radius);
+        cursor: pointer;
+        transition: all var(--transition-time) ease;
+      }
+
+      .main-btn:hover {
+        transform: scale(1.02);
+      }
+
+      .submit-btn {
+        background: var(--primary);
+        color: var(--text-light);
+        padding: 1rem;
+        border-radius: 8px;
+      }
+
+      .submit-btn:hover {
+        background: #1b5e20;
+      }
+
+      .add-btn {
+        background: var(--accent);
+        color: var(--text-dark);
+        padding: 1rem;
+        border-radius: 8px;
+      }
+
+      .add-btn:hover {
+        background: #ffb300;
+      }
+
+      .delete-btn {
+        /* position: absolute; */
+        /* top: 10px; */
+        /* right: 10px; */
+        background: #ef5350;
+        padding: 0.4rem 0.6rem;
+        font-size: 0.9rem;
+        border-radius: 8px;
+        max-width: 33px;
+        align-self: flex-end;
+      }
+
+      .delete-btn:hover {
+        background: #e53935;
+      }
+
+      .result-container {
+        margin-top: 2rem;
+        padding: 1rem;
+        border-radius: var(--border-radius);
+        background: #e8f5e9;
+      }
+
+      .discount-fields {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+      }
+
+      .fuel-type {
+        margin-bottom: 1rem;
+      }
+
+      @media (max-width: 480px) {
+        .container {
+          padding: 0.5rem;
+        }
+
+        .main-btn {
+          font-size: 1rem;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <!-- Экран выбора категории -->
+      <div id="categorySelect">
+        <h1 style="text-align: center; color: var(--primary); margin-top: 2rem">
+          Сравнение цен
+        </h1>
+        <div class="category-select">
+          <button class="category-btn" onclick="showForm('product')">
+            Сравнение товаров
+          </button>
+          <button class="category-btn" onclick="showForm('fuel')">
+            АЗС и топливо
+          </button>
+        </div>
+      </div>
+
+      <!-- Форма для товаров -->
+      <div id="productForm" class="form-container hidden">
+        <div class="card">
+          <h2 style="margin: 0 0 1rem 0; color: var(--text-dark)">
+            Сравнение товаров
+          </h2>
+
+          <form id="priceForm">
+            <div id="productsContainer">
+              <!-- Динамические товары -->
+              <div class="card product-card" data-product-id="1">
+                <button type="button" class="delete-btn">×</button>
+                <h3 style="margin: 0 0 1rem 0; color: var(--text-dark)">
+                  Товар 1
+                </h3>
+                <div class="input-group">
+                  <label for="name1">Название</label>
+                  <input
+                    type="text"
+                    id="name1"
+                    placeholder="Введите название"
+                  />
+                </div>
+                <div class="input-group">
+                  <label for="price1">Цена (₽)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="price1"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+                <div class="input-group">
+                  <label for="weight1">Количество (г/кг/шт)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="weight1"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="add-btn" onclick="addProduct()">
+                + Добавить товар
+              </button>
+              <button type="submit" class="submit-btn">Рассчитать</button>
+            </div>
+          </form>
+
+          <button class="back-btn main-btn" onclick="goBack()">Назад</button>
+        </div>
+
+        <!-- Результаты товаров -->
+        <div class="result-container hidden" id="productResult">
+          <p class="result" id="productResultText" style="margin: 0"></p>
+          <div
+            class="explanation"
+            id="productExplanationText"
+            style="margin-top: 1rem"
+          ></div>
+        </div>
+      </div>
+
+      <!-- Форма для АЗС -->
+      <div id="fuelForm" class="form-container hidden">
+        <div class="card">
+          <h2 style="margin: 0 0 1rem 0; color: var(--text-dark)">
+            Сравнение АЗС
+          </h2>
+
+          <form id="fuelStationForm">
+            <div id="stationsContainer">
+              <!-- Динамические АЗС -->
+              <div class="card fuel-card" data-station-id="1">
+                <button type="button" class="delete-btn">×</button>
+                <h3 style="margin: 0 0 1rem 0; color: var(--text-dark)">
+                  АЗС 1
+                </h3>
+
+                <div class="input-group fuel-type">
+                  <label for="fuelName1">Тип топлива</label>
+                  <select id="fuelName1">
+                    <option value="АИ-92">АИ-92</option>
+                    <option value="АИ-95">АИ-95</option>
+                    <option value="АИ-98">АИ-98</option>
+                    <option value="ДТ">ДТ</option>
+                  </select>
+                </div>
+
+                <div class="input-group">
+                  <label for="fuelPrice1">Цена за литр (₽)</label>
+                  <input
+                    type="number"
+                    step="0.01"
+                    id="fuelPrice1"
+                    placeholder="0.00"
+                    required
+                  />
+                </div>
+
+                <div class="input-group discount-type">
+                  <label for="discountType1">Тип скидки</label>
+                  <select id="discountType1" class="discount-type-select">
+                    <option value="none">Нет скидки</option>
+                    <option value="cashback">Кэшбэк (%)</option>
+                    <option value="fixed">Фиксированная скидка (₽)</option>
+                  </select>
+                </div>
+
+                <div class="discount-fields" id="discountFields1">
+                  <div class="input-group cashback-field" style="display: none">
+                    <label for="cashback1">Процент кэшбэка</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      id="cashback1"
+                      placeholder="0.00"
+                    />
+                  </div>
+
+                  <div
+                    class="input-group fixed-discount-field"
+                    style="display: none"
+                  >
+                    <label for="fixedDiscount1">Фиксированная скидка (₽)</label>
+                    <input
+                      type="number"
+                      step="0.01"
+                      id="fixedDiscount1"
+                      placeholder="0.00"
+                    />
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="btn-group">
+              <button type="button" class="add-btn" onclick="addStation()">
+                + Добавить АЗС
+              </button>
+              <button type="submit" class="submit-btn">Рассчитать</button>
+            </div>
+          </form>
+
+          <button class="back-btn main-btn" onclick="goBack()">Назад</button>
+        </div>
+
+        <!-- Результаты АЗС -->
+        <div class="result-container hidden" id="fuelResult">
+          <p class="result" id="fuelResultText" style="margin: 0"></p>
+          <div
+            class="explanation"
+            id="fuelExplanationText"
+            style="margin-top: 1rem"
+          ></div>
+        </div>
+      </div>
+    </div>
+
+    <script>
+      let productIdCounter = 1;
+      let stationIdCounter = 1;
+
+      function showForm(category) {
+        document.getElementById('categorySelect').classList.add('hidden');
+        document.getElementById('productForm').classList.add('hidden');
+        document.getElementById('fuelForm').classList.add('hidden');
+
+        if (category === 'product') {
+          document.getElementById('productForm').classList.remove('hidden');
+        } else if (category === 'fuel') {
+          document.getElementById('fuelForm').classList.remove('hidden');
+        }
+      }
+
+      function goBack() {
+        document.getElementById('productForm').classList.add('hidden');
+        document.getElementById('fuelForm').classList.add('hidden');
+        document.getElementById('categorySelect').classList.remove('hidden');
+
+        // Скрыть результаты
+        document.getElementById('productResult').classList.add('hidden');
+        document.getElementById('fuelResult').classList.add('hidden');
+      }
+
+      // Инициализация при загрузке страницы
+      document.addEventListener('DOMContentLoaded', function () {
+        // Скрыть все формы при загрузке
+        document.getElementById('productForm').classList.add('hidden');
+        document.getElementById('fuelForm').classList.add('hidden');
+
+        // Инициализация обработчиков для скидок
+        document.querySelectorAll('.discount-type-select').forEach(select => {
+          select.addEventListener('change', function () {
+            const stationId = this.closest('.fuel-card').dataset.stationId;
+            updateDiscountFields(stationId);
+          });
+        });
+      });
+
+      // Товары функции
+      function addProduct() {
+        productIdCounter++;
+
+        const container = document.getElementById('productsContainer');
+
+        const newProduct = document.createElement('div');
+        newProduct.className = 'card product-card';
+        newProduct.dataset.productId = productIdCounter;
+        newProduct.innerHTML = `
+        <button type="button" class="delete-btn">×</button>
+        <h3 style="margin: 0 0 1rem 0; color: var(--text-dark);">Товар ${productIdCounter}</h3>
+        <div class="input-group">
+          <label for="name${productIdCounter}">Название</label>
+          <input type="text" id="name${productIdCounter}" placeholder="Введите название" />
+        </div>
+        <div class="input-group">
+          <label for="price${productIdCounter}">Цена (₽)</label>
+          <input type="number" step="0.01" id="price${productIdCounter}" placeholder="0.00" required />
+        </div>
+        <div class="input-group">
+          <label for="weight${productIdCounter}">Количество (г/кг/шт)</label>
+          <input type="number" step="0.01" id="weight${productIdCounter}" placeholder="0.00" required />
+        </div>
+      `;
+
+        newProduct
+          .querySelector('.delete-btn')
+          .addEventListener('click', () => {
+            if (container.children.length > 1) {
+              newProduct.remove();
+            } else {
+              alert('Должен быть хотя бы один товар для сравнения');
+            }
+          });
+
+        container.appendChild(newProduct);
+      }
+
+      // АЗС функции
+      function addStation() {
+        stationIdCounter++;
+
+        const container = document.getElementById('stationsContainer');
+
+        const newStation = document.createElement('div');
+        newStation.className = 'card fuel-card';
+        newStation.dataset.stationId = stationIdCounter;
+        newStation.innerHTML = `
+        <button type="button" class="delete-btn">×</button>
+        <h3 style="margin: 0 0 1rem 0; color: var(--text-dark);">АЗС ${stationIdCounter}</h3>
+        
+        <div class="input-group fuel-type">
+          <label for="fuelName${stationIdCounter}">Тип топлива</label>
+          <select id="fuelName${stationIdCounter}">
+            <option value="АИ-92">АИ-92</option>
+            <option value="АИ-95">АИ-95</option>
+            <option value="АИ-98">АИ-98</option>
+            <option value="ДТ">ДТ</option>
+          </select>
+        </div>
+        
+        <div class="input-group">
+          <label for="fuelPrice${stationIdCounter}">Цена за литр (₽)</label>
+          <input type="number" step="0.01" id="fuelPrice${stationIdCounter}" placeholder="0.00" required />
+        </div>
+        
+        <div class="input-group discount-type">
+          <label for="discountType${stationIdCounter}">Тип скидки</label>
+          <select id="discountType${stationIdCounter}" class="discount-type-select">
+            <option value="none">Нет скидки</option>
+            <option value="cashback">Кэшбэк (%)</option>
+            <option value="fixed">Фиксированная скидка (₽)</option>
+          </select>
+        </div>
+        
+        <div class="discount-fields" id="discountFields${stationIdCounter}">
+          <div class="input-group cashback-field" style="display: none;">
+            <label for="cashback${stationIdCounter}">Процент кэшбэка</label>
+            <input type="number" step="0.01" id="cashback${stationIdCounter}" placeholder="0.00" />
+          </div>
+          
+          <div class="input-group fixed-discount-field" style="display: none;">
+            <label for="fixedDiscount${stationIdCounter}">Фиксированная скидка (₽)</label>
+            <input type="number" step="0.01" id="fixedDiscount${stationIdCounter}" placeholder="0.00" />
+          </div>
+        </div>
+      `;
+
+        newStation
+          .querySelector('.discount-type-select')
+          .addEventListener('change', function () {
+            const stationId = this.closest('.fuel-card').dataset.stationId;
+            updateDiscountFields(stationId);
+          });
+
+        newStation
+          .querySelector('.delete-btn')
+          .addEventListener('click', () => {
+            if (container.children.length > 1) {
+              newStation.remove();
+            } else {
+              alert('Должна быть хотя бы одна АЗС для сравнения');
+            }
+          });
+
+        container.appendChild(newStation);
+      }
+
+      function updateDiscountFields(stationId) {
+        const discountType = document.getElementById(
+          `discountType${stationId}`
+        ).value;
+        const fieldsContainer = document.getElementById(
+          `discountFields${stationId}`
+        );
+
+        const cashbackField = fieldsContainer.querySelector('.cashback-field');
+        const fixedDiscountField = fieldsContainer.querySelector(
+          '.fixed-discount-field'
+        );
+
+        cashbackField.style.display = 'none';
+        fixedDiscountField.style.display = 'none';
+
+        if (discountType === 'cashback') {
+          cashbackField.style.display = 'block';
+        } else if (discountType === 'fixed') {
+          fixedDiscountField.style.display = 'block';
+        }
+
+        if (cashbackField.querySelector('input'))
+          cashbackField.querySelector('input').value = '';
+        if (fixedDiscountField.querySelector('input'))
+          fixedDiscountField.querySelector('input').value = '';
+      }
+
+      // Обработчик товаров
+      document
+        .getElementById('priceForm')
+        .addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          const products = document.querySelectorAll('.product-card');
+          if (products.length < 2) {
+            alert('Для сравнения необходимо добавить минимум 2 товара');
+            return;
+          }
+
+          const names = [];
+          const prices = [];
+          const weights = [];
+
+          products.forEach((product, index) => {
+            const id = index + 1;
+            const name = document.getElementById(`name${id}`).value.trim();
+            const price = parseFloat(
+              document.getElementById(`price${id}`).value
+            );
+            const weight = parseFloat(
+              document.getElementById(`weight${id}`).value
+            );
+
+            if (isNaN(price) || isNaN(weight) || price <= 0 || weight <= 0) {
+              alert(`Проверьте правильность вводимых данных для товара ${id}`);
+              throw new Error(`Некорректные данные для товара ${id}`);
+            }
+
+            names.push(name || `Товар ${id}`);
+            prices.push(price);
+            weights.push(weight);
+          });
+
+          function comparePrices(names, prices, weights) {
+            let minCostIndex = null;
+            let minCostValue = Infinity;
+
+            for (let i = 0; i < prices.length; i++) {
+              const currentPricePerUnit = prices[i] / weights[i];
+
+              if (currentPricePerUnit < minCostValue) {
+                minCostValue = currentPricePerUnit;
+                minCostIndex = i;
+              }
+            }
+
+            if (minCostIndex === null) {
+              return ['Нет подходящего товара.', ''];
+            }
+
+            const bestProductName = names[minCostIndex]
+              ? `"${names[minCostIndex]}"`
+              : 'товара №' + (minCostIndex + 1);
+
+            const finalResult = `Выгоднее всего выбрать ${bestProductName}. Стоимость одного килограмма составит примерно ${minCostValue.toFixed(
+              2
+            )} ₽.`;
+
+            const explanations = [];
+            for (let i = 0; i < prices.length; i++) {
+              if (i !== minCostIndex) {
+                const pricePerUnit = prices[i] / weights[i];
+                const diff = ((pricePerUnit / minCostValue - 1) * 100).toFixed(
+                  1
+                );
+                explanations.push(
+                  `Товар "${names[i]}" (${pricePerUnit.toFixed(
+                    2
+                  )} ₽/кг) дороже на ${diff}%`
+                );
+              }
+            }
+
+            return [
+              finalResult,
+              `Минимальная стоимость одного килограмма составила ${minCostValue.toFixed(
+                2
+              )} ₽ у товара "${names[minCostIndex]}". ${explanations.join(
+                '; '
+              )}.`,
+            ];
+          }
+
+          const results = comparePrices(names, prices, weights);
+          const resultContainer = document.getElementById('productResult');
+          const resultText = document.getElementById('productResultText');
+          const explanationText = document.getElementById(
+            'productExplanationText'
+          );
+
+          resultText.textContent = results[0];
+          explanationText.innerHTML = `<i>${results[1]}</i>`;
+          resultContainer.classList.remove('hidden');
+
+          resultContainer.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        });
+
+      // Обработчик АЗС
+      document
+        .getElementById('fuelStationForm')
+        .addEventListener('submit', function (event) {
+          event.preventDefault();
+
+          const stations = document.querySelectorAll('.fuel-card');
+          if (stations.length < 2) {
+            alert('Для сравнения необходимо добавить минимум 2 АЗС');
+            return;
+          }
+
+          const fuelData = [];
+
+          stations.forEach((station, index) => {
+            const id = index + 1;
+            const fuelType = document.getElementById(`fuelName${id}`).value;
+            const price = parseFloat(
+              document.getElementById(`fuelPrice${id}`).value
+            );
+            const discountType = document.getElementById(
+              `discountType${id}`
+            ).value;
+
+            let cashback = 0;
+            let fixedDiscount = 0;
+
+            if (discountType === 'cashback') {
+              cashback =
+                parseFloat(document.getElementById(`cashback${id}`).value) || 0;
+            } else if (discountType === 'fixed') {
+              fixedDiscount =
+                parseFloat(
+                  document.getElementById(`fixedDiscount${id}`).value
+                ) || 0;
+            }
+
+            if (isNaN(price) || price <= 0) {
+              alert(`Проверьте правильность цены для АЗС ${id}`);
+              throw new Error(`Некорректная цена для АЗС ${id}`);
+            }
+
+            if (
+              discountType === 'cashback' &&
+              (isNaN(cashback) || cashback < 0 || cashback > 100)
+            ) {
+              alert(`Кэшбэк для АЗС ${id} должен быть числом от 0 до 100%`);
+              throw new Error(`Некорректный кэшбэк для АЗС ${id}`);
+            }
+
+            if (
+              discountType === 'fixed' &&
+              (isNaN(fixedDiscount) || fixedDiscount < 0)
+            ) {
+              alert(
+                `Фиксированная скидка для АЗС ${id} должна быть положительным числом`
+              );
+              throw new Error(
+                `Некорректная фиксированная скидка для АЗС ${id}`
+              );
+            }
+
+            if (discountType === 'fixed' && fixedDiscount >= price) {
+              alert(
+                `Фиксированная скидка для АЗС ${id} не может превышать цену`
+              );
+              throw new Error(`Скидка больше цены для АЗС ${id}`);
+            }
+
+            let finalPrice = price;
+
+            if (discountType === 'cashback') {
+              finalPrice = price * (1 - cashback / 100);
+            } else if (discountType === 'fixed') {
+              finalPrice = price - fixedDiscount;
+            }
+
+            fuelData.push({
+              id: id,
+              fuelType: fuelType,
+              originalPrice: price,
+              discountType: discountType,
+              cashback: cashback,
+              fixedDiscount: fixedDiscount,
+              finalPrice: finalPrice,
+            });
+          });
+
+          function compareFuelPrices(data) {
+            let minPriceIndex = 0;
+            let minPrice = data[0].finalPrice;
+
+            for (let i = 1; i < data.length; i++) {
+              if (data[i].finalPrice < minPrice) {
+                minPrice = data[i].finalPrice;
+                minPriceIndex = i;
+              }
+            }
+
+            const bestStation = data[minPriceIndex];
+            const bestPrice = bestStation.finalPrice.toFixed(2);
+
+            let finalResult = `Самый выгодный вариант: АЗС №${bestStation.id} - ${bestStation.fuelType}. `;
+
+            if (bestStation.discountType === 'none') {
+              finalResult += `Цена без скидки: ${bestPrice} ₽ за литр.`;
+            } else if (bestStation.discountType === 'cashback') {
+              finalResult += `Цена с кэшбэком ${bestStation.cashback}%: ${bestPrice} ₽ за литр.`;
+            } else {
+              finalResult += `Цена со скидкой ${bestStation.fixedDiscount} ₽: ${bestPrice} ₽ за литр.`;
+            }
+
+            let explanation = `Минимальная цена за литр топлива (${bestPrice} ₽) доступна на АЗС №${bestStation.id}. `;
+            explanation += 'Другие варианты:';
+
+            data.forEach((station, index) => {
+              if (index !== minPriceIndex) {
+                const diff = (
+                  (station.finalPrice / bestPrice - 1) *
+                  100
+                ).toFixed(1);
+                let discountInfo = '';
+
+                if (station.discountType === 'cashback') {
+                  discountInfo = `с кэшбэком ${station.cashback}%`;
+                } else if (station.discountType === 'fixed') {
+                  discountInfo = `со скидкой ${station.fixedDiscount} ₽`;
+                } else {
+                  discountInfo = 'без скидки';
+                }
+
+                explanation += ` АЗС №${station.id} (${
+                  station.fuelType
+                }) ${discountInfo} - ${station.finalPrice.toFixed(
+                  2
+                )} ₽/л (дороже на ${diff}%);`;
+              }
+            });
+
+            explanation = explanation.slice(0, -1) + '.';
+
+            return [finalResult, explanation];
+          }
+
+          const results = compareFuelPrices(fuelData);
+          const resultContainer = document.getElementById('fuelResult');
+          const resultText = document.getElementById('fuelResultText');
+          const explanationText = document.getElementById(
+            'fuelExplanationText'
+          );
+
+          resultText.textContent = results[0];
+          explanationText.innerHTML = `<i>${results[1]}</i>`;
+          resultContainer.classList.remove('hidden');
+
+          resultContainer.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start',
+          });
+        });
+    </script>
+  </body>
+</html>

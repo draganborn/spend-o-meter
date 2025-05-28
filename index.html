@@ -21,6 +21,7 @@
         color: #f1f1f1;
       }
       .nav {
+        display: flex;
         background-color: #333;
         padding: 10px;
         text-align: center;
@@ -197,16 +198,22 @@
   </head>
   <body>
     <div class="nav">
-      <button id="navMoneyPerMonth" class="active">Калькулятор финансов</button>
-      <button id="navComparison">Сравнение цен</button>
+      <div style="display: flex; justify-content: center; gap: 10px">
+        <button id="navMoneyPerMonth" class="active">
+          Калькулятор финансов
+        </button>
+        <button id="navProductCompare">Сравнение товаров</button>
+        <button id="navFuelCompare">Сравнение АЗС</button>
+      </div>
+      <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
     </div>
 
     <div id="moneyPerMonthTool" class="tool-container active">
       <div class="moneyPerMonth-container">
         <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
-        <button id="themeToggle" class="moneyPerMonth-btn-theme">
+        <!-- <button id="themeToggle" class="moneyPerMonth-btn-theme">
           Переключить тему
-        </button>
+        </button> -->
         <form id="financeForm" class="moneyPerMonth-form">
           <label
             >Все деньги на счете:
@@ -230,7 +237,7 @@
       </div>
     </div>
 
-    <div id="comparisonTool" class="tool-container">
+    <div id="productTool" class="tool-container">
       <div class="card">
         <h2>Сравнение товаров</h2>
         <form id="productForm">
@@ -248,7 +255,9 @@
           style="display: none"
         ></div>
       </div>
+    </div>
 
+    <div id="fuelTool" class="tool-container">
       <div class="card">
         <h2>Сравнение АЗС</h2>
         <form id="fuelForm">
@@ -267,154 +276,197 @@
         ></div>
       </div>
     </div>
+
     <script>
-        // --- Темы ---
-        const currentTheme = localStorage.getItem("appTheme") || "light";
-        document.body.classList.add(currentTheme);
-        if (currentTheme === "dark") document.body.classList.remove("light");
+      // --- Темы ---
+      const currentTheme = localStorage.getItem('appTheme') || 'light';
+      document.body.classList.add(currentTheme);
+      if (currentTheme === 'dark') document.body.classList.remove('light');
 
-        // --- Переключение вкладок ---
-        const navMoney = document.getElementById("navMoneyPerMonth");
-        const navCompare = document.getElementById("navComparison");
-        const moneyTool = document.getElementById("moneyPerMonthTool");
-        const compareTool = document.getElementById("comparisonTool");
+      // --- Переключение вкладок ---
+      const navMoney = document.getElementById('navMoneyPerMonth');
+      const moneyTool = document.getElementById('moneyPerMonthTool');
 
-        navMoney.onclick = () => {
-          moneyTool.classList.add("active");
-          compareTool.classList.remove("active");
-          navMoney.classList.add("active");
-          navCompare.classList.remove("active");
-        };
+      const navProduct = document.getElementById('navProductCompare');
+      const navFuel = document.getElementById('navFuelCompare');
+      const productTool = document.getElementById('productTool');
+      const fuelTool = document.getElementById('fuelTool');
 
-        navCompare.onclick = () => {
-          compareTool.classList.add("active");
-          moneyTool.classList.remove("active");
-          navCompare.classList.add("active");
-          navMoney.classList.remove("active");
-        };
+      function showTool(name) {
+        document
+          .querySelectorAll('.tool-container')
+          .forEach(div => div.classList.remove('active'));
+        document
+          .querySelectorAll('.nav button')
+          .forEach(btn => btn.classList.remove('active'));
 
-        // --- Финансовый калькулятор ---
-        const paymentsContainer = document.getElementById("paymentsContainer");
-        const addPaymentBtn = document.getElementById("addPaymentBtn");
-        const financeForm = document.getElementById("financeForm");
-        const resultDiv = document.getElementById("moneyPerMonthResult");
-        const ctx = document.getElementById("expensesChart").getContext("2d");
-        const themeToggle = document.getElementById("themeToggle");
-        let chart;
-        let paymentId = 0;
+        if (name === 'money') {
+          moneyTool.classList.add('active');
+          navMoney.classList.add('active');
+        } else if (name === 'product') {
+          productTool.classList.add('active');
+          navProduct.classList.add('active');
+        } else if (name === 'fuel') {
+          fuelTool.classList.add('active');
+          navFuel.classList.add('active');
+        }
+      }
 
-        const initialPayments = [
-          { name: "Автокредит", amount: 19900 },
-          { name: "Ипотека", amount: 18000 },
-          { name: "Кредитка", amount: 12000 }
-        ];
+      navMoney.onclick = () => showTool('money');
+      navProduct.onclick = () => showTool('product');
+      navFuel.onclick = () => showTool('fuel');
 
-        function createPaymentField(name = "", amount = "") {
-          paymentId++;
-          const div = document.createElement("div");
-          div.className = "payment-entry";
-          div.dataset.id = paymentId;
+      // --- Финансовый калькулятор ---
+      const paymentsContainer = document.getElementById('paymentsContainer');
+      const addPaymentBtn = document.getElementById('addPaymentBtn');
+      const financeForm = document.getElementById('financeForm');
+      const resultDiv = document.getElementById('moneyPerMonthResult');
+      const ctx = document.getElementById('expensesChart').getContext('2d');
+      const themeToggle = document.getElementById('themeToggle');
+      let chart;
+      let paymentId = 0;
 
-          div.innerHTML = `
+      const initialPayments = [
+        { name: 'Автокредит', amount: 19900 },
+        { name: 'Ипотека', amount: 18000 },
+        { name: 'Кредитка', amount: 12000 },
+      ];
+
+      function createPaymentField(name = '', amount = '') {
+        paymentId++;
+        const div = document.createElement('div');
+        div.className = 'payment-entry';
+        div.dataset.id = paymentId;
+
+        div.innerHTML = `
             <input type="text" placeholder="Название" value="${name}" required>
             <input type="number" step="0.01" placeholder="Сумма" value="${amount}" required>
             <button type="button" title="Удалить платеж">−</button>
           `;
 
-          div.querySelector("button").addEventListener("click", () => div.remove());
+        div
+          .querySelector('button')
+          .addEventListener('click', () => div.remove());
 
-          paymentsContainer.appendChild(div);
-        }
+        paymentsContainer.appendChild(div);
+      }
 
-        addPaymentBtn.onclick = () => createPaymentField();
-        initialPayments.forEach(p => createPaymentField(p.name, p.amount));
+      addPaymentBtn.onclick = () => createPaymentField();
+      initialPayments.forEach(p => createPaymentField(p.name, p.amount));
 
-        themeToggle.onclick = () => {
-          document.body.classList.toggle("light");
-          document.body.classList.toggle("dark");
-          const theme = document.body.classList.contains("dark") ? "dark" : "light";
-          localStorage.setItem("appTheme", theme);
-          if (chart) chart.destroy();
-          financeForm.dispatchEvent(new Event("submit"));
-        };
+      themeToggle.onclick = () => {
+        document.body.classList.toggle('light');
+        document.body.classList.toggle('dark');
+        const theme = document.body.classList.contains('dark')
+          ? 'dark'
+          : 'light';
+        localStorage.setItem('appTheme', theme);
+        if (chart) chart.destroy();
+        financeForm.dispatchEvent(new Event('submit'));
+      };
 
-        financeForm.onsubmit = e => {
-          e.preventDefault();
-          const allMoney = parseInt(document.getElementById("allMyMoney").value) || 0;
-          const nextPayDate = new Date(document.getElementById("nextPayDate").value || new Date().setMonth(new Date().getMonth() + 1));
-          const today = new Date();
-          const daysLeft = Math.max(1, Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24)));
+      financeForm.onsubmit = e => {
+        e.preventDefault();
+        const allMoney =
+          parseInt(document.getElementById('allMyMoney').value) || 0;
+        const nextPayDate = new Date(
+          document.getElementById('nextPayDate').value ||
+            new Date().setMonth(new Date().getMonth() + 1)
+        );
+        const today = new Date();
+        const daysLeft = Math.max(
+          1,
+          Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
+        );
 
-          const payments = [...paymentsContainer.children].map(div => {
-            return {
-              name: div.querySelector("input[type='text']").value.trim(),
-              value: parseInt(div.querySelector("input[type='number']").value) || 0
-            };
-          });
-
-          const total = payments.reduce((sum, p) => sum + p.value, 0);
-          const free = allMoney - total;
-          const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
-
-          let html = `<p>На сегодняшний день все деньги: <strong>${allMoney} ₽</strong></p>
-            <p>Общая сумма обязательных платежей: <strong>${total} ₽</strong></p>`;
-          html += free < 0
-            ? `<p style="color:red;">Необходимо вернуть на счёт: <strong>${-free} ₽</strong></p>`
-            : `<p>Свободных денег: <strong>${free} ₽</strong></p>
-               <p>Можно тратить ежедневно: <strong>${perDay} ₽/день</strong> (до ${nextPayDate.toLocaleDateString('ru-RU')}, ${daysLeft} дн.)</p>`;
-
-          resultDiv.innerHTML = html;
-          resultDiv.style.display = "block";
-
-          if (chart) chart.destroy();
-          chart = new Chart(ctx, {
-            type: "bar",
-            data: {
-              labels: payments.map(p => p.name || "Без названия"),
-              datasets: [{
-                label: "Расходы",
-                data: payments.map(p => p.value),
-                backgroundColor: document.body.classList.contains("dark") ? '#0056b3' : '#007bff'
-              }]
-            },
-            options: {
-              responsive: true,
-              scales: {
-                y: {
-                  beginAtZero: true,
-                  ticks: { color: document.body.classList.contains("dark") ? '#f1f1f1' : '#333' }
-                },
-                x: {
-                  ticks: { color: document.body.classList.contains("dark") ? '#f1f1f1' : '#333' }
-                }
-              },
-              plugins: {
-                legend: {
-                  labels: {
-                    color: document.body.classList.contains("dark") ? '#f1f1f1' : '#333'
-                  }
-                }
-              }
-            }
-          });
-        };
-
-        window.addEventListener("DOMContentLoaded", () => {
-          financeForm.dispatchEvent(new Event("submit"));
+        const payments = [...paymentsContainer.children].map(div => {
+          return {
+            name: div.querySelector("input[type='text']").value.trim(),
+            value:
+              parseInt(div.querySelector("input[type='number']").value) || 0,
+          };
         });
 
-        // Сравнение товаров
-        let productId = 0;
-        const productForm = document.getElementById("productForm");
-        const addProductBtn = document.getElementById("addProductBtn");
-        const productsContainer = document.getElementById("productsContainer");
-        const productResult = document.getElementById("productResult");
+        const total = payments.reduce((sum, p) => sum + p.value, 0);
+        const free = allMoney - total;
+        const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
 
-        function addProduct(name = "", price = "", weight = "") {
-          productId++;
-          const div = document.createElement("div");
-          div.className = "card";
-          div.innerHTML = `
+        let html = `<p>На сегодняшний день все деньги: <strong>${allMoney} ₽</strong></p>
+            <p>Общая сумма обязательных платежей: <strong>${total} ₽</strong></p>`;
+        html +=
+          free < 0
+            ? `<p style="color:red;">Необходимо вернуть на счёт: <strong>${-free} ₽</strong></p>`
+            : `<p>Свободных денег: <strong>${free} ₽</strong></p>
+               <p>Можно тратить ежедневно: <strong>${perDay} ₽/день</strong> (до ${nextPayDate.toLocaleDateString(
+                 'ru-RU'
+               )}, ${daysLeft} дн.)</p>`;
+
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: payments.map(p => p.name || 'Без названия'),
+            datasets: [
+              {
+                label: 'Расходы',
+                data: payments.map(p => p.value),
+                backgroundColor: document.body.classList.contains('dark')
+                  ? '#0056b3'
+                  : '#007bff',
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+          },
+        });
+      };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        financeForm.dispatchEvent(new Event('submit'));
+      });
+
+      // Сравнение товаров
+      let productId = 0;
+      const productForm = document.getElementById('productForm');
+      const addProductBtn = document.getElementById('addProductBtn');
+      const productsContainer = document.getElementById('productsContainer');
+      const productResult = document.getElementById('productResult');
+
+      function addProduct(name = '', price = '', weight = '') {
+        productId++;
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
             <button type="button" class="delete-btn" title="Удалить">×</button>
             <div class="input-group">
               <label>Название</label>
@@ -429,66 +481,87 @@
               <input type="number" step="0.01"  value="${weight}" placeholder="0.00" required>
             </div>
           `;
-          div.querySelector(".delete-btn").onclick = () => div.remove();
-          productsContainer.appendChild(div);
+        div.querySelector('.delete-btn').onclick = () => div.remove();
+        productsContainer.appendChild(div);
+      }
+
+      addProductBtn.onclick = () => addProduct();
+      addProduct('Молоко', 90, 1);
+
+      productForm.onsubmit = e => {
+        e.preventDefault();
+        const products = [...productsContainer.children]
+          .map(div => {
+            const inputs = div.querySelectorAll('input');
+            return {
+              name: inputs[0].value || 'Без названия',
+              price: parseFloat(inputs[1].value),
+              weight: parseFloat(inputs[2].value),
+            };
+          })
+          .filter(p => p.price > 0 && p.weight > 0);
+
+        if (products.length < 2) {
+          productResult.style.display = 'none';
+          return alert('Добавьте минимум два товара.');
         }
 
-        addProductBtn.onclick = () => addProduct();
-        addProduct("Молоко", 90, 1);
+        products.sort((a, b) => a.price / a.weight - b.price / b.weight);
+        const best = products[0];
+        let result = `Выгоднее: <strong>${best.name}</strong> (${(
+          best.price / best.weight
+        ).toFixed(2)} ₽/ед.)<br><br>`;
 
-        productForm.onsubmit = e => {
-          e.preventDefault();
-          const products = [...productsContainer.children].map(div => {
-            const inputs = div.querySelectorAll("input");
-            return {
-              name: inputs[0].value || "Без названия",
-      price: parseFloat(inputs[1].value), // вместо parseInt
-      weight: parseFloat(inputs[2].value), // вместо parseInt
-             // price: parseFloat(inputs[1].value),
-             // weight: parseFloat(inputs[2].value)
-            };
-          }).filter(p => p.price > 0 && p.weight > 0);
+        for (let i = 1; i < products.length; i++) {
+          const diff =
+            (products[i].price /
+              products[i].weight /
+              (best.price / best.weight) -
+              1) *
+            100;
+          result += `${products[i].name}: дороже на ${diff.toFixed(1)}%<br>`;
+        }
 
-          if (products.length < 2) {
-            productResult.style.display = "none";
-            return alert("Добавьте минимум два товара.");
-          }
+        productResult.innerHTML = result;
+        productResult.style.display = 'block';
+      };
 
-          products.sort((a, b) => (a.price / a.weight) - (b.price / b.weight));
-          const best = products[0];
-          let result = `Выгоднее: <strong>${best.name}</strong> (${(best.price / best.weight).toFixed(2)} ₽/ед.)<br><br>`;
+      // Сравнение АЗС
+      let stationId = 0;
+      const fuelForm = document.getElementById('fuelForm');
+      const addStationBtn = document.getElementById('addStationBtn');
+      const stationsContainer = document.getElementById('stationsContainer');
+      const fuelResult = document.getElementById('fuelResult');
 
-          for (let i = 1; i < products.length; i++) {
-            const diff = ((products[i].price / products[i].weight) / (best.price / best.weight) - 1) * 100;
-            result += `${products[i].name}: дороже на ${diff.toFixed(1)}%<br>`;
-          }
+      function addStation(
+        type = 'АИ-92',
+        price = '',
+        discountType = 'none',
+        cashback = '',
+        fixed = ''
+      ) {
+        stationId++;
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.dataset.id = stationId;
 
-          productResult.innerHTML = result;
-          productResult.style.display = "block";
-        };
-
-        // Сравнение АЗС
-        let stationId = 0;
-        const fuelForm = document.getElementById("fuelForm");
-        const addStationBtn = document.getElementById("addStationBtn");
-        const stationsContainer = document.getElementById("stationsContainer");
-        const fuelResult = document.getElementById("fuelResult");
-
-        function addStation(type = "АИ-92", price = "", discountType = "none", cashback = "", fixed = "") {
-          stationId++;
-          const div = document.createElement("div");
-          div.className = "card";
-          div.dataset.id = stationId;
-
-          div.innerHTML = `
+        div.innerHTML = `
             <button type="button" class="delete-btn">×</button>
             <div class="input-group">
               <label>Тип топлива</label>
               <select class="fuel-type">
-                <option value="АИ-92"${type === "АИ-92" ? " selected" : ""}>АИ-92</option>
-                <option value="АИ-95"${type === "АИ-95" ? " selected" : ""}>АИ-95</option>
-                <option value="АИ-98"${type === "АИ-98" ? " selected" : ""}>АИ-98</option>
-                <option value="ДТ"${type === "ДТ" ? " selected" : ""}>ДТ</option>
+                <option value="АИ-92"${
+                  type === 'АИ-92' ? ' selected' : ''
+                }>АИ-92</option>
+                <option value="АИ-95"${
+                  type === 'АИ-95' ? ' selected' : ''
+                }>АИ-95</option>
+                <option value="АИ-98"${
+                  type === 'АИ-98' ? ' selected' : ''
+                }>АИ-98</option>
+                <option value="ДТ"${
+                  type === 'ДТ' ? ' selected' : ''
+                }>ДТ</option>
               </select>
             </div>
             <div class="input-group">
@@ -498,9 +571,15 @@
             <div class="input-group">
               <label>Тип скидки</label>
               <select class="discount-select">
-                <option value="none"${discountType === "none" ? " selected" : ""}>Нет</option>
-                <option value="cashback"${discountType === "cashback" ? " selected" : ""}>Кэшбэк (%)</option>
-                <option value="fixed"${discountType === "fixed" ? " selected" : ""}>Фиксированная (₽)</option>
+                <option value="none"${
+                  discountType === 'none' ? ' selected' : ''
+                }>Нет</option>
+                <option value="cashback"${
+                  discountType === 'cashback' ? ' selected' : ''
+                }>Кэшбэк (%)</option>
+                <option value="fixed"${
+                  discountType === 'fixed' ? ' selected' : ''
+                }>Фиксированная (₽)</option>
               </select>
             </div>
             <div class="input-group cashback-group" style="display: none;">
@@ -513,63 +592,65 @@
             </div>
           `;
 
-          const discountSelect = div.querySelector(".discount-select");
-          const cashbackGroup = div.querySelector(".cashback-group");
-          const fixedGroup = div.querySelector(".fixed-group");
+        const discountSelect = div.querySelector('.discount-select');
+        const cashbackGroup = div.querySelector('.cashback-group');
+        const fixedGroup = div.querySelector('.fixed-group');
 
-          function toggleDiscountFields() {
-            const type = discountSelect.value;
-            cashbackGroup.style.display = type === "cashback" ? "block" : "none";
-            fixedGroup.style.display = type === "fixed" ? "block" : "none";
-          }
-
-          toggleDiscountFields();
-          discountSelect.onchange = toggleDiscountFields;
-
-          div.querySelector(".delete-btn").onclick = () => div.remove();
-          stationsContainer.appendChild(div);
+        function toggleDiscountFields() {
+          const type = discountSelect.value;
+          cashbackGroup.style.display = type === 'cashback' ? 'block' : 'none';
+          fixedGroup.style.display = type === 'fixed' ? 'block' : 'none';
         }
 
-        addStationBtn.onclick = () => addStation();
-        addStation("АИ-95", 49.5, "cashback", 5);
+        toggleDiscountFields();
+        discountSelect.onchange = toggleDiscountFields;
 
-        fuelForm.onsubmit = e => {
-          e.preventDefault();
-          const stations = [...stationsContainer.children].map(div => {
-            const type = div.querySelector(".fuel-type").value;
-            const discountType = div.querySelector(".discount-select").value;
-      const price = parseFloat(div.querySelector(".fuel-price").value); // уже есть
-      const cashback = parseFloat(div.querySelector(".cashback-value")?.value) || 0;
-      const fixed = parseFloat(div.querySelector(".fixed-value")?.value) || 0;
+        div.querySelector('.delete-btn').onclick = () => div.remove();
+        stationsContainer.appendChild(div);
+      }
 
-           // const price = parseFloat(div.querySelector(".fuel-price").value);
-           // const cashback = parseFloat(div.querySelector(".cashback-value")?.value) || 0;
-           // const fixed = parseFloat(div.querySelector(".fixed-value")?.value) || 0;
+      addStationBtn.onclick = () => addStation();
+      addStation('АИ-95', 49.5, 'cashback', 5);
 
+      fuelForm.onsubmit = e => {
+        e.preventDefault();
+        const stations = [...stationsContainer.children]
+          .map(div => {
+            const type = div.querySelector('.fuel-type').value;
+            const discountType = div.querySelector('.discount-select').value;
+            const price = parseFloat(div.querySelector('.fuel-price').value); // уже есть
+            const cashback =
+              parseFloat(div.querySelector('.cashback-value')?.value) || 0;
+            const fixed =
+              parseFloat(div.querySelector('.fixed-value')?.value) || 0;
             let finalPrice = price;
-            if (discountType === "cashback") finalPrice = price * (1 - cashback / 100);
-            else if (discountType === "fixed") finalPrice = price - fixed;
+            if (discountType === 'cashback')
+              finalPrice = price * (1 - cashback / 100);
+            else if (discountType === 'fixed') finalPrice = price - fixed;
 
             return { type, price, finalPrice, discountType, cashback, fixed };
-          }).filter(s => s.price > 0);
+          })
+          .filter(s => s.price > 0);
 
-          if (stations.length < 2) {
-            fuelResult.style.display = "none";
-            return alert("Добавьте минимум две АЗС.");
-          }
+        if (stations.length < 2) {
+          fuelResult.style.display = 'none';
+          return alert('Добавьте минимум две АЗС.');
+        }
 
-          stations.sort((a, b) => a.finalPrice - b.finalPrice);
-          const best = stations[0];
-          let result = `Выгоднее: <strong>${best.type}</strong> (${best.finalPrice.toFixed(2)} ₽/л)<br><br>`;
+        stations.sort((a, b) => a.finalPrice - b.finalPrice);
+        const best = stations[0];
+        let result = `Выгоднее: <strong>${
+          best.type
+        }</strong> (${best.finalPrice.toFixed(2)} ₽/л)<br><br>`;
 
-          for (let i = 1; i < stations.length; i++) {
-            const diff = ((stations[i].finalPrice / best.finalPrice) - 1) * 100;
-            result += `${stations[i].type}: дороже на ${diff.toFixed(1)}%<br>`;
-          }
+        for (let i = 1; i < stations.length; i++) {
+          const diff = (stations[i].finalPrice / best.finalPrice - 1) * 100;
+          result += `${stations[i].type}: дороже на ${diff.toFixed(1)}%<br>`;
+        }
 
-          fuelResult.innerHTML = result;
-          fuelResult.style.display = "block";
-        };
+        fuelResult.innerHTML = result;
+        fuelResult.style.display = 'block';
+      };
     </script>
   </body>
 </html>
