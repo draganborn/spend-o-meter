@@ -1,1088 +1,678 @@
 <!DOCTYPE html>
 <html lang="ru">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-  <title>Финансовый  компас</title>
-  <style>
-    body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      margin: 0;
-      padding: 0;
-      background-color: #f4f7fa; /* Default light theme */
-      color: #333; /* Default light theme */
-      transition: background 0.3s, color 0.3s;
-    }
-    body.dark {
-      background-color: #1e1e1e;
-      color: #f1f1f1;
-    }
-    .nav {
-      background-color: #333;
-      padding: 10px 0;
-      text-align: center;
-      margin-bottom: 20px;
-    }
-    .nav button {
-      background-color: #555;
-      color: white;
-      border: none;
-      padding: 10px 20px;
-      margin: 0 5px;
-      cursor: pointer;
-      border-radius: 5px;
-      font-size: 16px;
-    }
-    .nav button:hover, .nav button.active {
-      background-color: #007bff;
-    }
-    .tool-container {
-      display: none; /* Hidden by default */
-      padding: 20px;
-      max-width: 800px; /* Increased max-width for combined app */
-      margin: 0 auto;
-    }
-    .tool-container.active {
-      display: block;
-    }
-
-    /* Styles from moneyPerMonth.html (prefixed or adjusted) */
-    .moneyPerMonth-container {
-      max-width: 600px;
-      margin: 0px auto; /* Adjusted margin */
-      background: white;
-      padding: 30px;
-      border-radius: 10px;
-      box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-    }
-    body.dark .moneyPerMonth-container {
-      background-color: #2d2d2d;
-    }
-    .moneyPerMonth-h1, .moneyPerMonth-h3 {
-      text-align: center;
-      color: inherit;
-    }
-    .moneyPerMonth-btn-theme {
-      display: block;
-      margin: 10px auto 20px auto;
-      padding: 10px 20px;
-      background-color: #007bff;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .moneyPerMonth-btn-theme:hover {
-      background-color: #0056b3;
-    }
-    .moneyPerMonth-form label {
-      display: block;
-      margin-bottom: 10px;
-    }
-    .moneyPerMonth-form input {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      border: 1px solid #ccc;
-      border-radius: 5px;
-    }
-    body.dark .moneyPerMonth-form input {
-      background-color: #444;
-      color: #fff;
-      border: none;
-    }
-    .moneyPerMonth-form button[type="submit"] {
-      display: block;
-      width: 100%;
-      padding: 10px;
-      margin-top: 20px;
-      background-color: #28a745;
-      color: white;
-      border: none;
-      border-radius: 5px;
-      cursor: pointer;
-      font-size: 16px;
-    }
-    .moneyPerMonth-form button[type="submit"]:hover {
-      background-color: #218838;
-    }
-    #moneyPerMonthResult {
-      margin-top: 30px;
-      padding: 20px;
-      background-color: #e9f7ef;
-      border-left: 5px solid #28a745;
-      color: #155724;
-      display: none;
-    }
-    body.dark #moneyPerMonthResult {
-      background-color: #3c3c3c;
-      border-left-color: #4caf50;
-      color: #ddd;
-    }
-    @media (max-width: 600px) {
-      .moneyPerMonth-container {
-        padding: 20px;
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Финансовый помощник</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7fa;
+        color: #333;
+        transition: background 0.3s, color 0.3s;
       }
-    }
-
-    /* Styles from priceProfit.html START */
-    :root {
-        --primary: #2e7d32;
-        --secondary: #e8f5e9;
-        --accent: #ffc107;
-        --text-dark: #212121;
-        --text-light: #fafafa;
-        --border-radius: 12px;
-        --transition-time: 0.3s;
-    }
-
-    #priceProfitTool .container {
-        max-width: 500px;
-        margin: 0 auto;
-        padding: 1rem;
-    }
-
-    #priceProfitTool .hidden {
-        display: none !important;
-    }
-
-    #priceProfitTool .category-select {
+      body.dark {
+        background-color: #1e1e1e;
+        color: #f1f1f1;
+      }
+      .nav {
         display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-top: 2rem;
-    }
-
-    #priceProfitTool .category-btn {
-        background: var(--primary);
-        color: var(--text-light);
-        padding: 1.5rem;
-        font-size: 1.2rem;
-        font-weight: bold;
+        justify-content: center;
+        background-color: #333;
+        padding: 10px;
+        text-align: center;
+      }
+      .nav button {
+        background-color: #555;
+        color: white;
         border: none;
-        border-radius: var(--border-radius);
+        padding: 10px 20px;
+        margin: 0 5px;
         cursor: pointer;
-        transition: all var(--transition-time) ease;
-    }
-
-    #priceProfitTool .category-btn:hover {
-        background: #1b5e20;
-        transform: scale(1.02);
-    }
-
-    #priceProfitTool .form-container {
-        display: flex;
-        flex-direction: column;
-        gap: 1rem;
-        margin-top: 1rem;
-        transition: all var(--transition-time) ease;
-    }
-
-    #priceProfitTool .card {
-        display: flex;
-        background: white;
-        border-radius: var(--border-radius);
-        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
-        padding: 1rem;
-        margin: 1rem 0;
-        transition: transform var(--transition-time);
-        flex-direction: column;
-    }
-
-    #priceProfitTool .card:hover {
-        transform: translateY(-2px);
-    }
-
-    #priceProfitTool .back-btn {
-        background: var(--accent);
-        color: var(--text-dark);
-        margin-top: 0.5rem;
-    }
-
-    #priceProfitTool .back-btn:hover {
-        background: #ffb300;
-    }
-
-    #priceProfitTool label {
-        font-weight: 600;
-        margin-bottom: 0.3rem;
-    }
-
-    #priceProfitTool input[type='text'],
-    #priceProfitTool input[type='number'],
-    #priceProfitTool select {
-        padding: 0.8rem;
-        border: 1px solid #ddd;
-        border-radius: var(--border-radius);
-        font-size: 1rem;
-        transition: all var(--transition-time) ease;
-    }
-
-    #priceProfitTool input:focus {
-        border-color: var(--primary);
-        box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.2);
-        outline: none;
-    }
-
-    #priceProfitTool .input-group {
-        display: flex;
-        flex-direction: column;
-    }
-
-    #priceProfitTool .btn-group {
-        display: flex;
-        gap: 1rem;
-        flex-wrap: wrap;
-        justify-content: space-between;
-    }
-
-    #priceProfitTool .main-btn {
-        flex: 1;
-        min-width: 120px;
-        padding: 1rem;
-        font-size: 1.1rem;
-        font-weight: bold;
-        border-radius: var(--border-radius);
-        cursor: pointer;
-        transition: all var(--transition-time) ease;
-    }
-
-    #priceProfitTool .main-btn:hover {
-        transform: scale(1.02);
-    }
-
-    #priceProfitTool .submit-btn {
-        background: var(--primary);
-        color: var(--text-light);
-        padding: 1rem;
-        border-radius: 8px; /* Overrides var(--border-radius) for this specific button if desired */
-    }
-
-    #priceProfitTool .submit-btn:hover {
-        background: #1b5e20;
-    }
-
-    #priceProfitTool .add-btn {
-        background: var(--accent);
-        color: var(--text-dark);
-        padding: 1rem;
-        border-radius: 8px;
-    }
-
-    #priceProfitTool .add-btn:hover {
-        background: #ffb300;
-    }
-
-    #priceProfitTool .delete-btn {
-        background: #ef5350;
-        color: var(--text-light); /* Ensure text is light on red bg */
-        padding: 0.4rem 0.6rem;
-        font-size: 0.9rem;
-        border-radius: 8px;
-        max-width: 33px;
-        align-self: flex-end;
-    }
-
-    #priceProfitTool .delete-btn:hover {
-        background: #e53935;
-    }
-
-    #priceProfitTool .result-container {
-        margin-top: 2rem;
-        padding: 1rem;
-        border-radius: var(--border-radius);
-        background: #e8f5e9; /* Corresponds to var(--secondary) */
-    }
-
-    #priceProfitTool .discount-fields {
-        display: flex;
-        flex-direction: column;
-        gap: 0.5rem;
-    }
-
-    #priceProfitTool .fuel-type {
-        margin-bottom: 1rem;
-    }
-
-    @media (max-width: 480px) {
-        #priceProfitTool .container {
-            padding: 0.5rem;
-        }
-        #priceProfitTool .main-btn {
-            font-size: 1rem;
-        }
-    }
-    /* Styles from priceProfit.html END */
-
-    /* Dark theme adjustments for priceProfitTool */
-    body.dark #priceProfitTool .card {
-      background: #2d2d2d;
-      box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
-    }
-    body.dark #priceProfitTool h1,
-    body.dark #priceProfitTool h2,
-    body.dark #priceProfitTool h3,
-    body.dark #priceProfitTool label,
-    body.dark #priceProfitTool p,
-    body.dark #priceProfitTool .result-container p, /* ensure result text is also light */
-    body.dark #priceProfitTool .explanation {
-      color: #f1f1f1;
-    }
-    body.dark #priceProfitTool input[type='text'],
-    body.dark #priceProfitTool input[type='number'],
-    body.dark #priceProfitTool select {
-      background-color: #444;
-      color: #fff;
-      border: 1px solid #555;
-    }
-    body.dark #priceProfitTool input:focus {
-      border-color: var(--primary); 
-      box-shadow: 0 0 0 3px rgba(46, 125, 50, 0.4); /* Adjusted alpha for dark */
-    }
-    body.dark #priceProfitTool .result-container {
-      background: #3c3c3c;
-    }
-    body.dark #priceProfitTool .add-btn,
-    body.dark #priceProfitTool .back-btn {
-      color: var(--text-dark); /* Keep text light as background is accent (yellow) */
-      /* If accent itself should change in dark mode, update var(--accent) or button bg directly */
-    }
-    body.dark #priceProfitTool .category-btn:hover {
-        background: #124a15; /* Darker green for hover */
-    }
-    body.dark #priceProfitTool .submit-btn:hover {
-        background: #124a15;
-    }
-    body.dark #priceProfitTool .delete-btn {
-        background: #c62828;
-        color: var(--text-light);
-    }
-    body.dark #priceProfitTool .delete-btn:hover {
-        background: #b71c1c;
-    }
-  </style>
-  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-</head>
-<body class="light"> 
-
-  <div class="nav">
-    <button id="navMoneyPerMonth" class="active">Финансовый калькулятор</button>
-    <button id="navPriceProfit">Сравнение цен</button>
-  </div>
-
-  <div id="moneyPerMonthTool" class="tool-container active">
-    <div class="moneyPerMonth-container">
-      <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
-      <button id="themeToggle" class="moneyPerMonth-btn-theme">Переключить тему</button>
-      <form id="financeForm" class="moneyPerMonth-form">
-        <label>Все деньги на счете: 
-          <input type="number" id="allMyMoney" value="81933" />
-        </label>
-        <h3 class="moneyPerMonth-h3">Обязательные платежи:</h3>
-        <label>Автокредит:
-          <input type="number" id="car" value="19900" />
-        </label>
-        <label>Ипотека:
-          <input type="number" id="hypothec" value="18000" />
-        </label>
-        <label>Кредитка Альфа 1:
-          <input type="number" id="alphaM" value="2600" />
-        </label>
-        <label>Кредитка Альфа 2:
-          <input type="number" id="alphaK" value="9600" />
-        </label>
-        <label>Кредитка Сбер:
-          <input type="number" id="sberK" value="5400" />
-        </label>
-        <label>Топливо:
-          <input type="number" id="fuel" value="8000" />
-        </label>
-        <label>Коммунальные услуги:
-          <input type="number" id="utilityBill" value="6000" />
-        </label>
-        <label>Непредвиденные расходы:
-          <input type="number" id="unexpected" value="25000" />
-        </label>
-        <label>Дата следующего поступления:
-          <input type="date" id="nextPayDate" />
-        </label>
-        <button type="submit">Рассчитать</button>
-      </form>
-      <div id="moneyPerMonthResult"></div>
-      <canvas id="expensesChart" width="400" height="200"></canvas>
-    </div>
-  </div>
-
-  <div id="priceProfitTool" class="tool-container">
-    <div class="container">
-      <!-- Экран выбора категории -->
-      <div id="categorySelect">
-        <h1 style="text-align: center; color: var(--primary); margin-top: 2rem">
-          Сравнение цен
-        </h1>
-        <div class="category-select">
-          <button class="category-btn" onclick="priceProfit_showForm('product')">
-            Сравнение товаров
-          </button>
-          <button class="category-btn" onclick="priceProfit_showForm('fuel')">
-            АЗС и топливо
-          </button>
-        </div>
-      </div>
-
-      <!-- Форма для товаров -->
-      <div id="productForm" class="form-container hidden">
-        <div class="card">
-          <h2 style="margin: 0 0 1rem 0; ">
-            Сравнение товаров
-          </h2>
-
-          <form id="priceForm">
-            <div id="productsContainer">
-              <!-- Динамические товары -->
-              <div class="card product-card" data-product-id="1">
-                <button type="button" class="delete-btn">×</button>
-                <h3 style="margin: 0 0 1rem 0;">
-                  Товар 1
-                </h3>
-                <div class="input-group">
-                  <label for="name1">Название</label>
-                  <input
-                    type="text"
-                    id="name1"
-                    placeholder="Введите название"
-                  />
-                </div>
-                <div class="input-group">
-                  <label for="price1">Цена (₽)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    id="price1"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-                <div class="input-group">
-                  <label for="weight1">Количество (г/кг/шт)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    id="weight1"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-              </div>
-            </div>
-
-            <div class="btn-group">
-              <button type="button" class="add-btn" onclick="priceProfit_addProduct()">
-                + Добавить товар
-              </button>
-              <button type="submit" class="submit-btn">Рассчитать</button>
-            </div>
-          </form>
-
-          <button class="back-btn main-btn" onclick="priceProfit_goBack()">Назад</button>
-        </div>
-
-        <!-- Результаты товаров -->
-        <div class="result-container hidden" id="productResult">
-          <p class="result" id="productResultText" style="margin: 0"></p>
-          <div
-            class="explanation"
-            id="productExplanationText"
-            style="margin-top: 1rem"
-          ></div>
-        </div>
-      </div>
-
-      <!-- Форма для АЗС -->
-      <div id="fuelForm" class="form-container hidden">
-        <div class="card">
-          <h2 style="margin: 0 0 1rem 0;">
-            Сравнение АЗС
-          </h2>
-
-          <form id="fuelStationForm">
-            <div id="stationsContainer">
-              <!-- Динамические АЗС -->
-              <div class="card fuel-card" data-station-id="1">
-                <button type="button" class="delete-btn">×</button>
-                <h3 style="margin: 0 0 1rem 0; ">
-                  АЗС 1
-                </h3>
-
-                <div class="input-group fuel-type">
-                  <label for="fuelName1">Тип топлива</label>
-                  <select id="fuelName1">
-                    <option value="АИ-92">АИ-92</option>
-                    <option value="АИ-95">АИ-95</option>
-                    <option value="АИ-98">АИ-98</option>
-                    <option value="ДТ">ДТ</option>
-                  </select>
-                </div>
-
-                <div class="input-group">
-                  <label for="fuelPrice1">Цена за литр (₽)</label>
-                  <input
-                    type="number"
-                    step="0.01"
-                    id="fuelPrice1"
-                    placeholder="0.00"
-                    required
-                  />
-                </div>
-
-                <div class="input-group discount-type">
-                  <label for="discountType1">Тип скидки</label>
-                  <select id="discountType1" class="discount-type-select">
-                    <option value="none">Нет скидки</option>
-                    <option value="cashback">Кэшбэк (%)</option>
-                    <option value="fixed">Фиксированная скидка (₽)</option>
-                  </select>
-                </div>
-
-                <div class="discount-fields" id="discountFields1">
-                  <div class="input-group cashback-field" style="display: none">
-                    <label for="cashback1">Процент кэшбэка</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      id="cashback1"
-                      placeholder="0.00"
-                    />
-                  </div>
-
-                  <div
-                    class="input-group fixed-discount-field"
-                    style="display: none"
-                  >
-                    <label for="fixedDiscount1">Фиксированная скидка (₽)</label>
-                    <input
-                      type="number"
-                      step="0.01"
-                      id="fixedDiscount1"
-                      placeholder="0.00"
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <div class="btn-group">
-              <button type="button" class="add-btn" onclick="priceProfit_addStation()">
-                + Добавить АЗС
-              </button>
-              <button type="submit" class="submit-btn">Рассчитать</button>
-            </div>
-          </form>
-
-          <button class="back-btn main-btn" onclick="priceProfit_goBack()">Назад</button>
-        </div>
-
-        <!-- Результаты АЗС -->
-        <div class="result-container hidden" id="fuelResult">
-          <p class="result" id="fuelResultText" style="margin: 0"></p>
-          <div
-            class="explanation"
-            id="fuelExplanationText"
-            style="margin-top: 1rem"
-          ></div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <script>
-    // Global theme state for the entire application
-    let currentTheme = localStorage.getItem("appTheme") || "light";
-    document.body.classList.add(currentTheme);
-    if (currentTheme === "dark") {
-        document.body.classList.remove("light");
-    }
-
-    // Navigation logic
-    const navMoneyPerMonthBtn = document.getElementById("navMoneyPerMonth");
-    const navPriceProfitBtn = document.getElementById("navPriceProfit");
-    const moneyPerMonthToolDiv = document.getElementById("moneyPerMonthTool");
-    const priceProfitToolDiv = document.getElementById("priceProfitTool");
-
-    function showTool(toolName) {
-      if (toolName === "moneyPerMonth") {
-        moneyPerMonthToolDiv.classList.add("active");
-        priceProfitToolDiv.classList.remove("active");
-        navMoneyPerMonthBtn.classList.add("active");
-        navPriceProfitBtn.classList.remove("active");
-      } else if (toolName === "priceProfit") {
-        moneyPerMonthToolDiv.classList.remove("active");
-        priceProfitToolDiv.classList.add("active");
-        navMoneyPerMonthBtn.classList.remove("active");
-        navPriceProfitBtn.classList.add("active");
-        // Initialize priceProfit specific things if needed when shown for the first time
-        // For now, its DOMContentLoaded handles initialization
+        border-radius: 5px;
+        font-size: 16px;
       }
-    }
+      .nav button.active,
+      .nav button:hover {
+        background-color: #007bff;
+      }
+      .tool-container {
+        display: none;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .tool-container.active {
+        display: block;
+      }
+      /* Финансовый калькулятор */
+      .moneyPerMonth-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      body.dark .moneyPerMonth-container {
+        background-color: #2d2d2d;
+      }
+      .moneyPerMonth-h1,
+      .moneyPerMonth-h3 {
+        text-align: center;
+        color: inherit;
+      }
+      .moneyPerMonth-btn-theme {
+        display: block;
+        margin: 10px auto 20px auto;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .payment-entry {
+        display: flex;
+        gap: 10px;
+        margin-bottom: 10px;
+      }
+      .payment-entry input[type='text'],
+      .payment-entry input[type='number'] {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .payment-entry button {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 8px 12px;
+      }
+      .add-payment-btn {
+        background-color: #6a06a7;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      #moneyPerMonthResult {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #e9f7ef;
+        border-left: 5px solid #28a745;
+        color: #155724;
+        display: none;
+      }
+      body.dark #moneyPerMonthResult {
+        background-color: #3c3c3c;
+        border-left-color: #4caf50;
+        color: #ddd;
+      }
+      canvas {
+        margin-top: 20px;
+      }
 
-    navMoneyPerMonthBtn.addEventListener("click", () => showTool("moneyPerMonth"));
-    navPriceProfitBtn.addEventListener("click", () => showTool("priceProfit"));
+      /* Общие стили для сравнения */
+      .card-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      body.dark .card-container {
+        background-color: #2d2d2d;
+      }
+      body.dark .card {
+        background-color: #2d2d2d;
+      }
+      #productsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      
+      }
+      .input-group {
+    margin-bottom: 10px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: stretch;
+}
+      .input-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .input-group input,
+      .input-group select {
+        /* width: 100%; */
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .btn-group button {
+        flex: 1;
+        padding: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: white;
+      }
+      .add-btn {
+        background: #6a06a7;
+        color: #212121;
+      }
+      .submit-btn {
+        background: #28a745;
+      }
+      .back-btn {
+        background: #007bff;
+      }
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        line-height: 1;
+        font-weight: bold;
+        cursor: pointer;
+        float: right;
+        align-self: flex-end;
+      }
+      .result-container {
+        background: #e8f5e9;
+        border-left: 4px solid #2e7d32;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+      }
+      body.dark .result-container {
+        background: #3c3c3c;
+        color: #f1f1f1;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nav">
+      <div style="display: flex; justify-content: center; gap: 10px">
+        <button id="navMoneyPerMonth" class="active">
+          Калькулятор финансов
+        </button>
+        <button id="navProductCompare">Сравнение товаров</button>
+        <button id="navFuelCompare">Сравнение АЗС</button>
+      </div>
+      <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
+    </div>
 
-    // --- moneyPerMonth.html JavaScript START ---
-    document.addEventListener("DOMContentLoaded", () => {
-      const themeToggle = document.getElementById("themeToggle");
-      const financeForm = document.getElementById("financeForm");
-      const moneyPerMonthResultDiv = document.getElementById("moneyPerMonthResult");
-      const expensesCtx = document.getElementById("expensesChart").getContext("2d");
-      let expensesChart;
+    <div id="moneyPerMonthTool" class="tool-container active">
+      <div class="moneyPerMonth-container">
+        <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
+        <!-- <button id="themeToggle" class="moneyPerMonth-btn-theme">
+          Переключить тему
+        </button> -->
+        <form id="financeForm" class="moneyPerMonth-form">
+          <label
+            >Все деньги на счете:
+            <input type="number" step="0.01" id="allMyMoney" value="81933" />
+          </label>
+          <h3 class="moneyPerMonth-h3">Обязательные платежи:</h3>
+          <div id="paymentsContainer">
+            <!-- Скрипт создаст поля -->
+          </div>
+          <button type="button" class="add-payment-btn" id="addPaymentBtn">
+            + Добавить платеж
+          </button>
+          <label
+            >Дата следующего поступления:
+            <input type="date" id="nextPayDate" />
+          </label>
+          <button type="submit">Рассчитать</button>
+        </form>
+        <div id="moneyPerMonthResult"></div>
+        <canvas id="expensesChart" width="400" height="200"></canvas>
+      </div>
+    </div>
 
-      themeToggle.addEventListener("click", () => {
-        if (document.body.classList.contains("light")) {
-          document.body.classList.remove("light");
-          document.body.classList.add("dark");
-          localStorage.setItem("appTheme", "dark");
-          currentTheme = "dark";
-        } else {
-          document.body.classList.remove("dark");
-          document.body.classList.add("light");
-          localStorage.setItem("appTheme", "light");
-          currentTheme = "light";
+    <div id="productTool" class="tool-container">
+      <div class="card-container">
+        <h2>Сравнение товаров</h2>
+        <form id="productForm">
+          <div id="productsContainer"></div>
+          <div class="btn-group">
+            <button type="button" class="add-btn" id="addProductBtn">
+              + Товар
+            </button>
+            <button type="submit" class="submit-btn">Сравнить</button>
+          </div>
+        </form>
+        <div
+          class="result-container"
+          id="productResult"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+
+    <div id="fuelTool" class="tool-container">
+      <div class="card-container">
+        <h2>Сравнение АЗС</h2>
+        <form id="fuelForm">
+          <div id="stationsContainer"></div>
+          <div class="btn-group">
+            <button type="button" class="add-btn" id="addStationBtn">
+              + АЗС
+            </button>
+            <button type="submit" class="submit-btn">Сравнить</button>
+          </div>
+        </form>
+        <div
+          class="result-container"
+          id="fuelResult"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+
+    <script>
+      // --- Темы ---
+      const currentTheme = localStorage.getItem('appTheme') || 'light';
+      document.body.classList.add(currentTheme);
+      if (currentTheme === 'dark') document.body.classList.remove('light');
+
+      // --- Переключение вкладок ---
+      const navMoney = document.getElementById('navMoneyPerMonth');
+      const moneyTool = document.getElementById('moneyPerMonthTool');
+
+      const navProduct = document.getElementById('navProductCompare');
+      const navFuel = document.getElementById('navFuelCompare');
+      const productTool = document.getElementById('productTool');
+      const fuelTool = document.getElementById('fuelTool');
+
+      function showTool(name) {
+        document
+          .querySelectorAll('.tool-container')
+          .forEach(div => div.classList.remove('active'));
+        document
+          .querySelectorAll('.nav button')
+          .forEach(btn => btn.classList.remove('active'));
+
+        if (name === 'money') {
+          moneyTool.classList.add('active');
+          navMoney.classList.add('active');
+        } else if (name === 'product') {
+          productTool.classList.add('active');
+          navProduct.classList.add('active');
+        } else if (name === 'fuel') {
+          fuelTool.classList.add('active');
+          navFuel.classList.add('active');
         }
-        // Update chart on theme change
-        if (financeForm && financeForm.checkValidity()) { // Check if form is valid or data exists
-            financeForm.dispatchEvent(new Event('submit'));
-        } else if (expensesChart) { // Or just redraw with new colors if no data to submit
-            const existingData = expensesChart.data.datasets[0].data;
-            const existingLabels = expensesChart.data.labels;
-            updateExpensesChart(existingLabels, existingData);
-        }
-      });
+      }
 
-      function updateExpensesChart(labels, data) {
-        if (expensesChart) expensesChart.destroy();
-        expensesChart = new Chart(expensesCtx, {
-          type: "bar",
+      navMoney.onclick = () => showTool('money');
+      navProduct.onclick = () => showTool('product');
+      navFuel.onclick = () => showTool('fuel');
+
+      // --- Финансовый калькулятор ---
+      const paymentsContainer = document.getElementById('paymentsContainer');
+      const addPaymentBtn = document.getElementById('addPaymentBtn');
+      const financeForm = document.getElementById('financeForm');
+      const resultDiv = document.getElementById('moneyPerMonthResult');
+      const ctx = document.getElementById('expensesChart').getContext('2d');
+      const themeToggle = document.getElementById('themeToggle');
+      let chart;
+      let paymentId = 0;
+
+      const initialPayments = [
+        { name: 'Автокредит', amount: 19900 },
+        { name: 'Ипотека', amount: 18000 },
+        { name: 'Кредитка', amount: 12000 },
+      ];
+
+      function createPaymentField(name = '', amount = '') {
+        paymentId++;
+        const div = document.createElement('div');
+        div.className = 'payment-entry';
+        div.dataset.id = paymentId;
+
+        div.innerHTML = `
+            <input type="text" placeholder="Название" value="${name}" required>
+            <input type="number" step="0.01" placeholder="Сумма" value="${amount}" required>
+            <button type="button" title="Удалить платеж">−</button>
+          `;
+
+        div
+          .querySelector('button')
+          .addEventListener('click', () => div.remove());
+
+        paymentsContainer.appendChild(div);
+      }
+
+      addPaymentBtn.onclick = () => createPaymentField();
+      initialPayments.forEach(p => createPaymentField(p.name, p.amount));
+
+      themeToggle.onclick = () => {
+        document.body.classList.toggle('light');
+        document.body.classList.toggle('dark');
+        const theme = document.body.classList.contains('dark')
+          ? 'dark'
+          : 'light';
+        localStorage.setItem('appTheme', theme);
+        if (chart) chart.destroy();
+        financeForm.dispatchEvent(new Event('submit'));
+      };
+
+      financeForm.onsubmit = e => {
+        e.preventDefault();
+        const allMoney =
+          parseInt(document.getElementById('allMyMoney').value) || 0;
+        const nextPayDate = new Date(
+          document.getElementById('nextPayDate').value ||
+            new Date().setMonth(new Date().getMonth() + 1)
+        );
+        const today = new Date();
+        const daysLeft = Math.max(
+          1,
+          Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
+        );
+
+        const payments = [...paymentsContainer.children].map(div => {
+          return {
+            name: div.querySelector("input[type='text']").value.trim(),
+            value:
+              parseInt(div.querySelector("input[type='number']").value) || 0,
+          };
+        });
+
+        const total = payments.reduce((sum, p) => sum + p.value, 0);
+        const free = allMoney - total;
+        const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
+
+        let html = `<p>На сегодняшний день все деньги: <strong>${allMoney} ₽</strong></p>
+            <p>Общая сумма обязательных платежей: <strong>${total} ₽</strong></p>`;
+        html +=
+          free < 0
+            ? `<p style="color:red;">Необходимо вернуть на счёт: <strong>${-free} ₽</strong></p>`
+            : `<p>Свободных денег: <strong>${free} ₽</strong></p>
+               <p>Можно тратить ежедневно: <strong>${perDay} ₽/день</strong> (до ${nextPayDate.toLocaleDateString(
+                'ru-RU'
+              )}, ${daysLeft} дн.)</p>`;
+
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+          type: 'bar',
           data: {
-            labels,
-            datasets: [{
-              label: "Расходы",
-              data,
-              backgroundColor: currentTheme === 'dark' ? '#0056b3' : '#007bff',
-              borderColor: currentTheme === 'dark' ? '#003f7f' : '#0056b3',
-            }]
+            labels: payments.map(p => p.name || 'Без названия'),
+            datasets: [
+              {
+                label: 'Расходы',
+                data: payments.map(p => p.value),
+                backgroundColor: document.body.classList.contains('dark')
+                  ? '#0056b3'
+                  : '#007bff',
+              },
+            ],
           },
           options: {
             responsive: true,
             scales: {
               y: {
                 beginAtZero: true,
-                ticks: { color: currentTheme === 'dark' ? '#f1f1f1' : '#333' },
-                grid: { color: currentTheme === 'dark' ? '#444' : '#ddd' }
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
               },
               x: {
-                ticks: { color: currentTheme === 'dark' ? '#f1f1f1' : '#333' },
-                grid: { color: currentTheme === 'dark' ? '#444' : '#ddd' }
-              }
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
             },
             plugins: {
-                legend: {
-                    labels: {
-                        color: currentTheme === 'dark' ? '#f1f1f1' : '#333'
-                    }
-                }
-            }
-          }
+              legend: {
+                labels: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+          },
         });
-      }
+      };
 
-      function loadFinanceData() {
-        const keys = ["allMyMoney", "car", "hypothec", "alphaM", "alphaK", "sberK", "fuel", "utilityBill", "unexpected"];
-        keys.forEach(id => {
-          const value = localStorage.getItem("finance_" + id);
-          if (value !== null) {
-            const element = document.getElementById(id);
-            if(element) element.value = value;
-          }
-        });
-        const nextPayDateVal = localStorage.getItem("finance_nextPayDate");
-        if (nextPayDateVal) {
-            const nextPayDateEl = document.getElementById("nextPayDate");
-            if(nextPayDateEl) nextPayDateEl.value = nextPayDateVal;
-        }
-      }
-
-      function saveFinanceData(data) {
-        Object.entries(data).forEach(([key, val]) => {
-          localStorage.setItem("finance_" + key, val);
-        });
-        const nextPayDateEl = document.getElementById("nextPayDate");
-        if(nextPayDateEl) localStorage.setItem("finance_nextPayDate", nextPayDateEl.value);
-      }
-
-      loadFinanceData();
-
-      if(financeForm) {
-        financeForm.addEventListener("submit", function (e) {
-          e.preventDefault();
-          const nextPayDateInput = document.getElementById("nextPayDate");
-          const nextPayDate = new Date(nextPayDateInput ? nextPayDateInput.value : "");
-          const today = new Date();
-          let targetDate = nextPayDate;
-          if (!nextPayDateInput || !nextPayDateInput.value || !nextPayDate.getTime() || isNaN(nextPayDate.getTime())) {
-            targetDate = new Date(today.getFullYear(), today.getMonth() + 1, 15);
-          }
-          const diffInMs = targetDate.getTime() - today.getTime();
-          const daysLeft = Math.max(1, Math.ceil(diffInMs / (1000 * 60 * 60 * 24)));
-
-          const car = parseInt(document.getElementById("car").value) || 0;
-          const hypothec = parseInt(document.getElementById("hypothec").value) || 0;
-          const alphaM = parseInt(document.getElementById("alphaM").value) || 0;
-          const alphaK = parseInt(document.getElementById("alphaK").value) || 0;
-          const sberK = parseInt(document.getElementById("sberK").value) || 0;
-          const fuel = parseInt(document.getElementById("fuel").value) || 0;
-          const utilityBill = parseInt(document.getElementById("utilityBill").value) || 0;
-          const unexpected = parseInt(document.getElementById("unexpected").value) || 0;
-          const allMyMoney = parseInt(document.getElementById("allMyMoney").value) || 0;
-          const allBills = car + hypothec + alphaM + alphaK + sberK + fuel + utilityBill + unexpected;
-          const finalSum = allMyMoney - allBills;
-          const moneyOnDay = daysLeft > 0 ? Math.floor(finalSum / daysLeft) : (finalSum > 0 ? finalSum : 0) ;
-
-          saveFinanceData({ allMyMoney, car, hypothec, alphaM, alphaK, sberK, fuel, utilityBill, unexpected });
-          moneyPerMonthResultDiv.style.display = "block";
-          if (finalSum < 0) {
-            moneyPerMonthResultDiv.innerHTML = 
-              `<p>На сегодняшний день все деньги: <strong>${allMyMoney} ₽</strong></p>
-              <p>Общая сумма обязательных платежей: <strong>${allBills} ₽</strong></p>
-              <p style="color:red;">Необходимо вернуть на счёт: <strong>${-finalSum} ₽</strong></p>
-              <p>Свободных денег пока нет.</p>`;
-          } else {
-            moneyPerMonthResultDiv.innerHTML = 
-              `<p>На сегодняшний день все деньги: <strong>${allMyMoney} ₽</strong></p>
-              <p>Общая сумма обязательных платежей: <strong>${allBills} ₽</strong></p>
-              <p>Свободных денег: <strong>${finalSum} ₽</strong></p>
-              <p>Можно тратить ежедневно: <strong>${moneyOnDay} ₽/день</strong> (до ${targetDate.toLocaleDateString('ru-RU')}, ${daysLeft} дн.)</p>`;
-          }
-          const labels = ["Автокредит", "Ипотека", "Alpha M", "Alpha K", "Сбербанк", "Топливо", "Комуналка", "Непредвиденное"];
-          const values = [car, hypothec, alphaM, alphaK, sberK, fuel, utilityBill, unexpected];
-          updateExpensesChart(labels, values);
-        });
-      }
-      if (document.getElementById("allMyMoney") && document.getElementById("allMyMoney").value && financeForm) {
+      window.addEventListener('DOMContentLoaded', () => {
         financeForm.dispatchEvent(new Event('submit'));
+      });
+
+      // Сравнение товаров
+      let productId = 0;
+      const productForm = document.getElementById('productForm');
+      const addProductBtn = document.getElementById('addProductBtn');
+      const productsContainer = document.getElementById('productsContainer');
+      const productResult = document.getElementById('productResult');
+
+      function addProduct(name = '', price = '', weight = '') {
+        productId++;
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+            <button type="button" class="delete-btn" title="Удалить">×</button>
+            <div class="input-group">
+              <label>Название</label>
+              <input type="text" value="${name}" placeholder="Название">
+            </div>
+            <div class="input-group">
+              <label>Цена (₽)</label>
+              <input type="number" step="0.01"  value="${price}" placeholder="0.00" required>
+            </div>
+            <div class="input-group">
+              <label>Вес/Количество</label>
+              <input type="number" step="0.01"  value="${weight}" placeholder="0.00" required>
+            </div>
+          `;
+        div.querySelector('.delete-btn').onclick = () => div.remove();
+        productsContainer.appendChild(div);
       }
-    });
-    // --- moneyPerMonth.html JavaScript END ---
 
-    // --- priceProfit.html JavaScript START ---
-    let priceProfit_productIdCounter = 1;
-    let priceProfit_stationIdCounter = 1;
+      addProductBtn.onclick = () => addProduct();
+      addProduct('Молоко', 90, 1);
 
-    function priceProfit_showForm(category) {
-      document.getElementById('categorySelect').classList.add('hidden');
-      document.getElementById('productForm').classList.add('hidden');
-      document.getElementById('fuelForm').classList.add('hidden');
+      productForm.onsubmit = e => {
+        e.preventDefault();
+        const products = [...productsContainer.children]
+          .map(div => {
+            const inputs = div.querySelectorAll('input');
+            return {
+              name: inputs[0].value || 'Без названия',
+              price: parseFloat(inputs[1].value),
+              weight: parseFloat(inputs[2].value),
+            };
+          })
+          .filter(p => p.price > 0 && p.weight > 0);
 
-      if (category === 'product') {
-        document.getElementById('productForm').classList.remove('hidden');
-      } else if (category === 'fuel') {
-        document.getElementById('fuelForm').classList.remove('hidden');
-      }
-    }
-
-    function priceProfit_goBack() {
-      document.getElementById('productForm').classList.add('hidden');
-      document.getElementById('fuelForm').classList.add('hidden');
-      document.getElementById('categorySelect').classList.remove('hidden');
-      document.getElementById('productResult').classList.add('hidden');
-      document.getElementById('fuelResult').classList.add('hidden');
-    }
-    
-    function priceProfit_addProduct() {
-      priceProfit_productIdCounter++;
-      const container = document.getElementById('productsContainer');
-      const newProduct = document.createElement('div');
-      newProduct.className = 'card product-card';
-      newProduct.dataset.productId = priceProfit_productIdCounter;
-      newProduct.innerHTML = `
-      <button type="button" class="delete-btn">×</button>
-      <h3 style="margin: 0 0 1rem 0;">Товар ${priceProfit_productIdCounter}</h3>
-      <div class="input-group">
-        <label for="name${priceProfit_productIdCounter}">Название</label>
-        <input type="text" id="name${priceProfit_productIdCounter}" placeholder="Введите название" />
-      </div>
-      <div class="input-group">
-        <label for="price${priceProfit_productIdCounter}">Цена (₽)</label>
-        <input type="number" step="0.01" id="price${priceProfit_productIdCounter}" placeholder="0.00" required />
-      </div>
-      <div class="input-group">
-        <label for="weight${priceProfit_productIdCounter}">Количество (г/кг/шт)</label>
-        <input type="number" step="0.01" id="weight${priceProfit_productIdCounter}" placeholder="0.00" required />
-      </div>
-    `;
-      newProduct.querySelector('.delete-btn').addEventListener('click', () => {
-        if (container.children.length > 1) {
-          newProduct.remove();
-        } else {
-          alert('Должен быть хотя бы один товар для сравнения');
+        if (products.length < 2) {
+          productResult.style.display = 'none';
+          return alert('Добавьте минимум два товара.');
         }
-      });
-      container.appendChild(newProduct);
-    }
 
-    function priceProfit_addStation() {
-      priceProfit_stationIdCounter++;
-      const container = document.getElementById('stationsContainer');
-      const newStation = document.createElement('div');
-      newStation.className = 'card fuel-card';
-      newStation.dataset.stationId = priceProfit_stationIdCounter;
-      newStation.innerHTML = `
-      <button type="button" class="delete-btn">×</button>
-      <h3 style="margin: 0 0 1rem 0;">АЗС ${priceProfit_stationIdCounter}</h3>
-      <div class="input-group fuel-type">
-        <label for="fuelName${priceProfit_stationIdCounter}">Тип топлива</label>
-        <select id="fuelName${priceProfit_stationIdCounter}">
-          <option value="АИ-92">АИ-92</option>
-          <option value="АИ-95">АИ-95</option>
-          <option value="АИ-98">АИ-98</option>
-          <option value="ДТ">ДТ</option>
-        </select>
-      </div>
-      <div class="input-group">
-        <label for="fuelPrice${priceProfit_stationIdCounter}">Цена за литр (₽)</label>
-        <input type="number" step="0.01" id="fuelPrice${priceProfit_stationIdCounter}" placeholder="0.00" required />
-      </div>
-      <div class="input-group discount-type">
-        <label for="discountType${priceProfit_stationIdCounter}">Тип скидки</label>
-        <select id="discountType${priceProfit_stationIdCounter}" class="discount-type-select">
-          <option value="none">Нет скидки</option>
-          <option value="cashback">Кэшбэк (%)</option>
-          <option value="fixed">Фиксированная скидка (₽)</option>
-        </select>
-      </div>
-      <div class="discount-fields" id="discountFields${priceProfit_stationIdCounter}">
-        <div class="input-group cashback-field" style="display: none;">
-          <label for="cashback${priceProfit_stationIdCounter}">Процент кэшбэка</label>
-          <input type="number" step="0.01" id="cashback${priceProfit_stationIdCounter}" placeholder="0.00" />
-        </div>
-        <div class="input-group fixed-discount-field" style="display: none;">
-          <label for="fixedDiscount${priceProfit_stationIdCounter}">Фиксированная скидка (₽)</label>
-          <input type="number" step="0.01" id="fixedDiscount${priceProfit_stationIdCounter}" placeholder="0.00" />
-        </div>
-      </div>
-    `;
-      newStation.querySelector('.discount-type-select').addEventListener('change', function () {
-        const stationId = this.closest('.fuel-card').dataset.stationId;
-        priceProfit_updateDiscountFields(stationId);
-      });
-      newStation.querySelector('.delete-btn').addEventListener('click', () => {
-        if (container.children.length > 1) {
-          newStation.remove();
-        } else {
-          alert('Должна быть хотя бы одна АЗС для сравнения');
+        products.sort((a, b) => a.price / a.weight - b.price / b.weight);
+        const best = products[0];
+        let result = `Выгоднее: <strong>${best.name}</strong> (${(
+          best.price / best.weight
+        ).toFixed(2)} ₽/ед.)<br><br>`;
+
+        for (let i = 1; i < products.length; i++) {
+          const diff =
+            (products[i].price /
+              products[i].weight /
+              (best.price / best.weight) -
+              1) *
+            100;
+          result += `${products[i].name}: дороже на ${diff.toFixed(1)}%<br>`;
         }
-      });
-      container.appendChild(newStation);
-    }
 
-    function priceProfit_updateDiscountFields(stationId) {
-      const discountTypeSelect = document.getElementById(`discountType${stationId}`);
-      if (!discountTypeSelect) return;
-      const discountType = discountTypeSelect.value;
-      const fieldsContainer = document.getElementById(`discountFields${stationId}`);
-      if (!fieldsContainer) return;
+        productResult.innerHTML = result;
+        productResult.style.display = 'block';
+      };
 
-      const cashbackField = fieldsContainer.querySelector('.cashback-field');
-      const fixedDiscountField = fieldsContainer.querySelector('.fixed-discount-field');
+      // Сравнение АЗС
+      let stationId = 0;
+      const fuelForm = document.getElementById('fuelForm');
+      const addStationBtn = document.getElementById('addStationBtn');
+      const stationsContainer = document.getElementById('stationsContainer');
+      const fuelResult = document.getElementById('fuelResult');
 
-      if (cashbackField) cashbackField.style.display = 'none';
-      if (fixedDiscountField) fixedDiscountField.style.display = 'none';
+      function addStation(
+        type = 'АИ-92',
+        price = '',
+        discountType = 'none',
+        cashback = '',
+        fixed = ''
+      ) {
+        stationId++;
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.dataset.id = stationId;
 
-      if (discountType === 'cashback' && cashbackField) {
-        cashbackField.style.display = 'block';
-      } else if (discountType === 'fixed' && fixedDiscountField) {
-        fixedDiscountField.style.display = 'block';
-      }
-      const cashbackInput = cashbackField ? cashbackField.querySelector('input') : null;
-      const fixedDiscountInput = fixedDiscountField ? fixedDiscountField.querySelector('input') : null;
-      if (cashbackInput) cashbackInput.value = '';
-      if (fixedDiscountInput) fixedDiscountInput.value = '';
-    }
+        div.innerHTML = `
+            <button type="button" class="delete-btn">×</button>
+            <div class="input-group">
+              <label>Тип топлива</label>
+              <select class="fuel-type">
+                <option value="АИ-92"${
+                  type === 'АИ-92' ? ' selected' : ''
+                }>АИ-92</option>
+                <option value="АИ-95"${
+                  type === 'АИ-95' ? ' selected' : ''
+                }>АИ-95</option>
+                <option value="АИ-98"${
+                  type === 'АИ-98' ? ' selected' : ''
+                }>АИ-98</option>
+                <option value="ДТ"${
+                  type === 'ДТ' ? ' selected' : ''
+                }>ДТ</option>
+              </select>
+            </div>
+            <div class="input-group">
+              <label>Цена за литр (₽)</label>
+              <input type="number" step="0.01"  class="fuel-price" value="${price}" required>
+            </div>
+            <div class="input-group">
+              <label>Тип скидки</label>
+              <select class="discount-select">
+                <option value="none"${
+                  discountType === 'none' ? ' selected' : ''
+                }>Нет</option>
+                <option value="cashback"${
+                  discountType === 'cashback' ? ' selected' : ''
+                }>Кэшбэк (%)</option>
+                <option value="fixed"${
+                  discountType === 'fixed' ? ' selected' : ''
+                }>Фиксированная (₽)</option>
+              </select>
+            </div>
+            <div class="input-group cashback-group" style="display: none;">
+              <label>Процент кэшбэка</label>
+              <input type="number" step="0.01"  class="cashback-value" value="${cashback}">
+            </div>
+            <div class="input-group fixed-group" style="display: none;">
+              <label>Скидка в ₽</label>
+              <input type="number" step="0.01"  class="fixed-value" value="${fixed}">
+            </div>
+          `;
 
-    document.addEventListener('DOMContentLoaded', function () {
-      const productFormEl = document.getElementById('productForm');
-      const fuelFormEl = document.getElementById('fuelForm');
-      const priceFormEl = document.getElementById('priceForm');
-      const fuelStationFormEl = document.getElementById('fuelStationForm');
+        const discountSelect = div.querySelector('.discount-select');
+        const cashbackGroup = div.querySelector('.cashback-group');
+        const fixedGroup = div.querySelector('.fixed-group');
 
-      if (productFormEl) productFormEl.classList.add('hidden');
-      if (fuelFormEl) fuelFormEl.classList.add('hidden');
-
-      document.querySelectorAll('#priceProfitTool .discount-type-select').forEach(select => {
-        select.addEventListener('change', function () {
-          const stationCard = this.closest('.fuel-card');
-          if (stationCard) {
-            const stationId = stationCard.dataset.stationId;
-            priceProfit_updateDiscountFields(stationId);
-          }
-        });
-        // Initialize fields based on current selection
-        const stationCard = select.closest('.fuel-card');
-        if (stationCard) {
-            const stationId = stationCard.dataset.stationId;
-            priceProfit_updateDiscountFields(stationId);
+        function toggleDiscountFields() {
+          const type = discountSelect.value;
+          cashbackGroup.style.display = type === 'cashback' ? 'block' : 'none';
+          fixedGroup.style.display = type === 'fixed' ? 'block' : 'none';
         }
-      });
-      
-      // Initialize first product/station delete buttons if they exist
-      document.querySelectorAll('#productsContainer .product-card .delete-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-              if (document.getElementById('productsContainer').children.length > 1) {
-                  btn.closest('.product-card').remove();
-              } else {
-                  alert('Должен быть хотя бы один товар для сравнения');
-              }
-          });
-      });
-      document.querySelectorAll('#stationsContainer .fuel-card .delete-btn').forEach(btn => {
-          btn.addEventListener('click', () => {
-              if (document.getElementById('stationsContainer').children.length > 1) {
-                  btn.closest('.fuel-card').remove();
-              } else {
-                  alert('Должна быть хотя бы одна АЗС для сравнения');
-              }
-          });
-      });
 
-      if (priceFormEl) {
-        priceFormEl.addEventListener('submit', function (event) {
-          event.preventDefault();
-          const products = document.querySelectorAll('#productsContainer .product-card');
-          if (products.length < 1) { // Allow single item, though comparison needs 2
-            alert('Для сравнения необходимо добавить хотя бы 1 товар.');
-            return;
-          }
-          const items = [];
-          let valid = true;
-          products.forEach((product, index) => {
-            const productId = product.dataset.productId;
-            const name = document.getElementById(`name${productId}`).value.trim();
-            const price = parseFloat(document.getElementById(`price${productId}`).value);
-            const weight = parseFloat(document.getElementById(`weight${productId}`).value);
-            if (isNaN(price) || isNaN(weight) || price <= 0 || weight <= 0) {
-              alert(`Проверьте правильность вводимых данных для товара ${name || ('#'+productId)}`);
-              valid = false; return;
-            }
-            items.push({ name: name || `Товар ${productId}`, price, weight, id: productId });
-          });
-          if (!valid) return;
-          if (items.length < 2 && items.length > 0) {
-             alert('Для сравнения необходимо добавить минимум 2 товара. Расчет для одного товара не производится.');
-             document.getElementById('productResult').classList.add('hidden');
-             return;
-          }
-          if (items.length === 0) {
-            alert('Нет товаров для расчета.');
-            document.getElementById('productResult').classList.add('hidden');
-            return;
-          }
+        toggleDiscountFields();
+        discountSelect.onchange = toggleDiscountFields;
 
-          items.sort((a, b) => (a.price / a.weight) - (b.price / b.weight));
-          const bestItem = items[0];
-          const resultText = `Выгоднее всего выбрать "${bestItem.name}". Стоимость за единицу (г/кг/шт): ${(bestItem.price / bestItem.weight).toFixed(2)} ₽.`;
-          let explanation = `Минимальная стоимость за единицу (${(bestItem.price / bestItem.weight).toFixed(2)} ₽) у товара "${bestItem.name}".`;
-          if (items.length > 1) {
-            explanation += " Другие варианты:";
-            for (let i = 1; i < items.length; i++) {
-              const item = items[i];
-              const costPerUnit = item.price / item.weight;
-              const diff = ((costPerUnit / (bestItem.price / bestItem.weight)) - 1) * 100;
-              explanation += ` "${item.name}" (${costPerUnit.toFixed(2)} ₽/ед.) дороже на ${diff.toFixed(1)}%;`;
-            }
-            explanation = explanation.slice(0, -1) + '.';
-          }
-          document.getElementById('productResultText').textContent = resultText;
-          document.getElementById('productExplanationText').innerHTML = `<i>${explanation}</i>`;
-          document.getElementById('productResult').classList.remove('hidden');
-          document.getElementById('productResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
+        div.querySelector('.delete-btn').onclick = () => div.remove();
+        stationsContainer.appendChild(div);
       }
 
-      if (fuelStationFormEl) {
-        fuelStationFormEl.addEventListener('submit', function (event) {
-          event.preventDefault();
-          const stations = document.querySelectorAll('#stationsContainer .fuel-card');
-          if (stations.length < 1) { // Allow single, though comparison needs 2
-            alert('Для сравнения необходимо добавить хотя бы 1 АЗС.');
-            return;
-          }
-          const fuelData = [];
-          let valid = true;
-          stations.forEach((station) => {
-            const stationId = station.dataset.stationId;
-            const fuelType = document.getElementById(`fuelName${stationId}`).value;
-            const price = parseFloat(document.getElementById(`fuelPrice${stationId}`).value);
-            const discountType = document.getElementById(`discountType${stationId}`).value;
-            let cashback = 0, fixedDiscount = 0;
-            if (discountType === 'cashback') cashback = parseFloat(document.getElementById(`cashback${stationId}`).value) || 0;
-            else if (discountType === 'fixed') fixedDiscount = parseFloat(document.getElementById(`fixedDiscount${stationId}`).value) || 0;
-            
-            if (isNaN(price) || price <= 0) { alert(`Проверьте цену для АЗС #${stationId}`); valid = false; return; }
-            if (discountType === 'cashback' && (isNaN(cashback) || cashback < 0 || cashback > 100)) { alert(`Кэшбэк для АЗС #${stationId} 0-100%`); valid = false; return; }
-            if (discountType === 'fixed' && (isNaN(fixedDiscount) || fixedDiscount < 0)) { alert(`Скидка для АЗС #${stationId} > 0`); valid = false; return; }
-            if (discountType === 'fixed' && fixedDiscount >= price) { alert(`Скидка для АЗС #${stationId} < цены`); valid = false; return; }
+      addStationBtn.onclick = () => addStation();
+      addStation('АИ-95', 49.5, 'cashback', 5);
 
+      fuelForm.onsubmit = e => {
+        e.preventDefault();
+        const stations = [...stationsContainer.children]
+          .map(div => {
+            const type = div.querySelector('.fuel-type').value;
+            const discountType = div.querySelector('.discount-select').value;
+            const price = parseFloat(div.querySelector('.fuel-price').value); // уже есть
+            const cashback =
+              parseFloat(div.querySelector('.cashback-value')?.value) || 0;
+            const fixed =
+              parseFloat(div.querySelector('.fixed-value')?.value) || 0;
             let finalPrice = price;
-            if (discountType === 'cashback') finalPrice = price * (1 - cashback / 100);
-            else if (discountType === 'fixed') finalPrice = price - fixedDiscount;
-            fuelData.push({ id: stationId, fuelType, originalPrice: price, discountType, cashback, fixedDiscount, finalPrice });
-          });
-          if (!valid) return;
-          if (fuelData.length < 2 && fuelData.length > 0) {
-             alert('Для сравнения необходимо добавить минимум 2 АЗС. Расчет для одной АЗС не производится.');
-             document.getElementById('fuelResult').classList.add('hidden');
-             return;
-          }
-           if (fuelData.length === 0) {
-            alert('Нет АЗС для расчета.');
-            document.getElementById('fuelResult').classList.add('hidden');
-            return;
-          }
+            if (discountType === 'cashback')
+              finalPrice = price * (1 - cashback / 100);
+            else if (discountType === 'fixed') finalPrice = price - fixed;
 
-          fuelData.sort((a, b) => a.finalPrice - b.finalPrice);
-          const bestStation = fuelData[0];
-          let resultText = `Самый выгодный вариант: АЗС №${bestStation.id} - ${bestStation.fuelType}. `;
-          if (bestStation.discountType === 'none') resultText += `Цена без скидки: ${bestStation.finalPrice.toFixed(2)} ₽/л.`;
-          else if (bestStation.discountType === 'cashback') resultText += `Цена с кэшбэком ${bestStation.cashback}%: ${bestStation.finalPrice.toFixed(2)} ₽/л.`;
-          else resultText += `Цена со скидкой ${bestStation.fixedDiscount} ₽: ${bestStation.finalPrice.toFixed(2)} ₽/л.`;
-          
-          let explanation = `Минимальная цена (${bestStation.finalPrice.toFixed(2)} ₽/л) на АЗС №${bestStation.id}.`;
-          if (fuelData.length > 1) {
-            explanation += " Другие варианты:";
-            for (let i = 1; i < fuelData.length; i++) {
-              const station = fuelData[i];
-              const diff = ((station.finalPrice / bestStation.finalPrice) - 1) * 100;
-              let discountInfo = '';
-              if (station.discountType === 'cashback') discountInfo = `с кэшбэком ${station.cashback}%`;
-              else if (station.discountType === 'fixed') discountInfo = `со скидкой ${station.fixedDiscount} ₽`;
-              else discountInfo = 'без скидки';
-              explanation += ` АЗС №${station.id} (${station.fuelType}) ${discountInfo} - ${station.finalPrice.toFixed(2)} ₽/л (дороже на ${diff.toFixed(1)}%);`;
-            }
-            explanation = explanation.slice(0, -1) + '.';
-          }
-          document.getElementById('fuelResultText').textContent = resultText;
-          document.getElementById('fuelExplanationText').innerHTML = `<i>${explanation}</i>`;
-          document.getElementById('fuelResult').classList.remove('hidden');
-          document.getElementById('fuelResult').scrollIntoView({ behavior: 'smooth', block: 'start' });
-        });
-      }
-    });
-    // --- priceProfit.html JavaScript END ---
+            return { type, price, finalPrice, discountType, cashback, fixed };
+          })
+          .filter(s => s.price > 0);
 
-    // Initialize first tool
-    showTool("moneyPerMonth");
+        if (stations.length < 2) {
+          fuelResult.style.display = 'none';
+          return alert('Добавьте минимум две АЗС.');
+        }
 
-  </script>
-</body>
+        stations.sort((a, b) => a.finalPrice - b.finalPrice);
+        const best = stations[0];
+        let result = `Выгоднее: <strong>${
+          best.type
+        }</strong> (${best.finalPrice.toFixed(2)} ₽/л)<br><br>`;
+
+        for (let i = 1; i < stations.length; i++) {
+          const diff = (stations[i].finalPrice / best.finalPrice - 1) * 100;
+          result += `${stations[i].type}: дороже на ${diff.toFixed(1)}%<br>`;
+        }
+
+        fuelResult.innerHTML = result;
+        fuelResult.style.display = 'block';
+      };
+    </script>
+  </body>
 </html>
-
