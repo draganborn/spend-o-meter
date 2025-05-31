@@ -23,7 +23,7 @@
       }
       .nav {
         display: flex;
-        justify-content: space-between;
+        justify-content: center;
         background-color: #333;
         padding: 10px;
         text-align: center;
@@ -33,10 +33,11 @@
       }
       .nav div {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         gap: 10px;
         flex-wrap: wrap;
         width: 100%;
+        max-width: 760px;
       }
       .nav button {
         background-color: #555;
@@ -159,7 +160,7 @@
       }
       #expensesChart {
         width: 100%;
-        height: auto;
+        height: 200px;
       }
       body.dark #moneyPerMonthResult {
         background-color: #3c3c3c;
@@ -274,25 +275,25 @@
         .payment-entry input[type='text'] {
           order: 0;
         }
-      }
-      @media (max-width: 360px) {
-        .nav button {
-          width: 100%;
+        .nav div {
+          justify-content: center;
         }
       }
     </style>
   </head>
   <body>
     <div class="nav">
-      <div style="display: flex; justify-content: center; gap: 10px">
+      <div>
         <button id="navMoneyPerMonth" class="active">
           Калькулятор финансов
         </button>
         <button id="navProductCompare">Сравнение товаров</button>
         <button id="navFuelCompare">Сравнение АЗС</button>
       </div>
-      <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
-      <button id="languageToggle" class="moneyPerMonth-btn-theme">🌐</button>
+      <div>
+        <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
+        <button id="languageToggle" class="moneyPerMonth-btn-theme">🌐</button>
+      </div>
     </div>
 
     <div id="moneyPerMonthTool" class="tool-container active">
@@ -471,7 +472,7 @@
             priceLabel: 'Price per liter',
             discountLabel: 'Discount type',
             cashbackLabel: 'Cashback percentage',
-            fixedLabel: 'Discount in money',
+            fixedLabel: 'Money',
             options: ['AI-92', 'AI-95', 'AI-98', 'DT'],
             discounts: {
               none: 'None',
@@ -622,7 +623,7 @@
       }
 
       addPaymentBtn.onclick = () => createPaymentField();
-      initialPayments.forEach(p => createPaymentField(p.name, p.amount));
+      // initialPayments.forEach(p => createPaymentField(p.name, p.amount));
 
       themeToggle.onclick = () => {
         document.body.classList.toggle('light');
@@ -636,101 +637,130 @@
       };
 
       financeForm.onsubmit = e => {
-  e.preventDefault();
-  const lang = localStorage.getItem("appLang") || "ru";
-const lChart = languages[lang]?.chart || { label: lang === "ru" ? "Расходы" : "Expenses", unnamed: lang === "ru" ? "Без названия" : "Untitled" };
+        
+        e.preventDefault();
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const lChart = languages[lang]?.chart || {
+          label: lang === 'ru' ? 'Расходы' : 'Expenses',
+          unnamed: lang === 'ru' ? 'Без названия' : 'Untitled',
+        };
 
+        const allMoney =
+          parseInt(document.getElementById('allMyMoney').value) || 0;
+        const nextPayDate = new Date(
+          document.getElementById('nextPayDate').value ||
+            new Date().setMonth(new Date().getMonth() + 1)
+        );
+        const today = new Date();
+        const daysLeft = Math.max(
+          1,
+          Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
+        );
 
+        const payments = [...paymentsContainer.children].map(div => {
+          return {
+            name: div.querySelector("input[type='text']").value.trim(),
+            value:
+              parseInt(div.querySelector("input[type='number']").value) || 0,
+          };
+        });
 
-  const allMoney =
-    parseInt(document.getElementById('allMyMoney').value) || 0;
-  const nextPayDate = new Date(
-    document.getElementById('nextPayDate').value ||
-    new Date().setMonth(new Date().getMonth() + 1)
-  );
-  const today = new Date();
-  const daysLeft = Math.max(
-    1,
-    Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
-  );
+        const total = payments.reduce((sum, p) => sum + p.value, 0);
+        const free = allMoney - total;
+        const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
 
-  const payments = [...paymentsContainer.children].map(div => {
-    return {
-      name: div.querySelector("input[type='text']").value.trim(),
-      value:
-        parseInt(div.querySelector("input[type='number']").value) || 0,
-    };
-  });
-
-  const total = payments.reduce((sum, p) => sum + p.value, 0);
-  const free = allMoney - total;
-  const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
-
-  const t = languages[currentLang].financeResult;
-  let html = `<p>${t.totalMoney}: <strong>${allMoney}</strong></p>
+        const t = languages[currentLang].financeResult;
+        let html = `<p>${t.totalMoney}: <strong>${allMoney}</strong></p>
       <p>${t.totalPayments}: <strong>${total}</strong></p>`;
-  html +=
-    free < 0
-      ? `<p style="color:red;">${t.needReturn}: <strong>${-free}</strong></p>`
-      : `<p>${t.freeMoney}: <strong>${free}</strong></p>
-         <p>${t.dailySpend}: <strong>${perDay}</strong> (${t.untilDate} ${nextPayDate.toLocaleDateString(
-          currentLang === "ru" ? "ru-RU" : "en-US"
-        )}, ${daysLeft} ${t.daysLeft})</p>`;
+        html +=
+          free < 0
+            ? `<p style="color:red;">${
+                t.needReturn
+              }: <strong>${-free}</strong></p>`
+            : `<p>${t.freeMoney}: <strong>${free}</strong></p>
+         <p>${t.dailySpend}: <strong>${perDay}</strong> (${
+                t.untilDate
+              } ${nextPayDate.toLocaleDateString(
+                currentLang === 'ru' ? 'ru-RU' : 'en-US'
+              )}, ${daysLeft} ${t.daysLeft})</p>`;
 
-  resultDiv.innerHTML = html;
-  resultDiv.style.display = 'block';
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
 
-  if (chart) chart.destroy();
-  chart = new Chart(ctx, {
-    type: 'bar',
-    data: {
-      labels: payments.map(p => p.name || lChart.unnamed),
-      datasets: [
-        {
-          label: lChart.label,
-          data: payments.map(p => p.value),
-          backgroundColor: document.body.classList.contains('dark')
-            ? '#0056b3'
-            : '#007bff',
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      scales: {
-        y: {
-          beginAtZero: true,
-          ticks: {
-            color: document.body.classList.contains('dark')
-              ? '#f1f1f1'
-              : '#333',
-          },
-        },
-        x: {
-          ticks: {
-            color: document.body.classList.contains('dark')
-              ? '#f1f1f1'
-              : '#333',
-          },
-        },
-      },
-      plugins: {
-        legend: {
-          labels: {
-            color: document.body.classList.contains('dark')
-              ? '#f1f1f1'
-              : '#333',
-          },
-        },
-      },
-    },
-  });
-};
+        localStorage.setItem("financeData", JSON.stringify({
+  allMoney,
+  nextPayDate: document.getElementById('nextPayDate').value,
+  payments
+}));
 
+
+
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: payments.map(p => p.name || lChart.unnamed),
+            datasets: [
+              {
+                label: lChart.label,
+                data: payments.map(p => p.value),
+                backgroundColor: document.body.classList.contains('dark')
+                  ? '#0056b3'
+                  : '#007bff',
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+          },
+        });
+      };
 
       window.addEventListener('DOMContentLoaded', () => {
-        financeForm.dispatchEvent(new Event('submit'));
-      });
+  const saved = JSON.parse(localStorage.getItem("financeData") || "{}");
+
+  if (saved.allMoney !== undefined) {
+    document.getElementById('allMyMoney').value = saved.allMoney;
+  }
+  if (saved.nextPayDate) {
+    document.getElementById('nextPayDate').value = saved.nextPayDate;
+  }
+  if (Array.isArray(saved.payments)) {
+    paymentsContainer.innerHTML = "";
+    saved.payments.forEach(p => createPaymentField(p.name, p.value));
+  } else {
+    initialPayments.forEach(p => createPaymentField(p.name, p.amount));
+  }
+
+  financeForm.dispatchEvent(new Event('submit'));
+});
+
 
       // Сравнение товаров
       let productId = 0;
@@ -788,7 +818,13 @@ const lChart = languages[lang]?.chart || { label: lang === "ru" ? "Расход�
 
         products.sort((a, b) => a.price / a.weight - b.price / b.weight);
         const best = products[0];
-        const l = languages[currentLang].result;
+        const lang = localStorage.getItem("appLang") || "ru";
+        const l = languages[lang]?.result || {
+          better: "Выгоднее",
+          moreExpensive: "дороже на",
+          perUnit: "₽/ед."
+        };
+
         let result = `${l.better}: <strong>${best.name}</strong> (${(
           best.price / best.weight
         ).toFixed(2)} ${l.perUnit})<br><br>`;
@@ -892,7 +928,7 @@ const lChart = languages[lang]?.chart || { label: lang === "ru" ? "Расход�
       }
 
       addStationBtn.onclick = () => addStation();
-      addStation('АИ-95', 49.5, 'cashback', 5);
+      addStation('АИ-95', 0, 'cashback', 0);
 
       fuelForm.onsubmit = e => {
         e.preventDefault();
@@ -921,7 +957,13 @@ const lChart = languages[lang]?.chart || { label: lang === "ru" ? "Расход�
 
         stations.sort((a, b) => a.finalPrice - b.finalPrice);
         const best = stations[0];
-        const l = languages[currentLang].result;
+        const lang = localStorage.getItem("appLang") || "ru";
+        const l = languages[lang]?.result || {
+          better: "Выгоднее",
+          moreExpensive: "дороже на",
+          perLiter: "₽/л"
+        };
+
         let result = `${l.better}: <strong>${
           best.type
         }</strong> (${best.finalPrice.toFixed(2)} ${l.perLiter})<br><br>`;
