@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Финансовый помощник</title>
+    <title>spend-o-meter</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
       body {
@@ -20,10 +20,20 @@
       }
       .nav {
         display: flex;
-        justify-content: center;
+        justify-content: space-between;
         background-color: #333;
         padding: 10px;
         text-align: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+      }
+      .nav div {
+        display: flex;
+        justify-content: center;
+        gap: 10px;
+        flex-wrap: wrap;
+        width: 100%;
       }
       .nav button {
         background-color: #555;
@@ -58,6 +68,18 @@
       body.dark .moneyPerMonth-container {
         background-color: #2d2d2d;
       }
+      .moneyPerMonth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+      }
+      #paymentsContainer {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
       .moneyPerMonth-h1,
       .moneyPerMonth-h3 {
         text-align: center;
@@ -74,11 +96,21 @@
         cursor: pointer;
         font-size: 14px;
       }
+      .moneyPerMonth-form label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
       .payment-entry {
         display: flex;
         gap: 10px;
+        flex-wrap: wrap;
         margin-bottom: 10px;
       }
+      #allMyMoney,
+      #nextPayDate,
       .payment-entry input[type='text'],
       .payment-entry input[type='number'] {
         flex: 1;
@@ -96,6 +128,16 @@
       }
       .add-payment-btn {
         background-color: #6a06a7;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .calculate-btn {
+        background-color: #28a745;
         color: white;
         border: none;
         border-radius: 5px;
@@ -148,15 +190,14 @@
         display: flex;
         flex-direction: column;
         gap: 1rem;
-      
       }
       .input-group {
-    margin-bottom: 10px;
-    width: 100%;
-    display: flex;
-    flex-direction: column;
-    align-items: stretch;
-}
+        margin-bottom: 10px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
       .input-group label {
         display: block;
         font-weight: bold;
@@ -216,6 +257,22 @@
         background: #3c3c3c;
         color: #f1f1f1;
       }
+      @media (max-width: 480px) {
+        .payment-entry button {
+          order: 1;
+        }
+        .payment-entry input[type='number'] {
+          order: 2;
+        }
+        .payment-entry input[type='text'] {
+          order: 0;
+        }
+      }
+      @media (max-width: 360px) {
+        .nav button {
+          width: 100%;
+        }
+      }
     </style>
   </head>
   <body>
@@ -253,6 +310,34 @@
             <input type="date" id="nextPayDate" />
           </label>
           <button type="submit">Рассчитать</button>
+        </form>
+        <div id="moneyPerMonthResult"></div>
+        <canvas id="expensesChart" width="400" height="200"></canvas>
+      </div>
+    </div>
+    <div id="moneyPerMonthTool" class="tool-container active">
+      <div class="moneyPerMonth-container">
+        <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
+        <!-- <button id="themeToggle" class="moneyPerMonth-btn-theme">
+          Переключить тему
+        </button> -->
+        <form id="financeForm" class="moneyPerMonth-form">
+          <label
+            >Все деньги на счете:
+            <input type="number" step="0.01" id="allMyMoney" value="81933" />
+          </label>
+          <h3 class="moneyPerMonth-h3">Обязательные платежи:</h3>
+          <div id="paymentsContainer">
+            <!-- Скрипт создаст поля -->
+          </div>
+          <button type="button" class="add-payment-btn" id="addPaymentBtn">
+            + Добавить платеж
+          </button>
+          <label
+            >Дата следующего поступления:
+            <input type="date" id="nextPayDate" />
+          </label>
+          <button type="submit" class="calculate-btn">Рассчитать</button>
         </form>
         <div id="moneyPerMonthResult"></div>
         <canvas id="expensesChart" width="400" height="200"></canvas>
