@@ -6,6 +6,9 @@
     <title>spend-o-meter</title>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
     <style>
+      * {
+        box-sizing: border-box;
+      }
       body {
         font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
         margin: 0;
@@ -154,6 +157,10 @@
         color: #155724;
         display: none;
       }
+      #expensesChart {
+        width: 100%;
+        height: auto;
+      }
       body.dark #moneyPerMonthResult {
         background-color: #3c3c3c;
         border-left-color: #4caf50;
@@ -295,7 +302,7 @@
         <form id="financeForm" class="moneyPerMonth-form">
           <label id="allMyMoneyLabel"
             >Все деньги на счете:
-            <input type="number" step="0.01" id="allMyMoney" value="81933" />
+            <input type="number" step="0.01" id="allMyMoney" value="0" />
           </label>
           <h3 id="paymentsTitle" class="moneyPerMonth-h3">
             Обязательные платежи:
@@ -313,7 +320,7 @@
           <button type="submit" class="calculate-btn">Рассчитать</button>
         </form>
         <div id="moneyPerMonthResult"></div>
-        <canvas id="expensesChart" width="400" height="200"></canvas>
+        <canvas id="expensesChart"></canvas>
       </div>
     </div>
 
@@ -588,9 +595,9 @@
       let paymentId = 0;
 
       const initialPayments = [
-        { name: 'Автокредит', amount: 19900 },
-        { name: 'Ипотека', amount: 18000 },
-        { name: 'Кредитка', amount: 12000 },
+        { name: '', amount: 0 },
+        { name: '', amount: 0 },
+        { name: '', amount: 0 },
       ];
 
       function createPaymentField(name = '', amount = '') {
@@ -629,99 +636,97 @@
       };
 
       financeForm.onsubmit = e => {
-        e.preventDefault();
-        const allMoney =
-          parseInt(document.getElementById('allMyMoney').value) || 0;
-        const nextPayDate = new Date(
-          document.getElementById('nextPayDate').value ||
-            new Date().setMonth(new Date().getMonth() + 1)
-        );
-        const today = new Date();
-        const daysLeft = Math.max(
-          1,
-          Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
-        );
+  e.preventDefault();
+  const lang = localStorage.getItem("appLang") || "ru";
+const lChart = languages[lang]?.chart || { label: lang === "ru" ? "Расходы" : "Expenses", unnamed: lang === "ru" ? "Без названия" : "Untitled" };
 
-        const payments = [...paymentsContainer.children].map(div => {
-          return {
-            name: div.querySelector("input[type='text']").value.trim(),
-            value:
-              parseInt(div.querySelector("input[type='number']").value) || 0,
-          };
-        });
 
-        const lang = localStorage.getItem('appLang') || 'ru';
-        const t = languages[lang].financeResult;
-        const total = payments.reduce((sum, p) => sum + p.value, 0);
-        const free = allMoney - total;
-        const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
 
-        let html = `<p>${t.totalMoney}: <strong>${allMoney}</strong></p>
-  <p>${t.totalPayments}: <strong>${total}</strong></p>`;
+  const allMoney =
+    parseInt(document.getElementById('allMyMoney').value) || 0;
+  const nextPayDate = new Date(
+    document.getElementById('nextPayDate').value ||
+    new Date().setMonth(new Date().getMonth() + 1)
+  );
+  const today = new Date();
+  const daysLeft = Math.max(
+    1,
+    Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
+  );
 
-        html +=
-          free < 0
-            ? `<p style="color:red;">${
-                t.needReturn
-              }: <strong>${-free}</strong></p>`
-            : `<p>${t.freeMoney}: <strong>${free}</strong></p>
-     <p>${t.dailySpend}: <strong>${perDay}</strong> (${
-                t.untilDate
-              } ${nextPayDate.toLocaleDateString(
-                lang === 'ru' ? 'ru-RU' : 'en-US'
-              )}, ${daysLeft} ${t.daysLeft})</p>`;
+  const payments = [...paymentsContainer.children].map(div => {
+    return {
+      name: div.querySelector("input[type='text']").value.trim(),
+      value:
+        parseInt(div.querySelector("input[type='number']").value) || 0,
+    };
+  });
 
-        resultDiv.innerHTML = html;
-        resultDiv.style.display = 'block';
+  const total = payments.reduce((sum, p) => sum + p.value, 0);
+  const free = allMoney - total;
+  const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
 
-        if (chart) chart.destroy();
-        chart = new Chart(ctx, {
-          type: 'bar',
-          data: {
-            labels: payments.map(
-              p => p.name || languages[currentLang].chart.unnamed
-            ),
-            datasets: [
-              {
-                label: languages[currentLang].chart.label,
-                data: payments.map(p => p.value),
-                backgroundColor: document.body.classList.contains('dark')
-                  ? '#0056b3'
-                  : '#007bff',
-              },
-            ],
+  const t = languages[currentLang].financeResult;
+  let html = `<p>${t.totalMoney}: <strong>${allMoney}</strong></p>
+      <p>${t.totalPayments}: <strong>${total}</strong></p>`;
+  html +=
+    free < 0
+      ? `<p style="color:red;">${t.needReturn}: <strong>${-free}</strong></p>`
+      : `<p>${t.freeMoney}: <strong>${free}</strong></p>
+         <p>${t.dailySpend}: <strong>${perDay}</strong> (${t.untilDate} ${nextPayDate.toLocaleDateString(
+          currentLang === "ru" ? "ru-RU" : "en-US"
+        )}, ${daysLeft} ${t.daysLeft})</p>`;
+
+  resultDiv.innerHTML = html;
+  resultDiv.style.display = 'block';
+
+  if (chart) chart.destroy();
+  chart = new Chart(ctx, {
+    type: 'bar',
+    data: {
+      labels: payments.map(p => p.name || lChart.unnamed),
+      datasets: [
+        {
+          label: lChart.label,
+          data: payments.map(p => p.value),
+          backgroundColor: document.body.classList.contains('dark')
+            ? '#0056b3'
+            : '#007bff',
+        },
+      ],
+    },
+    options: {
+      responsive: true,
+      scales: {
+        y: {
+          beginAtZero: true,
+          ticks: {
+            color: document.body.classList.contains('dark')
+              ? '#f1f1f1'
+              : '#333',
           },
-          options: {
-            responsive: true,
-            scales: {
-              y: {
-                beginAtZero: true,
-                ticks: {
-                  color: document.body.classList.contains('dark')
-                    ? '#f1f1f1'
-                    : '#333',
-                },
-              },
-              x: {
-                ticks: {
-                  color: document.body.classList.contains('dark')
-                    ? '#f1f1f1'
-                    : '#333',
-                },
-              },
-            },
-            plugins: {
-              legend: {
-                labels: {
-                  color: document.body.classList.contains('dark')
-                    ? '#f1f1f1'
-                    : '#333',
-                },
-              },
-            },
+        },
+        x: {
+          ticks: {
+            color: document.body.classList.contains('dark')
+              ? '#f1f1f1'
+              : '#333',
           },
-        });
-      };
+        },
+      },
+      plugins: {
+        legend: {
+          labels: {
+            color: document.body.classList.contains('dark')
+              ? '#f1f1f1'
+              : '#333',
+          },
+        },
+      },
+    },
+  });
+};
+
 
       window.addEventListener('DOMContentLoaded', () => {
         financeForm.dispatchEvent(new Event('submit'));
@@ -761,7 +766,7 @@
       }
 
       addProductBtn.onclick = () => addProduct();
-      addProduct('', 90, 1);
+      addProduct('', 0, 0);
 
       productForm.onsubmit = e => {
         e.preventDefault();
