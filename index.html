@@ -285,55 +285,28 @@
         <button id="navFuelCompare">Сравнение АЗС</button>
       </div>
       <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
+      <button id="languageToggle" class="moneyPerMonth-btn-theme">🌐</button>
     </div>
 
     <div id="moneyPerMonthTool" class="tool-container active">
       <div class="moneyPerMonth-container">
         <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
-        <!-- <button id="themeToggle" class="moneyPerMonth-btn-theme">
-          Переключить тему
-        </button> -->
+
         <form id="financeForm" class="moneyPerMonth-form">
-          <label
+          <label id="allMyMoneyLabel"
             >Все деньги на счете:
             <input type="number" step="0.01" id="allMyMoney" value="81933" />
           </label>
-          <h3 class="moneyPerMonth-h3">Обязательные платежи:</h3>
+          <h3 id="paymentsTitle" class="moneyPerMonth-h3">
+            Обязательные платежи:
+          </h3>
           <div id="paymentsContainer">
             <!-- Скрипт создаст поля -->
           </div>
           <button type="button" class="add-payment-btn" id="addPaymentBtn">
             + Добавить платеж
           </button>
-          <label
-            >Дата следующего поступления:
-            <input type="date" id="nextPayDate" />
-          </label>
-          <button type="submit">Рассчитать</button>
-        </form>
-        <div id="moneyPerMonthResult"></div>
-        <canvas id="expensesChart" width="400" height="200"></canvas>
-      </div>
-    </div>
-    <div id="moneyPerMonthTool" class="tool-container active">
-      <div class="moneyPerMonth-container">
-        <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
-        <!-- <button id="themeToggle" class="moneyPerMonth-btn-theme">
-          Переключить тему
-        </button> -->
-        <form id="financeForm" class="moneyPerMonth-form">
-          <label
-            >Все деньги на счете:
-            <input type="number" step="0.01" id="allMyMoney" value="81933" />
-          </label>
-          <h3 class="moneyPerMonth-h3">Обязательные платежи:</h3>
-          <div id="paymentsContainer">
-            <!-- Скрипт создаст поля -->
-          </div>
-          <button type="button" class="add-payment-btn" id="addPaymentBtn">
-            + Добавить платеж
-          </button>
-          <label
+          <label id="nextDate"
             >Дата следующего поступления:
             <input type="date" id="nextPayDate" />
           </label>
@@ -353,7 +326,9 @@
             <button type="button" class="add-btn" id="addProductBtn">
               + Товар
             </button>
-            <button type="submit" class="submit-btn">Сравнить</button>
+            <button id="productCompareBtn" type="submit" class="submit-btn">
+              Сравнить
+            </button>
           </div>
         </form>
         <div
@@ -373,7 +348,9 @@
             <button type="button" class="add-btn" id="addStationBtn">
               + АЗС
             </button>
-            <button type="submit" class="submit-btn">Сравнить</button>
+            <button id="fuelCompareBtn" type="submit" class="submit-btn">
+              Сравнить
+            </button>
           </div>
         </form>
         <div
@@ -385,6 +362,183 @@
     </div>
 
     <script>
+      // --- Языки ---
+      const languages = {
+        ru: {
+          navMoney: 'Калькулятор финансов',
+          allMyMoneyLabel: 'Все деньги на счете',
+          paymentsTitle: 'Обязательные платежи',
+          navProduct: 'Сравнение товаров',
+          navFuel: 'Сравнение АЗС',
+          addPayment: '+ Добавить платеж',
+          resultTitle: 'Результаты',
+          moneyTitle: 'Калькулятор финансов',
+          allMoney: 'Все деньги на счете',
+          nextDate: 'Дата следующего поступления',
+          submitCalc: 'Рассчитать',
+          comparisonProduct: 'Сравнение товаров',
+          comparisonFuel: 'Сравнение АЗС',
+          addStationBtn: '+ АЗС',
+          addProductBtn: '+ Товар',
+          fuelCompareBtn: 'Сравнить',
+          productCompareBtn: 'Сравнить',
+          paymentField: {
+            namePlaceholder: 'Название',
+            amountPlaceholder: 'Сумма',
+            deleteTitle: 'Удалить платеж',
+          },
+          productField: {
+            nameLabel: 'Название',
+            namePlaceholder: 'Название',
+            priceLabel: 'Цена (₽)',
+            weightLabel: 'Вес/Количество',
+          },
+          stationField: {
+            typeLabel: 'Тип топлива',
+            priceLabel: 'Цена за литр (₽)',
+            discountLabel: 'Тип скидки',
+            cashbackLabel: 'Процент кэшбэка',
+            fixedLabel: 'Скидка в ₽',
+            options: ['АИ-92', 'АИ-95', 'АИ-98', 'ДТ'],
+            discounts: {
+              none: 'Нет',
+              cashback: 'Кэшбэк (%)',
+              fixed: 'Фиксированная (₽)',
+            },
+            alerts: {
+              notEnoughProducts: 'Добавьте минимум два товара.',
+              notEnoughStations: 'Добавьте минимум две АЗС.',
+            },
+            chart: {
+              label: 'Расходы', // en: Expenses
+              unnamed: 'Без названия', // en: Untitled
+            },
+            result: {
+              better: 'Выгоднее',
+              moreExpensive: 'дороже на',
+              perUnit: '₽/ед.',
+              perLiter: '₽/л',
+            },
+          },
+          financeResult: {
+            totalMoney: 'На сегодняшний день все деньги',
+            totalPayments: 'Общая сумма обязательных платежей',
+            needReturn: 'Необходимо вернуть на счёт',
+            freeMoney: 'Свободных денег',
+            dailySpend: 'Можно тратить ежедневно',
+            daysLeft: 'дн.',
+            untilDate: 'до',
+          },
+        },
+        en: {
+          navMoney: 'Finance Calculator',
+          allMyMoneyLabel: 'All money on account',
+          paymentsTitle: 'Required payments',
+          navProduct: 'Product Comparison',
+          navFuel: 'Gas Station Comparison',
+          addPayment: '+ Add Payment',
+          resultTitle: 'Results',
+          moneyTitle: 'Finance Calculator',
+          allMoney: 'Total money in account',
+          nextDate: 'Next income date',
+          submitCalc: 'Calculate',
+          comparisonProduct: 'Product Comparison',
+          comparisonFuel: 'Fuel Station Comparison',
+          addStationBtn: '+ Station',
+          addProductBtn: '+ Product',
+          fuelCompareBtn: 'Compare',
+          productCompareBtn: 'Compare',
+          paymentField: {
+            namePlaceholder: 'Name',
+            amountPlaceholder: 'Amount',
+            deleteTitle: 'Delete payment',
+          },
+          productField: {
+            nameLabel: 'Name',
+            namePlaceholder: 'Name',
+            priceLabel: 'Price',
+            weightLabel: 'Weight/Quantity',
+          },
+          stationField: {
+            typeLabel: 'Fuel type',
+            priceLabel: 'Price per liter',
+            discountLabel: 'Discount type',
+            cashbackLabel: 'Cashback percentage',
+            fixedLabel: 'Discount in money',
+            options: ['AI-92', 'AI-95', 'AI-98', 'DT'],
+            discounts: {
+              none: 'None',
+              cashback: 'Cashback (%)',
+              fixed: 'Fixed',
+            },
+          },
+          alerts: {
+            notEnoughProducts: 'Add at least two products.',
+            notEnoughStations: 'Add at least two gas stations.',
+          },
+          chart: {
+            label: 'Expenses',
+            unnamed: 'Untitled',
+          },
+          result: {
+            better: 'Better',
+            moreExpensive: 'more expensive by',
+            perUnit: 'money/unit',
+            perLiter: 'money/liter',
+          },
+          financeResult: {
+            totalMoney: 'Total money on account',
+            totalPayments: 'Total payments',
+            needReturn: 'Need to return to account',
+            freeMoney: 'Free money',
+            dailySpend: 'Daily spend',
+            daysLeft: 'days left',
+            untilDate: 'until',
+          },
+        },
+      };
+
+      function applyLanguage(lang) {
+        const l = languages[lang];
+
+        document.getElementById('navMoneyPerMonth').textContent = l.navMoney;
+        document.getElementById('navProductCompare').textContent = l.navProduct;
+        document.getElementById('navFuelCompare').textContent = l.navFuel;
+        document.querySelector('.moneyPerMonth-h1').textContent = l.moneyTitle;
+        const label = document.getElementById('allMyMoneyLabel');
+        if (label && label.childNodes[0]) {
+          label.childNodes[0].nodeValue = `${l.allMyMoneyLabel}: `;
+        }
+        const label2 = document.getElementById('nextDate');
+        if (label2 && label2.childNodes[0]) {
+          label2.childNodes[0].nodeValue = `${l.nextDate}: `;
+        }
+        document.getElementById('addPaymentBtn').textContent = l.addPayment;
+        document.querySelector(
+          "#financeForm button[type='submit']"
+        ).textContent = l.submitCalc;
+        document.getElementById('paymentsTitle').textContent = l.paymentsTitle;
+        document.querySelector('#productTool h2').textContent =
+          l.comparisonProduct;
+        document.querySelector('#fuelTool h2').textContent = l.comparisonFuel;
+
+        document.getElementById('addStationBtn').textContent = l.addStationBtn;
+        document.getElementById('addProductBtn').textContent = l.addProductBtn;
+        document.getElementById('fuelCompareBtn').textContent =
+          l.fuelCompareBtn;
+        document.getElementById('productCompareBtn').textContent =
+          l.productCompareBtn;
+      }
+
+      const currentLang = localStorage.getItem('appLang') || 'ru';
+      applyLanguage(currentLang);
+
+      document.getElementById('languageToggle').onclick = () => {
+        const newLang = currentLang === 'ru' ? 'en' : 'ru';
+        localStorage.setItem('appLang', newLang);
+        location.reload(); // перезагрузка — просто и эффективно для всего UI
+      };
+
       // --- Темы ---
       const currentTheme = localStorage.getItem('appTheme') || 'light';
       document.body.classList.add(currentTheme);
@@ -440,21 +594,23 @@
       ];
 
       function createPaymentField(name = '', amount = '') {
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const t = languages[lang].paymentField;
+
         paymentId++;
         const div = document.createElement('div');
         div.className = 'payment-entry';
         div.dataset.id = paymentId;
 
         div.innerHTML = `
-            <input type="text" placeholder="Название" value="${name}" required>
-            <input type="number" step="0.01" placeholder="Сумма" value="${amount}" required>
-            <button type="button" title="Удалить платеж">−</button>
-          `;
+    <input type="text" placeholder="${t.namePlaceholder}" value="${name}" required>
+    <input type="number" step="0.01" placeholder="${t.amountPlaceholder}" value="${amount}" required>
+    <button type="button" title="${t.deleteTitle}">−</button>
+  `;
 
         div
           .querySelector('button')
           .addEventListener('click', () => div.remove());
-
         paymentsContainer.appendChild(div);
       }
 
@@ -494,19 +650,26 @@
           };
         });
 
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const t = languages[lang].financeResult;
         const total = payments.reduce((sum, p) => sum + p.value, 0);
         const free = allMoney - total;
         const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
 
-        let html = `<p>На сегодняшний день все деньги: <strong>${allMoney} ₽</strong></p>
-            <p>Общая сумма обязательных платежей: <strong>${total} ₽</strong></p>`;
+        let html = `<p>${t.totalMoney}: <strong>${allMoney}</strong></p>
+  <p>${t.totalPayments}: <strong>${total}</strong></p>`;
+
         html +=
           free < 0
-            ? `<p style="color:red;">Необходимо вернуть на счёт: <strong>${-free} ₽</strong></p>`
-            : `<p>Свободных денег: <strong>${free} ₽</strong></p>
-               <p>Можно тратить ежедневно: <strong>${perDay} ₽/день</strong> (до ${nextPayDate.toLocaleDateString(
-                'ru-RU'
-              )}, ${daysLeft} дн.)</p>`;
+            ? `<p style="color:red;">${
+                t.needReturn
+              }: <strong>${-free}</strong></p>`
+            : `<p>${t.freeMoney}: <strong>${free}</strong></p>
+     <p>${t.dailySpend}: <strong>${perDay}</strong> (${
+                t.untilDate
+              } ${nextPayDate.toLocaleDateString(
+                lang === 'ru' ? 'ru-RU' : 'en-US'
+              )}, ${daysLeft} ${t.daysLeft})</p>`;
 
         resultDiv.innerHTML = html;
         resultDiv.style.display = 'block';
@@ -515,10 +678,12 @@
         chart = new Chart(ctx, {
           type: 'bar',
           data: {
-            labels: payments.map(p => p.name || 'Без названия'),
+            labels: payments.map(
+              p => p.name || languages[currentLang].chart.unnamed
+            ),
             datasets: [
               {
-                label: 'Расходы',
+                label: languages[currentLang].chart.label,
                 data: payments.map(p => p.value),
                 backgroundColor: document.body.classList.contains('dark')
                   ? '#0056b3'
@@ -570,30 +735,33 @@
       const productResult = document.getElementById('productResult');
 
       function addProduct(name = '', price = '', weight = '') {
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const t = languages[lang].productField;
+
         productId++;
         const div = document.createElement('div');
         div.className = 'card';
         div.innerHTML = `
-            <button type="button" class="delete-btn" title="Удалить">×</button>
-            <div class="input-group">
-              <label>Название</label>
-              <input type="text" value="${name}" placeholder="Название">
-            </div>
-            <div class="input-group">
-              <label>Цена (₽)</label>
-              <input type="number" step="0.01"  value="${price}" placeholder="0.00" required>
-            </div>
-            <div class="input-group">
-              <label>Вес/Количество</label>
-              <input type="number" step="0.01"  value="${weight}" placeholder="0.00" required>
-            </div>
-          `;
+    <button type="button" class="delete-btn" title="×">×</button>
+    <div class="input-group">
+      <label>${t.nameLabel}</label>
+      <input type="text" value="${name}" placeholder="${t.namePlaceholder}">
+    </div>
+    <div class="input-group">
+      <label>${t.priceLabel}</label>
+      <input type="number" step="0.01"  value="${price}" placeholder="0.00" required>
+    </div>
+    <div class="input-group">
+      <label>${t.weightLabel}</label>
+      <input type="number" step="0.01"  value="${weight}" placeholder="0.00" required>
+    </div>
+  `;
         div.querySelector('.delete-btn').onclick = () => div.remove();
         productsContainer.appendChild(div);
       }
 
       addProductBtn.onclick = () => addProduct();
-      addProduct('Молоко', 90, 1);
+      addProduct('', 90, 1);
 
       productForm.onsubmit = e => {
         e.preventDefault();
@@ -601,7 +769,7 @@
           .map(div => {
             const inputs = div.querySelectorAll('input');
             return {
-              name: inputs[0].value || 'Без названия',
+              name: inputs[0].value || '',
               price: parseFloat(inputs[1].value),
               weight: parseFloat(inputs[2].value),
             };
@@ -610,14 +778,15 @@
 
         if (products.length < 2) {
           productResult.style.display = 'none';
-          return alert('Добавьте минимум два товара.');
+          return alert(languages[currentLang].alerts.notEnoughProducts);
         }
 
         products.sort((a, b) => a.price / a.weight - b.price / b.weight);
         const best = products[0];
-        let result = `Выгоднее: <strong>${best.name}</strong> (${(
+        const l = languages[currentLang].result;
+        let result = `${l.better}: <strong>${best.name}</strong> (${(
           best.price / best.weight
-        ).toFixed(2)} ₽/ед.)<br><br>`;
+        ).toFixed(2)} ${l.perUnit})<br><br>`;
 
         for (let i = 1; i < products.length; i++) {
           const diff =
@@ -626,7 +795,9 @@
               (best.price / best.weight) -
               1) *
             100;
-          result += `${products[i].name}: дороже на ${diff.toFixed(1)}%<br>`;
+          result += `${products[i].name}: ${l.moreExpensive} ${diff.toFixed(
+            1
+          )}%<br>`;
         }
 
         productResult.innerHTML = result;
@@ -647,57 +818,56 @@
         cashback = '',
         fixed = ''
       ) {
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const t = languages[lang].stationField;
+
         stationId++;
         const div = document.createElement('div');
         div.className = 'card';
         div.dataset.id = stationId;
 
         div.innerHTML = `
-            <button type="button" class="delete-btn">×</button>
-            <div class="input-group">
-              <label>Тип топлива</label>
-              <select class="fuel-type">
-                <option value="АИ-92"${
-                  type === 'АИ-92' ? ' selected' : ''
-                }>АИ-92</option>
-                <option value="АИ-95"${
-                  type === 'АИ-95' ? ' selected' : ''
-                }>АИ-95</option>
-                <option value="АИ-98"${
-                  type === 'АИ-98' ? ' selected' : ''
-                }>АИ-98</option>
-                <option value="ДТ"${
-                  type === 'ДТ' ? ' selected' : ''
-                }>ДТ</option>
-              </select>
-            </div>
-            <div class="input-group">
-              <label>Цена за литр (₽)</label>
-              <input type="number" step="0.01"  class="fuel-price" value="${price}" required>
-            </div>
-            <div class="input-group">
-              <label>Тип скидки</label>
-              <select class="discount-select">
-                <option value="none"${
-                  discountType === 'none' ? ' selected' : ''
-                }>Нет</option>
-                <option value="cashback"${
-                  discountType === 'cashback' ? ' selected' : ''
-                }>Кэшбэк (%)</option>
-                <option value="fixed"${
-                  discountType === 'fixed' ? ' selected' : ''
-                }>Фиксированная (₽)</option>
-              </select>
-            </div>
-            <div class="input-group cashback-group" style="display: none;">
-              <label>Процент кэшбэка</label>
-              <input type="number" step="0.01"  class="cashback-value" value="${cashback}">
-            </div>
-            <div class="input-group fixed-group" style="display: none;">
-              <label>Скидка в ₽</label>
-              <input type="number" step="0.01"  class="fixed-value" value="${fixed}">
-            </div>
-          `;
+    <button type="button" class="delete-btn">×</button>
+    <div class="input-group">
+      <label>${t.typeLabel}</label>
+      <select class="fuel-type">
+        ${t.options
+          .map(
+            opt =>
+              `<option value="${opt}"${
+                opt === type ? ' selected' : ''
+              }>${opt}</option>`
+          )
+          .join('')}
+      </select>
+    </div>
+    <div class="input-group">
+      <label>${t.priceLabel}</label>
+      <input type="number" step="0.01"  class="fuel-price" value="${price}" required>
+    </div>
+    <div class="input-group">
+      <label>${t.discountLabel}</label>
+      <select class="discount-select">
+        <option value="none"${discountType === 'none' ? ' selected' : ''}>${
+          t.discounts.none
+        }</option>
+        <option value="cashback"${
+          discountType === 'cashback' ? ' selected' : ''
+        }>${t.discounts.cashback}</option>
+        <option value="fixed"${discountType === 'fixed' ? ' selected' : ''}>${
+          t.discounts.fixed
+        }</option>
+      </select>
+    </div>
+    <div class="input-group cashback-group" style="display: none;">
+      <label>${t.cashbackLabel}</label>
+      <input type="number" step="0.01"  class="cashback-value" value="${cashback}">
+    </div>
+    <div class="input-group fixed-group" style="display: none;">
+      <label>${t.fixedLabel}</label>
+      <input type="number" step="0.01"  class="fixed-value" value="${fixed}">
+    </div>
+  `;
 
         const discountSelect = div.querySelector('.discount-select');
         const cashbackGroup = div.querySelector('.cashback-group');
@@ -741,18 +911,21 @@
 
         if (stations.length < 2) {
           fuelResult.style.display = 'none';
-          return alert('Добавьте минимум две АЗС.');
+          return alert(languages[currentLang].alerts.notEnoughStations);
         }
 
         stations.sort((a, b) => a.finalPrice - b.finalPrice);
         const best = stations[0];
-        let result = `Выгоднее: <strong>${
+        const l = languages[currentLang].result;
+        let result = `${l.better}: <strong>${
           best.type
-        }</strong> (${best.finalPrice.toFixed(2)} ₽/л)<br><br>`;
+        }</strong> (${best.finalPrice.toFixed(2)} ${l.perLiter})<br><br>`;
 
         for (let i = 1; i < stations.length; i++) {
           const diff = (stations[i].finalPrice / best.finalPrice - 1) * 100;
-          result += `${stations[i].type}: дороже на ${diff.toFixed(1)}%<br>`;
+          result += `${stations[i].type}: ${l.moreExpensive} ${diff.toFixed(
+            1
+          )}%<br>`;
         }
 
         fuelResult.innerHTML = result;
