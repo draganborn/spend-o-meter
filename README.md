@@ -1,5 +1,10 @@
 # Spend-O-Meter - Financial Tools for Expense Optimization
 
+This repository contains three branches:
+- Main - html for quick use in any device and browser;
+- Android - for installing APK on your phone;
+- Vue - project rewritten to vue3 for deployment on a server or hosting site.
+
 Spend-O-Meter is a web application that provides three essential financial tools to help you manage your budget, compare products, and find the best fuel deals - all in one place.
 
 ## Features
