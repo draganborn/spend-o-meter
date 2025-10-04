@@ -33,8 +33,9 @@
         align-items: center;
           flex-direction: column;
       }
-      .nav div, .footer-container {
+      .nav div, .footer-elements {
         display: flex;
+        flex-direction: row;
         justify-content: space-between;
         gap: 10px;
         flex-wrap: wrap;
@@ -268,6 +269,14 @@
         color: #f1f1f1;
       }
       @media (max-width: 480px) {
+      .footer-elements {
+    flex-direction: column;
+    align-items: center;
+}
+iframe {
+display:block;
+    margin: 0 auto;
+}
         .payment-entry button {
           order: 1;
         }
@@ -374,8 +383,9 @@
 
     <footer class="footer">
       <div class="footer-elements">
-<iframe src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1D65820TIPS.251004&" width="330" height="50" frameborder="0" allowtransparency="true" scrolling="no"></iframe>​
-      <a
+<iframe src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1D65IDTOK6V.251004&" width="330" height="50" frameborder="0" allowtransparency="true" scrolling="no"></iframe>
+<br>
+<a
       href="https://etherscan.io/address/0x2cC359a7f7e2a21047Ab3D6e20a6ECEF89D6E80d"
       target="_blank"
     >
