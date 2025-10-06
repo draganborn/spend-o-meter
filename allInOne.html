@@ -1,0 +1,1020 @@
+<!doctype html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>spend-o-meter</title>
+    <link
+      rel="shortcut icon"
+      href="data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAIAAAACACAMAAAD04JH5AAAACXBIWXMAAA7EAAAOxAGVKw4bAAAC9FBMVEXw59Tx6dXx6NT3tCTv59Pw6NXx6NXw6NQVQEfw59MVQUjv59T1aCMVQEgWQUj+zVfmRDgUP0YWQEf+zVgUP0cTPETnRDgVP0bw6tfw6NPx6tf1aSPmQzcVQUf4tCQqTlPY1sYSOkL2aSP+zljw5tMcRUs5Wl7f28oTPs3w6dYTPUUUPkXk3869wLTq5NHx6dcaQ0ne2sotUFUpTFEYQUiAkYxkfHt+jooeRkwbQUf2ZiE+XmF3iYWwtatPa2wWQUdmfXtCYWMvUlcnTFFxhYLx59NyhoP4tyledXWdpp73sySgqKDm4M9ed3bs5dMkSlC3ua7s5NJUbm8kSE1WcHDw5tKJl5Jof36Nm5V5i4bp49F1h4SFlI/j3cx8jYkiSU9NaWvT0MJtgoD4tSTa18ju59Q1V1tmfXyZo5zKybswVFjh3MzV1MVieXnW08P414gmSk4sTlIgR03u5tSkrKOiq6LLy73y69lrgH57jIi4u7CWoZrV0sPc2cnqgnP3syP3tSVIZmgfREpKaGrX1capsKYyVVqMmZO6vbFgeHfDxLfGxbnBwrbx5c9pgH/Ozb/Rzb+0uK34uXTnRTj4tSi1ua5bdHSDko4VPURvhIGmrqRRbW79zVVac3Orsafw3cn1uj/1ZCLy2KGUoJits6mRnpbSz8BGY2b4uC713qTzn3Hv6NT80WjHyLvy26n1aic5W2CZpJ350W/sqpr0z3vzkV7z4LLzyG7136vx4sHw1b/z15vzez/1ZyLywqLxyq79y1Hw6dTu2Kj3uTX0eDnoaVvsnY7qhnf8yEzw5Mr41oXuwLDxuZXttaX0cTDsppbnVUjoXVDy4brwx6nv6Nb13J322pbv59XoZVjwzodoYlXywVnu2rGPWjjyroTql4fsaibXRjqqST2zXzEsQkY4SURqYl3DRzupXzKISECSR0DTZivaaCrLWTTpemzpb2HvxLPtsKDoSjbv6NXzhEz1vkrnRTfy0pD6x1H0xF3rWj3xvZqSu2YQAAAb7UlEQVR42nU7d3wVVbrfDOfMOSeXXHJDQkwkhCLwC80QqY9O4AnSlN6bAUHEJ01FwrNQFVzkJyi2tevaZevb4u5me3v7tr7ee+/9/fO+7ztlztywkxDmzp055+t9QCmVqlQqJbMksf/wAh1JlmRZhieZ/YQnYD/hr1R8mtDfhM8kX0v4uVT10uWE7qQHkySxt/IN9L1K7cMK+C8umPAy+JTkezK7AD4p7Z4yk/bWDPCOjO8Cux49KxO7AO/n4E0cnKqXIJEOE8SCUExTZbKU15B0q3uO76OdGHj7hFSGtpZSultKyhGDkJEOfr7V2L2lo49ywCgPiT3PZJp5YiEFEHpJbGAIkf69MhAX1yXEiRxK+iXCWipCCx+UCvgzUQ8/Zu4L/JgFiJBuaYLIAxGAOI0AeEJJkHwiWRg89vkBAUO6twhDAM2t4e5WSqgIcXshzT/wehAtkFhOSN5buksBFhMBEtEiK16lE4Bq6K2spNEHkiNj+AErLSxXTHgrgjHnErCSwChAASlBTFMqiIc9ei02SjUrS2kmTNIHJhIFsDKnHO94JxnxOQmoCosmOCz5rqwoFwipcA/x/g65aGcTkTuNaJfY/3tZwwNbU7tyzKX4cGhb8jjoocAhJDoE/AJG0pGceZKBqlpe9uWfDNKU0A5+j4yBs5/THJmSAmm8BhvHmCwWylw5USkgp6CMiJ74RWUBvoyVhDE1sXaApVRRTIPxqyai5VxGmsgUcFDK6HkZALX2zkCVSkJqvDR4GAgEEMK4zwstBp6fWXiU7E7KZ2zfoJdF2T6VMTCQWdlJczvjjYBh+WRCLlzo5A53jfUeiDfM5l5nESBRfUXaApUGClq65N8YUdDwQBW8KGRW0HxjAcoAyEQL4diWCV7ARIJvlyAdBWGlxa4jhDR+L+kR8bYTHF6iYFNUZGqYEyIDuxRAtQib6gsl5pdUaeIfDw85z5IZL5YBHg8QJLkt8LQpEefBgkkAi4K5NLkAW5SZWllmVLVllRQVJAULjnKaBBDsI+E5IOpA0pIk75REbAKsdbM3pobNrVFeeyKbnVrDCvl+IIuuR2ZZX+tDmJfQHrfseHby/u0f3tk5f/6HJ/ZPfnZHu+ehs6N2pzVmzTVMmNXhZlb1CIAgT/i/tHaAeIC78QMih2DjqTvaKrqmtkbX4o+uranRla79R5ZKb5aEv52eNNcAIfX2LCPRzf1EUrB/iUckYbZ62zN+yjTckfbGzXUN/vBvTU3HssveUZvIdnlXbSAyu4a+MAxwZrx1vvYRBSK4wDsfn6FryzW6zLvWjmlsHFtTQyQgSGr1qCMsEDZ6khEmZHsgy5m8JvEmre9GntjsRURk/Qj7ebQTEX7k9pmLb71wfNy47gsPLD46exptj8zQoy7nK5lq6xwZRJK5LPeu3sd6RAsuOTy0b0oDUhohuHPr+ENg5TtlvwC7xm+9U/OXlWUTZVCKzDEOcqcEysTKENsNEe8mOdKOYYLLbUhrxHPRWUkSauTn33/li//35a+82G5DqweemsPU6bqIn0jL1twABU03uUUN1r3ojh08maxmP0YjcnO9pmPZBRQn8/gXP/cfl/r163fzyx/1f/mDf3/7y483QyouPFUhPsyZXKBeGpkH4qSMNyUWBKOfxZuKIvknLCPmt44aj7bDvPI/l24Z0q/fkH5Dbv7oo/798bf/B5/5MiE0flQNHcsmBL+SBBxifXMxOzh+J3nEmSRVoTAZK6mWzibsm47ehtj/10u4db9+tzz0IAHQPxxf+oEyZsLUJpKF2UvjKCKPFSxcqTTgnDVkbM6DoCS5rMrceagJ28nibLuIwLz/Ur9b+vHxENLg5l/KAej/0Zd+agw8sAJJVd4+gRdMYiUQOXWll8vwHcgoqPIe0UaEoEovEP6n31Dq8c89aLcfQlS4fcilj/pfbzfnPx+9/Xiz2nG6FvXxBVkVxFcnGRhLCBtx23i3BIbPQIJzqiF8MFsraPZGTTTwk5eG3NLvlgctBfrdHrHg+v7D+1+PsHzpCwqOjyJDuVUFv51Yr1v0kTbUtEFmyLtIpfGbklM+98jHmxD/3ceNev8TjvL9/HHpl3jz6xkABuSHX1Hq+GlkWOW1gqGDPDSMvUMAS3IwExQ/uDS8OHQbilVXj1KvXLqF6I9/bunnqMAUwK2HD0cYhhMJ+n/wU6V2dCHIB09aFTSFtCT1dJUuywMvdN77SlU0H3Il2rfyeGHev+TxftD/HXLzy4w2UYB4wOcffAXM2Xp0D7OLCW1iA56UgkEXhMk8YA5MgFIeOrM0nkLPU7PZmM//dyA8Sp/779LLzAH+HY5kGE5Q/C/KweZWpMHhXkQ/8Sof5WRFrxAogbopHJWEC1qVuq0TcZlXMo+/O/A7l7wGIu63D3nw67/3uU+//fZnvuHZcP31f/zXfz/85X/9zx8/rnah29KdE66lADKSxTQSDRUlKS5jp7PX0cPUv2fS740YOOA7Nz/0kKP9kJd+5/O/xRKU9H7hD79BjBg+/O/+omb6Pzw56Mknv52o9+agIK4v+tmQ7XBSYpMA3AaiCIVJkOb+SSxv07r1fmU+O2DgwAEDvkoQ3I4wvPRKCSB3KqUf/BAB+LNHUP//dhAeg7+v1P1Igq4JphihZFU5AkCU+Jf6cAbj3CW4zKShZuG7SIABA57/6ifYBn56DecpKgRA5sXP9P+DMvrKP/+TQYMRgh/fYIZ2YOywOLNc7S3SoNomRWGk4aTEplkUgD6MNmWuMT9H/BGC5wc8jxB84msmT1j8Mst/l+Ky6X/1ZN2gOjx+QzXfX6Nb58lfmCFYDQ0yYSj6JBPo8l9D+YOAniZdrjym1rw7gilAx9dv/n10OmBrAYKjVrx39MMUo5X/dNCgusF1gwfX/egGtbdSW1O5IFUUmPr6RhpSpkgoZZUL5hvW46qjlPk1v/tAPL7mFZYYCNax3HsnB8h/8ySSvw5BqBv0L0rNqy3rtVXph60B5akHPk9QCSsMIvgssCFr8+xyWW9uNp8eOHAEsYAA+CKny+DRoazNzDpYphD5L0kAmQN1df8EZj1eehgKtDfVRoHPKJK17sCQ4Iv8m+XTy/WVc+a7AzwFBgz85BooiA+6D7ke42QM0mcf+mYdiSAxoW7wi+ZCpVbXb2RsaE3TnKuB8aEBfwe5LQoOrMRwny+36m2y+S3e2kLwWQLSUKwJgp4FtXwu2kokwKhx8P3BdSiEKAIkhs29qMI1txbdUfCERGtTVdsIN2Q+xTyGRFypDBqhgZ4AAnOqHNb2BMWvQZP77bobL36zjiWA/vyjMk8hYc4gsr1pX12w5lZCsajiojRjE3tjFuDSU4V6l7cfgT8DXhG5oJSWzO5a8fD8Wk5SOs7TU59i/g+m40dSPU06bOtGnAxKC0AalYlYhHhfYXIKCF+WWYlyvEQ8/jybABLB579L9gFpjyqw701Kz2o5Vq5tOiwwFTYvDvYQkBA8S1JYVH9pVNBLsDUiwlnYeheoKIQlQGagap8VP8GNrQ4M+GSJ70YQzaGHtTsQf/20tarit9kO4f6D6v65eTx+c7pPkc9uI6qSJicaGfsGRJKdcnsnLn1BsRVgNRz4PcsdItdiHR2PcukISfDtunD8utmB3zzS4sQv2KNCOgixhTbOvgS3dN1BrRu71VtoBkeQHI4Y8ZuuOoY/J8hLPDNzJO0/byMbEVSOPyI7xKZg8KfMxEZ8/r7ctqwxUQ7uSkt2Q3DAhfIKV91US0etvjJRfHYEGcCBCMXAtwJH27tQ8jcrtjYNew3GMVSjg0+xM7QUUFsay3pYS8lpjXDRGaEqrNXLquJmEbQEH0IYWqbX6sbjQr31K+74ecmg2ALqv2k/qBv0VYDDCMCYoWAlSakbvvWr7viWhH1IgWH3eaSEkaZYQFfFohZEaazlSMsqzHZ7iLf4dDObPWv6yRDPa2jQpx/AXEzrae0kxt6NKVcXUubkWORSi8MNqF4kvEfydhBXlHHaFDlY4ja6mPJj4Op/4WvrQNbmIjg3ql0520JWRJzDwLCt3fMWogqsuxd+Ueri0hXxJgbEr4lQaHDaWyLHrca1sQFERkzrQVIKKHk5wg+GUDOvIXVmsLNTQfVAxIaX6qxQXUW0XzHMy8o1NeujKiWemhC0n9+myQU1jJwlWC6oXOh5aqOa1xHEF0JSZE0smDwqgj7Jm6iqck7GatD9zDSvm3SUrMqpnmX15XLluXuNY5la41RKWW7DTiTQ1msv3ad649nrNAZsjHgKAZjhaGKshabaI4OBEJhx48+O5k9sHrw191U9iYZUH1EFBqLfF4U8pFgHBk5McrPcjWLctDQyopjXY0FYCMcIdsf8C2w5CHCWB766BXPKyhsqxqxQqqS4Blz9xFRJprNIvacRh1OcLBlLXGbH8lOb7pgyZS7+TJlyxx385+isXZZwnN8yKdhEtCWiqtlWyELSPKzxGzPqLtRQagHyYD8VZ8HLK/57YL6u1/X1tlZY1ohnuTynvPu8lQT8YR8r1DIE4I7g4yCEklXNj2B/g3yLUKQVl3Vr7chxKOERjWZNao39UG2TO+m47OM/sjlGbenA+z5epd0LjSlUZUFF1QFbHytE8rvayuXWVyleFd6Rjt5Gu9XnAGgiA/1bMdpVBZGAiM16/ObgBLBP+gAgABAqd9KF5hBMVeytzdGacvn0Li/ERNrJvB2BUKMPXj020p7xMRmsASV1EIc6dateAC7TMTbGAQj930ABE0Vm0vfYJLcv8EoPsrp2SdAuBGFGuT7g/5QyqxtybswQIg9priJklQt5nRcg6gTlehWafS47zGNTYxOlRzHh6txIhg61C/8mbbW1DoKarsWgXh2paz0A97RwSoc3CrW0E6+vjpUc4qZAYmNzY6Mx58msvTZgRc41My7U63LNVHItpAZCtHd5CWh4htJ/MXF2oMCqdjaWBIDYip8rjxHOwnLF5ZxRSA2RC7beFFMUUdATFCaxE2V50l7BnMWvkpt4rzm6sgypOQFhmLDb7d+wql0otpTKvDcJvdSjrhwMVcFY4BSLRRAFth7GtgGj4v3oFbj2qKWWNsoBgKo39oJZvrJx2MpDZo9usIKwKkEFXEOWeelurBpPG2q8IxUmoA/KmMjfWaMdW0kRW26C/Qixe5G00m16DyD9UQ5rm1rMWdSH1iPjDiON2DTc006xElmNR0kvXhVgm1agIBdjmgRw5yYE4sFcieoEBkkvXyAxm5qSJzCm/QAbwbJu3KjuphpEpbFCQkG6eU+CBKBoYDOB8xx5TUgjt8thQojMTewiAtFLVRJCtn8fBUaV9SmFnUK2lTFbmYMbHlbq3M7TFbJBqKr1SJibEjsVsYcudo4GA6EpACGkouZRFoU3keWRrlLC6WnebzHmvWkNurYBQ2Cs5yadXu267sXtkh1bRzIEdNzUfgNKuzpGSjLtPWUzDNNsorTTem3j1wfoUz+BqOFLPCSyw8UOjZXHnYdQDJNO5H+5nrYcufUJRBnu7SKZIB7cxGHv04T/pIvCIdZMSmFsn9BqFtjooo8qyqwYlZJgpIKNBZyaRGieOK5EMt8ynLCsrczff1nBkbLTw7ZeA0uforPyKVYAO2cAhU6RUb7fbvI8rVT01iIf1gFgAyJeG4n2SLfNUmo+WwEEYto9HWRsLpqNGP4T1rozMed2k0Z0vOYEG3zuawMN46TdzrawUGZeIaMpFVPkC4cCZvwK6gJUpow+TQ6wXFvftLxlFppp/Sq0eNfQuXHrJIKua7xNuthwiFy9SirvHBWaxKFsEroHxXEk5trJN7lluO2gE8JKDxx64cqV2VvMjjEOgIOd7CLmnfTUBuE6wfy5+R2nYlYJjGMHyaprkmS+Q2EdQWQnyEQvnzzJVQNY6jFcNurfaO39eKXVykEreqqjt/HyHMJyDUjYmMCsafYJj68VeEuZh6i+903hZV7Kox+0sPDevFYbfMwhCCobNlIAuHRnJY5PZjxmvNbnbe8SBSnKmBA2Z67G6OuEplDLLiaMhgt2wCZeLm7jvnU9mZ361hXHMPk46CIiaxuO7XJb2MCZdjB56UPklTXlo3+oblVLKFQQjKviIB0path4ZgXzwO65WojnHFNYBjaPI1Q5NSPC+w1FmAKBHF1DDlqGPEtAIHYVDVz4H6z2WrchE2HngrI3g0iZqcw7YbzucQsC3HibDQ0XuvKYhSAoqHFQ+kzeKiaNRIVgmswinyzt5AiQPFJNHgzRsW00x0Oe7jbY92kSm2UvmJRMNft6e8Ed8LaOVJl7DPIYgjPQ89N0iItby+XaOVFYzpUE5YjfHARLeMRAeCxN7od5/sbKCcRZY2j/clWOyUJrC9g7w6piucbGRvbYfR4IMVt6zWstPrpzuh3UEK6dnNKslR0IcrkwRabCSwjnKrTU+LUzFyz4ZXfQyabNl3cR/YUbShEqGqYxUFWTA+m8RFwcsDdlmTVepersueQKC9Km3mBdKvlK4QsYeOq6r3lBAJgPEA90FGuDiHAzuDSJZsAgGhhJIlsAUcMhj6JK3mmC6/461XZxjXFlKBDVs1Uynh8Qru/hOzVWfcS16wqWO36ayIqz29+mWCHNavb+pE8uGgFi/MhEPrkBfWomYBWKSwCurakC2uBHC+0wGQgIcu2zfeHkgRwOPW5EFIik0RALZx6+mFRy1sCuwB2sUom7QwDWKJFollzdmEf6uHolGEJboiA+GJd9lYg3vh3mtNKoIN0uRMtCtF5y2Btnn4hUpaiw5Ky746+NWaBQ+bFUMH4ngshAGGVx5QDboIfc2LlmBQcuto+mOBJm78q5ES3j1a1E8Sqi7Oo6bCv4G0sAMvW8KZfW2ESq3LvjF9gthwziCMi7AxO6FraTZ1jQ6DrF9Zy18jnXeAw7H1vpIBHge/lOsGEhc4vrlpCPqthYg55LiqOJE9bO3j51HCxft27dgmNbDGxdt+5jH5sqFz9zEdSOnVN7L69b98z6Hq8fh46tPrFurxO2IwuuInjyzDOz1FF86GNPJ5vQRC145upG+rRuj8K1dp65G8Jksi0pFWZjVcbOdcZtVGfHILcnaeOUr2W13rYFZumDN05m4/u6jRTlIqqTdoznPiYs0vV3G/NYRW/iBFofuG8Ym+jt3bRY03a71sizrgLG1T4DURZA8IzXlc1r6/WS4421c+/v0I+23FOePXfuzGw1pmYIwKqWybpr/3zd9B4tkc7SlaNXR+ndkom7iO4xc2tqN7Wv0vjU1GTnHSvKM+44drKxsmzKlNeTe/TqmSvwbtZfFhCzxuT0YClfrLe1w4YTR7oby+fUVN3Zck/DRbp9JYI+GgFon6pPqI136plMsZ16O44u6cq9zGkEYMXyfRipz7zuEX2RCgIGWz5rU3PX2DEncQMEa4l6VjeOtgVdk8fBkQCer1T2P4bK0d045xys1W33rdKTb711i1mJ+femWZj/b9AnSrjxc7Bv4j61HQExP7uin50wceJSgQDUHjmDQePMGx9pmnz51i0okB82rDXQM7ay5PKtt924qrLEzNKNE1WoFkEegHhrtKCimw7skScb9dRjbXr1dQcbKk16sVpZv1p37NGrbtygt4M6qk/sGNY47I03K5PBtK9qWLxgWOOdsKhhd9Ob88ee1jPbOyhNuYpk/pB6xz2VCi7ywI2P6CnHRuk7uVRLfhasIZLOXFk/mzwwd0VT5fBdY1lgzrU/og8eOPCaWq0nP6oPYPo9U28XZpOePbSzc/7QE/ooKFz38ObOztlmkd6E80Pb9+sN7R161YEDWCEUo/RagB0VveqmA3tbHqGyxsjLNlYKY7lROQJhemLPrWbCm3p1T6X+9Jv33wsIwCl66WGlnvzGJCpCbULqw0o9VySphGUNTyk17kr9ecDXQMyippmL6yuz9jdtuG565RTNpAECcAbUG02Vnl6V4loztrU+TSpjnIdwBRoDoW2+p7JtolytV/ZUyufo2o3T9bOju48TBSSOZNyEAMzu3oNqwhbxVT1yR7JWT7uN7dUiPXP5gVHvPIoUmK4Pj+5GXh9CAJR4oqnxwvGhW5Axi9fqVfuchysJ5adKpX9nRsHEg3pal65c3TG2vJcM1HXTdWNj47AbkQIKRzJuat+kK6jVM5YzybASN6mtUtnKht8sapgJpV0KAWjhp67chwA0nUGyavo472eTKks2tlkFivsvkYPGgHl8W7l+0tTk7mFX9ioGYAwB0L5y7NNKbRhzINk09kpjx9zRNuox9+6utDbdv9yus2jMBkIH/2vhpxAAsXvMGaWeGNs4ZkzjvPbpY5aoPY1j93Hmza9SuN2TaIBLHXrsLOqP7O62EB4/2T305HG15a4JSLS7xqmld5083g5BguTes8c5E8HPW+7aSCnBlp6lauLJ7u6hpG4TezbiiwQnh+IiW1Q3LqJOnlQmGvdOeZY/C+PbEE2bAw8+Q56bKD+VjtuUwriwiMocInSkIBOhFGc9cBqG5QoDPXmgqUJLybaGY96IuJ9BqQ9FopwzlpTNRGzlh/2wyz+KvUgfC8ShuiiWjqIAUPjaBtcXhI1gvOpa6hibIbguFtsQm4RLzgtLbhzAvxsUSt3B4zuH3+wcoigM+9p3Lny4GmoV4LIFP2xgkUC1tpfXCGfdzQ2+v2nAFCfz3FC9r05QUJDIEHNHIXnUaFRRiSK+4hpDxoahqeAQJOPC9EJeMk8E0kKnqnrGWtoBIu4kZBBeGLJDn95Rx5ik12j0W/rachZA/N4N9HlBLItwyCSwDZKBX24MAKpfqxG+rQUUSuIrLgZ8F821pDPfIHaEynlqUg84VL8h1axCBK9cnkN7ZF7YQrzoAnYopJLcqXXOROahsLFBsstGLRypjF4S84qZKCcjoXyRRMvLII9CFNKUzBdyhO3TsuYV8h4RRXruXQqwU+55C1HE+apwxeMsL6eGioCdd/ARfD5tCMU80RRCy7Q64c5HNOy9SXh9KbF9TqpayTQa93MW2vV5fYpfHFV25T+O8P0olqtnRE3yLJ6QkkK4abbUTW+4koFwJZt0oXtJxEmykCW3qggtBUtysK/tgAlCygkaZ+hGGFeHs6ubYpc+U32yVQdsAqmdJa22Hm74thSrsjFBIqM30YyJp+a9uqaq+j02P8KTKpewQRbcoa9cSV/p4JqRKEUUCw0+l/z4fNGaxqz6FdDQF4GqN7kC/om1fH7R3qhWzmVDiObiTZA1zh4tSNIXHMEVeVXuRI2HHKqMUspOD/KuRWTCnHb4YrnwZi967dPYpBSsLbA6xumpdRDhtQlcZKHh3NUzE6ryaGK+4amhgKiMSERiGFAu5cVzYQwU+9wSuK4gfEkGEv+6VbEUKyPNTbgXAMFmCFutBtW3jibi6gDwskKEFxRynRKizyi1YR4VnZgXDffeS/XUvYidCGu2f9MR8oRKxrWwLHAP4kCzOM+cVVXeQBReOuBaajzlU3wBgGMTtjCJU3HriI0R1W8RiLxK49JAJoGUVohSz+E0Gmy2L2dBVS1LxANGbgBAGtffsJBxmpGPyxben40a9KJ6fM+9T63+H7FODGJFJsk+AAAAAElFTkSuQmCC"
+    />
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7fa;
+        color: #333;
+        transition:
+          background 0.3s,
+          color 0.3s;
+      }
+      body.dark {
+        background-color: #1e1e1e;
+        color: #f1f1f1;
+      }
+      .nav,
+      .footer {
+        display: flex;
+        justify-content: center;
+        background-color: #333;
+        padding: 10px;
+        text-align: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+        flex-direction: column;
+      }
+      .nav div,
+      .footer-elements {
+        display: flex;
+        flex-direction: row;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 760px;
+      }
+      .nav button,
+      .footer button {
+        background-color: #555;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      .nav button.active,
+      .nav button:hover {
+        background-color: #007bff;
+      }
+      .tool-container {
+        display: none;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .tool-container.active {
+        display: block;
+      }
+      /* Финансовый калькулятор */
+      .moneyPerMonth-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      body.dark .moneyPerMonth-container {
+        background-color: #2d2d2d;
+      }
+      .moneyPerMonth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+      }
+      #paymentsContainer {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      .moneyPerMonth-h1,
+      .moneyPerMonth-h3 {
+        text-align: center;
+        color: inherit;
+      }
+      .moneyPerMonth-btn-theme {
+        display: block;
+        margin: 10px auto 20px auto;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .moneyPerMonth-form label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .payment-entry {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      #allMyMoney,
+      #nextPayDate,
+      .payment-entry input[type='text'],
+      .payment-entry input[type='number'] {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .payment-entry button {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 8px 12px;
+      }
+      .add-payment-btn {
+        background-color: #6a06a7;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .calculate-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      #moneyPerMonthResult {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #e9f7ef;
+        border-left: 5px solid #28a745;
+        color: #155724;
+        display: none;
+      }
+      #expensesChart {
+        width: 100%;
+        height: 200px;
+      }
+      body.dark #moneyPerMonthResult {
+        background-color: #3c3c3c;
+        border-left-color: #4caf50;
+        color: #ddd;
+      }
+      canvas {
+        margin-top: 20px;
+      }
+
+      /* Общие стили для сравнения */
+      .card-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      body.dark .card-container {
+        background-color: #2d2d2d;
+      }
+      body.dark .card {
+        background-color: #2d2d2d;
+      }
+      #productsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .input-group {
+        margin-bottom: 10px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .input-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .input-group input,
+      .input-group select {
+        /* width: 100%; */
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .btn-group button {
+        flex: 1;
+        padding: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: white;
+      }
+      .add-btn {
+        background: #6a06a7;
+        color: #212121;
+      }
+      .submit-btn {
+        background: #28a745;
+      }
+      .back-btn {
+        background: #007bff;
+      }
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        line-height: 1;
+        font-weight: bold;
+        cursor: pointer;
+        float: right;
+        align-self: flex-end;
+      }
+      .result-container {
+        background: #e8f5e9;
+        border-left: 4px solid #2e7d32;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+      }
+      body.dark .result-container {
+        background: #3c3c3c;
+        color: #f1f1f1;
+      }
+      @media (max-width: 480px) {
+        .footer-elements {
+          flex-direction: column;
+          align-items: center;
+        }
+        iframe {
+          display: block;
+          margin: 0 auto;
+        }
+        .payment-entry button {
+          order: 1;
+        }
+        .payment-entry input[type='number'] {
+          order: 2;
+        }
+        .payment-entry input[type='text'] {
+          order: 0;
+        }
+        .nav div {
+          justify-content: center;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="nav">
+      <div>
+        <button id="navMoneyPerMonth" class="active">
+          Калькулятор финансов
+        </button>
+        <button id="navProductCompare">Сравнение товаров</button>
+        <button id="navFuelCompare">Сравнение АЗС</button>
+      </div>
+      <div>
+        <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
+
+        <button id="languageToggle" class="moneyPerMonth-btn-theme">🌐</button>
+      </div>
+    </div>
+
+    <div id="moneyPerMonthTool" class="tool-container active">
+      <div class="moneyPerMonth-container">
+        <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
+
+        <form id="financeForm" class="moneyPerMonth-form">
+          <label id="allMyMoneyLabel"
+            >Все деньги на счете:
+            <input type="number" step="0.01" id="allMyMoney" value="0" />
+          </label>
+          <h3 id="paymentsTitle" class="moneyPerMonth-h3">
+            Обязательные платежи:
+          </h3>
+          <div id="paymentsContainer">
+            <!-- Скрипт создаст поля -->
+          </div>
+          <button type="button" class="add-payment-btn" id="addPaymentBtn">
+            + Добавить платеж
+          </button>
+          <label id="nextDate"
+            >Дата следующего поступления:
+            <input type="date" id="nextPayDate" />
+          </label>
+          <button type="submit" class="calculate-btn">Рассчитать</button>
+        </form>
+        <div id="moneyPerMonthResult"></div>
+        <canvas id="expensesChart"></canvas>
+      </div>
+    </div>
+
+    <div id="productTool" class="tool-container">
+      <div class="card-container">
+        <h2>Сравнение товаров</h2>
+        <form id="productForm">
+          <div id="productsContainer"></div>
+          <div class="btn-group">
+            <button type="button" class="add-btn" id="addProductBtn">
+              + Товар
+            </button>
+            <button id="productCompareBtn" type="submit" class="submit-btn">
+              Сравнить
+            </button>
+          </div>
+        </form>
+        <div
+          class="result-container"
+          id="productResult"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+
+    <div id="fuelTool" class="tool-container">
+      <div class="card-container">
+        <h2>Сравнение АЗС</h2>
+        <form id="fuelForm">
+          <div id="stationsContainer"></div>
+          <div class="btn-group">
+            <button type="button" class="add-btn" id="addStationBtn">
+              + АЗС
+            </button>
+            <button id="fuelCompareBtn" type="submit" class="submit-btn">
+              Сравнить
+            </button>
+          </div>
+        </form>
+        <div
+          class="result-container"
+          id="fuelResult"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-elements">
+        <iframe
+          src="https://yoomoney.ru/quickpay/fundraise/button?billNumber=1D65IDTOK6V.251004&"
+          width="330"
+          height="50"
+          frameborder="0"
+          allowtransparency="true"
+          scrolling="no"
+        ></iframe>
+        <br />
+        <a
+          href="https://etherscan.io/address/0x2cC359a7f7e2a21047Ab3D6e20a6ECEF89D6E80d"
+          target="_blank"
+        >
+          <button style="background-color: #6a06a7">donate ETH</button>
+        </a>
+        <p>
+          ©
+          <script>
+            document.write(new Date().getFullYear());
+          </script>
+          Spend-O-Meter
+        </p>
+      </div>
+    </footer>
+
+    <!-- <script>
+      // --- Языки ---
+      const languages = {
+        ru: {
+          navMoney: 'Калькулятор финансов',
+          allMyMoneyLabel: 'Все деньги на счете',
+          paymentsTitle: 'Обязательные платежи',
+          navProduct: 'Сравнение товаров',
+          navFuel: 'Сравнение АЗС',
+          addPayment: '+ Добавить платеж',
+          resultTitle: 'Результаты',
+          moneyTitle: 'Калькулятор финансов',
+          allMoney: 'Все деньги на счете',
+          nextDate: 'Дата следующего поступления',
+          submitCalc: 'Рассчитать',
+          comparisonProduct: 'Сравнение товаров',
+          comparisonFuel: 'Сравнение АЗС',
+          addStationBtn: '+ АЗС',
+          addProductBtn: '+ Товар',
+          fuelCompareBtn: 'Сравнить',
+          productCompareBtn: 'Сравнить',
+          paymentField: {
+            namePlaceholder: 'Название',
+            amountPlaceholder: 'Сумма',
+            deleteTitle: 'Удалить платеж',
+          },
+          productField: {
+            nameLabel: 'Название',
+            namePlaceholder: 'Название',
+            priceLabel: 'Цена (₽)',
+            weightLabel: 'Вес/Количество',
+          },
+          stationField: {
+            typeLabel: 'Название АЗС',
+            priceLabel: 'Цена за литр (₽)',
+            discountLabel: 'Тип скидки',
+            cashbackLabel: 'Процент кэшбэка',
+            fixedLabel: 'Скидка в ₽',
+            options: ['АИ-92', 'АИ-95', 'АИ-98', 'ДТ'],
+            discounts: {
+              none: 'Нет',
+              cashback: 'Кэшбэк (%)',
+              fixed: 'Фиксированная (₽)',
+            },
+            alerts: {
+              notEnoughProducts: 'Добавьте минимум два товара.',
+              notEnoughStations: 'Добавьте минимум две АЗС.',
+            },
+            chart: {
+              label: 'Расходы', // en: Expenses
+              unnamed: 'Без названия', // en: Untitled
+            },
+            result: {
+              better: 'Выгоднее',
+              moreExpensive: 'дороже на',
+              perUnit: '₽/ед.',
+              perLiter: '₽/л',
+            },
+          },
+          financeResult: {
+            totalMoney: 'На сегодняшний день все деньги',
+            totalPayments: 'Общая сумма обязательных платежей',
+            needReturn: 'Необходимо вернуть на счёт',
+            freeMoney: 'Свободных денег',
+            dailySpend: 'Можно тратить ежедневно',
+            daysLeft: 'дн.',
+            untilDate: 'до',
+          },
+        },
+        en: {
+          navMoney: 'Finance Calculator',
+          allMyMoneyLabel: 'All money on account',
+          paymentsTitle: 'Required payments',
+          navProduct: 'Product Comparison',
+          navFuel: 'Gas Station Comparison',
+          addPayment: '+ Add Payment',
+          resultTitle: 'Results',
+          moneyTitle: 'Finance Calculator',
+          allMoney: 'Total money in account',
+          nextDate: 'Next income date',
+          submitCalc: 'Calculate',
+          comparisonProduct: 'Product Comparison',
+          comparisonFuel: 'Fuel Station Comparison',
+          addStationBtn: '+ Station',
+          addProductBtn: '+ Product',
+          fuelCompareBtn: 'Compare',
+          productCompareBtn: 'Compare',
+          paymentField: {
+            namePlaceholder: 'Name',
+            amountPlaceholder: 'Amount',
+            deleteTitle: 'Delete payment',
+          },
+          productField: {
+            nameLabel: 'Name',
+            namePlaceholder: 'Name',
+            priceLabel: 'Price',
+            weightLabel: 'Weight/Quantity',
+          },
+          stationField: {
+            typeLabel: 'Gas station name',
+            priceLabel: 'Price per liter',
+            discountLabel: 'Discount type',
+            cashbackLabel: 'Cashback percentage',
+            fixedLabel: 'Money',
+            options: ['AI-92', 'AI-95', 'AI-98', 'DT'],
+            discounts: {
+              none: 'None',
+              cashback: 'Cashback (%)',
+              fixed: 'Fixed',
+            },
+          },
+          alerts: {
+            notEnoughProducts: 'Add at least two products.',
+            notEnoughStations: 'Add at least two gas stations.',
+          },
+          chart: {
+            label: 'Expenses',
+            unnamed: 'Untitled',
+          },
+          result: {
+            better: 'Better',
+            moreExpensive: 'more expensive by',
+            perUnit: 'money/unit',
+            perLiter: 'money/liter',
+          },
+          financeResult: {
+            totalMoney: 'Total money on account',
+            totalPayments: 'Total payments',
+            needReturn: 'Need to return to account',
+            freeMoney: 'Free money',
+            dailySpend: 'Daily spend',
+            daysLeft: 'days left',
+            untilDate: 'until',
+          },
+        },
+      };
+
+      function applyLanguage(lang) {
+        const l = languages[lang];
+
+        document.getElementById('navMoneyPerMonth').textContent = l.navMoney;
+        document.getElementById('navProductCompare').textContent = l.navProduct;
+        document.getElementById('navFuelCompare').textContent = l.navFuel;
+        document.querySelector('.moneyPerMonth-h1').textContent = l.moneyTitle;
+        const label = document.getElementById('allMyMoneyLabel');
+        if (label && label.childNodes[0]) {
+          label.childNodes[0].nodeValue = `${l.allMyMoneyLabel}: `;
+        }
+        const label2 = document.getElementById('nextDate');
+        if (label2 && label2.childNodes[0]) {
+          label2.childNodes[0].nodeValue = `${l.nextDate}: `;
+        }
+        document.getElementById('addPaymentBtn').textContent = l.addPayment;
+        document.querySelector(
+          "#financeForm button[type='submit']"
+        ).textContent = l.submitCalc;
+        document.getElementById('paymentsTitle').textContent = l.paymentsTitle;
+        document.querySelector('#productTool h2').textContent =
+          l.comparisonProduct;
+        document.querySelector('#fuelTool h2').textContent = l.comparisonFuel;
+
+        document.getElementById('addStationBtn').textContent = l.addStationBtn;
+        document.getElementById('addProductBtn').textContent = l.addProductBtn;
+        document.getElementById('fuelCompareBtn').textContent =
+          l.fuelCompareBtn;
+        document.getElementById('productCompareBtn').textContent =
+          l.productCompareBtn;
+      }
+
+      const currentLang = localStorage.getItem('appLang') || 'ru';
+      applyLanguage(currentLang);
+
+      document.getElementById('languageToggle').onclick = () => {
+        const newLang = currentLang === 'ru' ? 'en' : 'ru';
+        localStorage.setItem('appLang', newLang);
+        location.reload(); // перезагрузка — просто и эффективно для всего UI
+      };
+
+      // --- Темы ---
+      const currentTheme = localStorage.getItem('appTheme') || 'light';
+      document.body.classList.add(currentTheme);
+      if (currentTheme === 'dark') document.body.classList.remove('light');
+
+      // --- Переключение вкладок ---
+      const navMoney = document.getElementById('navMoneyPerMonth');
+      const moneyTool = document.getElementById('moneyPerMonthTool');
+
+      const navProduct = document.getElementById('navProductCompare');
+      const navFuel = document.getElementById('navFuelCompare');
+      const productTool = document.getElementById('productTool');
+      const fuelTool = document.getElementById('fuelTool');
+
+      function showTool(name) {
+        document
+          .querySelectorAll('.tool-container')
+          .forEach(div => div.classList.remove('active'));
+        document
+          .querySelectorAll('.nav button')
+          .forEach(btn => btn.classList.remove('active'));
+
+        if (name === 'money') {
+          moneyTool.classList.add('active');
+          navMoney.classList.add('active');
+        } else if (name === 'product') {
+          productTool.classList.add('active');
+          navProduct.classList.add('active');
+        } else if (name === 'fuel') {
+          fuelTool.classList.add('active');
+          navFuel.classList.add('active');
+        }
+      }
+
+      navMoney.onclick = () => showTool('money');
+      navProduct.onclick = () => showTool('product');
+      navFuel.onclick = () => showTool('fuel');
+
+      // --- Финансовый калькулятор ---
+      const paymentsContainer = document.getElementById('paymentsContainer');
+      const addPaymentBtn = document.getElementById('addPaymentBtn');
+      const financeForm = document.getElementById('financeForm');
+      const resultDiv = document.getElementById('moneyPerMonthResult');
+      const ctx = document.getElementById('expensesChart').getContext('2d');
+      const themeToggle = document.getElementById('themeToggle');
+      let chart;
+      let paymentId = 0;
+
+      const initialPayments = [
+        { name: '', amount: 0 },
+        { name: '', amount: 0 },
+        { name: '', amount: 0 },
+      ];
+
+      function createPaymentField(name = '', amount = '') {
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const t = languages[lang].paymentField;
+
+        paymentId++;
+        const div = document.createElement('div');
+        div.className = 'payment-entry';
+        div.dataset.id = paymentId;
+
+        div.innerHTML = `
+    <input type="text" placeholder="${t.namePlaceholder}" value="${name}" required>
+    <input type="number" step="0.01" placeholder="${t.amountPlaceholder}" value="${amount}" required>
+    <button type="button" title="${t.deleteTitle}">−</button>
+  `;
+
+        div
+          .querySelector('button')
+          .addEventListener('click', () => div.remove());
+        paymentsContainer.appendChild(div);
+      }
+
+      addPaymentBtn.onclick = () => createPaymentField();
+      // initialPayments.forEach(p => createPaymentField(p.name, p.amount));
+
+      themeToggle.onclick = () => {
+        document.body.classList.toggle('light');
+        document.body.classList.toggle('dark');
+        const theme = document.body.classList.contains('dark')
+          ? 'dark'
+          : 'light';
+        localStorage.setItem('appTheme', theme);
+        if (chart) chart.destroy();
+        financeForm.dispatchEvent(new Event('submit'));
+      };
+
+      financeForm.onsubmit = e => {
+        e.preventDefault();
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const lChart = languages[lang]?.chart || {
+          label: lang === 'ru' ? 'Расходы' : 'Expenses',
+          unnamed: lang === 'ru' ? 'Без названия' : 'Untitled',
+        };
+
+        const allMoney =
+          parseInt(document.getElementById('allMyMoney').value) || 0;
+        const nextPayDate = new Date(
+          document.getElementById('nextPayDate').value ||
+            new Date().setMonth(new Date().getMonth() + 1)
+        );
+        const today = new Date();
+        const daysLeft = Math.max(
+          1,
+          Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
+        );
+
+        const payments = [...paymentsContainer.children].map(div => {
+          return {
+            name: div.querySelector("input[type='text']").value.trim(),
+            value:
+              parseInt(div.querySelector("input[type='number']").value) || 0,
+          };
+        });
+
+        const total = payments.reduce((sum, p) => sum + p.value, 0);
+        const free = allMoney - total;
+        const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
+
+        const t = languages[currentLang].financeResult;
+        let html = `<p>${t.totalMoney}: <strong>${allMoney}</strong></p>
+      <p>${t.totalPayments}: <strong>${total}</strong></p>`;
+        html +=
+          free < 0
+            ? `<p style="color:red;">${
+                t.needReturn
+              }: <strong>${-free}</strong></p>`
+            : `<p>${t.freeMoney}: <strong>${free}</strong></p>
+         <p>${t.dailySpend}: <strong>${perDay}</strong> (${
+                t.untilDate
+              } ${nextPayDate.toLocaleDateString(
+                currentLang === 'ru' ? 'ru-RU' : 'en-US'
+              )}, ${daysLeft} ${t.daysLeft})</p>`;
+
+        resultDiv.innerHTML = html;
+        resultDiv.style.display = 'block';
+
+        localStorage.setItem(
+          'financeData',
+          JSON.stringify({
+            allMoney,
+            nextPayDate: document.getElementById('nextPayDate').value,
+            payments,
+          })
+        );
+
+        if (chart) chart.destroy();
+        chart = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: payments.map(p => p.name || lChart.unnamed),
+            datasets: [
+              {
+                label: lChart.label,
+                data: payments.map(p => p.value),
+                backgroundColor: document.body.classList.contains('dark')
+                  ? '#0056b3'
+                  : '#007bff',
+              },
+            ],
+          },
+          options: {
+            responsive: true,
+            scales: {
+              y: {
+                beginAtZero: true,
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+              x: {
+                ticks: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+            plugins: {
+              legend: {
+                labels: {
+                  color: document.body.classList.contains('dark')
+                    ? '#f1f1f1'
+                    : '#333',
+                },
+              },
+            },
+          },
+        });
+      };
+
+      window.addEventListener('DOMContentLoaded', () => {
+        const saved = JSON.parse(localStorage.getItem('financeData') || '{}');
+
+        if (saved.allMoney !== undefined) {
+          document.getElementById('allMyMoney').value = saved.allMoney;
+        }
+        if (saved.nextPayDate) {
+          document.getElementById('nextPayDate').value = saved.nextPayDate;
+        }
+        if (Array.isArray(saved.payments)) {
+          paymentsContainer.innerHTML = '';
+          saved.payments.forEach(p => createPaymentField(p.name, p.value));
+        } else {
+          initialPayments.forEach(p => createPaymentField(p.name, p.amount));
+        }
+
+        financeForm.dispatchEvent(new Event('submit'));
+      });
+
+      // Сравнение товаров
+      let productId = 0;
+      const productForm = document.getElementById('productForm');
+      const addProductBtn = document.getElementById('addProductBtn');
+      const productsContainer = document.getElementById('productsContainer');
+      const productResult = document.getElementById('productResult');
+
+      function addProduct(name = '', price = '', weight = '') {
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const t = languages[lang].productField;
+
+        productId++;
+        const div = document.createElement('div');
+        div.className = 'card';
+        div.innerHTML = `
+    <button type="button" class="delete-btn" title="×">×</button>
+    <div class="input-group">
+      <label>${t.nameLabel}</label>
+      <input type="text" value="${name}" placeholder="${t.namePlaceholder}">
+    </div>
+    <div class="input-group">
+      <label>${t.priceLabel}</label>
+      <input type="number" step="0.01"  value="${price}" placeholder="0.00" required>
+    </div>
+    <div class="input-group">
+      <label>${t.weightLabel}</label>
+      <input type="number" step="0.01"  value="${weight}" placeholder="0.00" required>
+    </div>
+  `;
+        div.querySelector('.delete-btn').onclick = () => div.remove();
+        productsContainer.appendChild(div);
+      }
+
+      addProductBtn.onclick = () => addProduct();
+      addProduct('', 0, 0);
+
+      productForm.onsubmit = e => {
+        e.preventDefault();
+        const products = [...productsContainer.children]
+          .map(div => {
+            const inputs = div.querySelectorAll('input');
+            return {
+              name: inputs[0].value || '',
+              price: parseFloat(inputs[1].value),
+              weight: parseFloat(inputs[2].value),
+            };
+          })
+          .filter(p => p.price > 0 && p.weight > 0);
+
+        if (products.length < 2) {
+          productResult.style.display = 'none';
+          return alert(languages[currentLang].alerts.notEnoughProducts);
+        }
+
+        products.sort((a, b) => a.price / a.weight - b.price / b.weight);
+        const best = products[0];
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const l = languages[lang]?.result || {
+          better: 'Выгоднее',
+          moreExpensive: 'дороже на',
+          perUnit: '₽/ед.',
+        };
+
+        let result = `${l.better}: <strong>${best.name}</strong> (${(
+          best.price / best.weight
+        ).toFixed(2)} ${l.perUnit})<br><br>`;
+
+        for (let i = 1; i < products.length; i++) {
+          const diff =
+            (products[i].price /
+              products[i].weight /
+              (best.price / best.weight) -
+              1) *
+            100;
+          result += `${products[i].name}: ${l.moreExpensive} ${diff.toFixed(
+            1
+          )}%<br>`;
+        }
+
+        productResult.innerHTML = result;
+        productResult.style.display = 'block';
+      };
+
+      // Сравнение АЗС
+      let stationId = 0;
+      const fuelForm = document.getElementById('fuelForm');
+      const addStationBtn = document.getElementById('addStationBtn');
+      const stationsContainer = document.getElementById('stationsContainer');
+      const fuelResult = document.getElementById('fuelResult');
+
+      function addStation(name = '', price = '', discountType = 'none', cashback = '', fixed = '') {
+  const lang = localStorage.getItem('appLang') || 'ru';
+  const t = languages[lang]?.stationField || {
+    typeLabel: "Название АЗС",
+    priceLabel: "Цена за литр (₽)",
+    discountLabel: "Тип скидки",
+    cashbackLabel: "Процент кэшбэка",
+    fixedLabel: "Скидка в ₽",
+    discounts: {
+      none: "Нет",
+      cashback: "Кэшбэк (%)",
+      fixed: "Фиксированная (₽)"
+    }
+  };
+
+  stationId++;
+  const div = document.createElement('div');
+  div.className = 'card';
+  div.dataset.id = stationId;
+
+  div.innerHTML = `
+    <button type="button" class="delete-btn">×</button>
+    <div class="input-group">
+      <label>${t.typeLabel}</label>
+      <input type="text" class="fuel-name" placeholder="${t.typeLabel}" value="${name}" required>
+    </div>
+    <div class="input-group">
+      <label>${t.priceLabel}</label>
+      <input type="number" step="0.01" class="fuel-price" value="${price}" required>
+    </div>
+    <div class="input-group">
+      <label>${t.discountLabel}</label>
+      <select class="discount-select">
+        <option value="none"${discountType === 'none' ? ' selected' : ''}>${t.discounts.none}</option>
+        <option value="cashback"${discountType === 'cashback' ? ' selected' : ''}>${t.discounts.cashback}</option>
+        <option value="fixed"${discountType === 'fixed' ? ' selected' : ''}>${t.discounts.fixed}</option>
+      </select>
+    </div>
+    <div class="input-group cashback-group" style="display: none;">
+      <label>${t.cashbackLabel}</label>
+      <input type="number" step="0.01" class="cashback-value" value="${cashback}">
+    </div>
+    <div class="input-group fixed-group" style="display: none;">
+      <label>${t.fixedLabel}</label>
+      <input type="number" step="0.01" class="fixed-value" value="${fixed}">
+    </div>
+  `;
+
+  const discountSelect = div.querySelector('.discount-select');
+  const cashbackGroup = div.querySelector('.cashback-group');
+  const fixedGroup = div.querySelector('.fixed-group');
+
+  function toggleDiscountFields() {
+    const type = discountSelect.value;
+    cashbackGroup.style.display = type === 'cashback' ? 'block' : 'none';
+    fixedGroup.style.display = type === 'fixed' ? 'block' : 'none';
+  }
+
+  toggleDiscountFields();
+  discountSelect.onchange = toggleDiscountFields;
+
+  div.querySelector('.delete-btn').onclick = () => div.remove();
+  stationsContainer.appendChild(div);
+}
+
+
+      addStationBtn.onclick = () => addStation();
+      addStation('Teboil', 0, 'cashback', 0);
+
+      fuelForm.onsubmit = e => {
+        e.preventDefault();
+        const stations = [...stationsContainer.children]
+          .map(div => {
+            const name = div.querySelector('.fuel-name').value.trim();
+            const discountType = div.querySelector('.discount-select').value;
+            const price = parseFloat(div.querySelector('.fuel-price').value); // уже есть
+            const cashback =
+              parseFloat(div.querySelector('.cashback-value')?.value) || 0;
+            const fixed =
+              parseFloat(div.querySelector('.fixed-value')?.value) || 0;
+            let finalPrice = price;
+            if (discountType === 'cashback')
+              finalPrice = price * (1 - cashback / 100);
+            else if (discountType === 'fixed') finalPrice = price - fixed;
+
+            return { name, price, finalPrice, discountType, cashback, fixed };
+          })
+          .filter(s => s.price > 0);
+
+        if (stations.length < 2) {
+          fuelResult.style.display = 'none';
+          return alert(languages[currentLang].alerts.notEnoughStations);
+        }
+
+        stations.sort((a, b) => a.finalPrice - b.finalPrice);
+        const best = stations[0];
+        const lang = localStorage.getItem('appLang') || 'ru';
+        const l = languages[lang]?.result || {
+          better: 'Выгоднее',
+          moreExpensive: 'дороже на',
+          perLiter: '₽/л',
+        };
+
+        let result = `${l.better}: <strong>${
+          best.name
+        }</strong> (${best.finalPrice.toFixed(2)} ${l.perLiter})<br><br>`;
+
+        for (let i = 1; i < stations.length; i++) {
+          const diff = (stations[i].finalPrice / best.finalPrice - 1) * 100;
+          result += `${stations[i].name}: ${l.moreExpensive} ${diff.toFixed(
+            1
+          )}%<br>`;
+        }
+
+        fuelResult.innerHTML = result;
+        fuelResult.style.display = 'block';
+      };
+    </script> -->
+  </body>
+</html>
