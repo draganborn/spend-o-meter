@@ -1,16 +1,117 @@
-# React + Vite
+# Spend-O-Meter React
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+A modern React + TypeScript migration of the Spend-O-Meter financial calculator application.
 
-Currently, two official plugins are available:
+## Features
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Babel](https://babeljs.io/) (or [oxc](https://oxc.rs) when used in [rolldown-vite](https://vite.dev/guide/rolldown)) for Fast Refresh
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/) for Fast Refresh
+- 💰 **Finance Calculator** - Track your money, payments, and daily spending budget
+- 🛒 **Product Comparison** - Compare products by price per unit
+- ⛽ **Fuel Station Comparison** - Compare gas stations with different discount types
+- 🌓 **Dark/Light Theme** - Toggle between themes with localStorage persistence
+- 🌐 **i18n Support** - Russian and English language support
+- 📊 **Charts** - Visual representation of expenses using Chart.js
+- 💾 **LocalStorage** - All data persists across sessions
 
-## React Compiler
+## Tech Stack
 
-The React Compiler is currently not compatible with SWC. See [this issue](https://github.com/vitejs/vite-plugin-react/issues/428) for tracking the progress.
+- **React 18** - Modern UI library
+- **TypeScript** - Type-safe development
+- **Vite** - Fast build tool and dev server
+- **Chart.js + react-chartjs-2** - Data visualization
+- **Context API** - State management for theme and language
+- **CSS** - Clean, maintainable styling
 
-## Expanding the ESLint configuration
+## Project Structure
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+```
+src/
+├── components/         # React components
+│   ├── Header.tsx             # Navigation and controls
+│   ├── FinanceCalculator.tsx  # Finance calculator tool
+│   ├── ProductComparison.tsx  # Product comparison tool
+│   └── FuelComparison.tsx     # Fuel station comparison tool
+├── contexts/          # React contexts
+│   ├── ThemeContext.tsx       # Dark/light theme management
+│   └── LanguageContext.tsx    # i18n management
+├── types/             # TypeScript type definitions
+│   └── index.ts
+├── utils/             # Utility functions
+│   └── translations.ts        # Translation strings
+├── App.tsx            # Main application component
+├── App.css            # Global styles
+└── main.tsx           # Application entry point
+```
+
+## Best Practices Implemented
+
+### Architecture
+- ✅ **Component-based architecture** - Modular, reusable components
+- ✅ **Context API** - Efficient state management for global state (theme, language)
+- ✅ **Custom hooks** - Encapsulated logic in `useTheme` and `useLanguage`
+- ✅ **TypeScript** - Full type safety throughout the application
+
+### Code Quality
+- ✅ **Separation of concerns** - Logic, presentation, and state separated
+- ✅ **DRY principle** - Reusable components and utilities
+- ✅ **Type safety** - Proper TypeScript types and interfaces
+- ✅ **Clean imports** - Using `type` keyword for type-only imports
+
+### Performance
+- ✅ **LocalStorage caching** - Persistent data without backend
+- ✅ **Conditional rendering** - Only active tools are rendered
+- ✅ **Optimized builds** - Vite's fast HMR and optimized production builds
+
+### User Experience
+- ✅ **Theme persistence** - User preferences saved
+- ✅ **Responsive design** - Mobile-friendly layouts
+- ✅ **Accessibility** - Semantic HTML and proper labels
+
+## Development
+
+### Prerequisites
+- Node.js 16+ and npm
+
+### Install Dependencies
+```bash
+npm install
+```
+
+### Run Development Server
+```bash
+npm run dev
+```
+
+Visit `http://localhost:5173` to see the application.
+
+### Build for Production
+```bash
+npm run build
+```
+
+### Preview Production Build
+```bash
+npm run preview
+```
+
+## Migration Notes
+
+This project was migrated from a single vanilla HTML/JS file to a modern React application:
+
+### What Changed
+- ✅ Vanilla JavaScript → React + TypeScript
+- ✅ Inline scripts → Component-based architecture
+- ✅ Manual DOM manipulation → Declarative React rendering
+- ✅ Global state → Context API
+- ✅ No build process → Vite build system
+- ✅ No type checking → Full TypeScript support
+
+### What Stayed the Same
+- ✅ All original functionality preserved
+- ✅ Same visual design and UX
+- ✅ LocalStorage persistence
+- ✅ Theme and language switching
+- ✅ All calculations and comparison logic
+
+## License
+
+© 2025 Spend-O-Meter
