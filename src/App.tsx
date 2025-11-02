@@ -36,7 +36,7 @@ function App() {
             >
               <button style={{ backgroundColor: '#6a06a7' }}>donate ETH</button>
             </a>
-            <p>© {new Date().getFullYear()} Spend-O-Meter</p>
+            <p>© {new Date().getFullYear()} Spend-0-Meter</p>
           </div>
         </footer>
       </LanguageProvider>

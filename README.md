@@ -1,6 +1,6 @@
-# Spend-O-Meter React
+# Spend-0-Meter React
 
-A modern React + TypeScript migration of the Spend-O-Meter financial calculator application.
+A modern React + TypeScript migration of the Spend-0-Meter financial calculator application.
 
 ## Features
 
@@ -114,4 +114,4 @@ This project was migrated from a single vanilla HTML/JS file to a modern React a
 
 ## License
 
-© 2025 Spend-O-Meter
+© 2025 Spend-0-Meter

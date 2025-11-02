@@ -44,6 +44,9 @@ body.dark {
   width: 100%;
   max-width: 760px;
 }
+.footer-elements p {
+  color: #f1f1f1;
+}
 .nav button,
 .footer button {
   background-color: #555;
