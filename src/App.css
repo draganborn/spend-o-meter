@@ -119,10 +119,12 @@ body.dark .moneyPerMonth-container {
   justify-content: center;
 }
 .payment-entry {
-  display: flex;
-  gap: 10px;
-  flex-wrap: wrap;
-  margin-bottom: 10px;
+	display: flex;
+	gap: 10px;
+	flex-wrap: wrap;
+	margin-bottom: 10px;
+	align-items: center;
+	justify-content: space-between;
 }
 #allMyMoney,
 #allMyMoneyLabel input,
@@ -133,6 +135,14 @@ body.dark .moneyPerMonth-container {
   padding: 8px;
   border: 1px solid #ccc;
   border-radius: 5px;
+  max-width: 220px;
+  min-width: 220px;
+}
+.payingCheck {
+  flex: 1;
+}
+.monthsLeft {
+  flex: 2;
 }
 .payment-entry button {
   background-color: #dc3545;
@@ -430,4 +440,15 @@ body.dark .bank-card {
   .nav div {
     justify-content: center;
   }
+  .payingCheck {
+  flex: 0;
+  order: 3;
+}
+.monthsLeft {
+  flex: 1;
+  order: 4;
+}
+.payment-entry button {
+  order: 5;
+}
 }

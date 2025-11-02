@@ -1,6 +1,12 @@
 export interface Payment {
+  id?: string;
   name: string;
   value: number;
+  startDate?: string; // ISO yyyy-mm-dd
+  endDate?: string;   // ISO yyyy-mm-dd
+  frequency?: 'monthly' | 'quarterly' | 'yearly';
+  isActive?: boolean;
+  lastPaidAt?: string; // ISO
 }
 
 export interface Product {
