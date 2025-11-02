@@ -111,7 +111,7 @@ body.dark .moneyPerMonth-container {
   cursor: pointer;
   font-size: 14px;
 }
-.moneyPerMonth-form label {
+.moneyPerMonth-form label, .month-selector label {
   display: flex;
   gap: 10px;
   align-items: center;
@@ -125,6 +125,7 @@ body.dark .moneyPerMonth-container {
   margin-bottom: 10px;
 }
 #allMyMoney,
+#allMyMoneyLabel input,
 #nextPayDate,
 .payment-entry input[type='text'],
 .payment-entry input[type='number'] {
@@ -276,7 +277,139 @@ body.dark .result-container {
   background: #3c3c3c;
   color: #f1f1f1;
 }
+
+
+/* Cashback Planner styles (aligned with existing components) */
+.cashback-planner-container {
+  background: white;
+  padding: 20px;
+  border-radius: 10px;
+  margin: 10px 0;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+body.dark .cashback-planner-container {
+  background-color: #2d2d2d;
+}
+.cashback-planner-title {
+  text-align: center;
+  margin-top: 0;
+}
+
+.month-selector {
+  display: flex;
+  justify-content: center;
+  margin-bottom: 16px;
+}
+.nextDate-input, .month-selector input[type='month'] {
+  padding: 4px;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+}
+
+.users-container,
+.banks-container,
+.categories-container {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.user-card, .bank-card {
+    background: white;
+    padding: 16px;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.06);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    width: 100%;
+    gap: 1rem;
+}
+body.dark .user-card,
+body.dark .bank-card {
+  background-color: #2d2d2d;
+}
+
+.user-header,
+.bank-header {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.user-name-input,
+.bank-name-input,
+.category-name-input,
+.category-percentage-input {
+  flex: 1;
+  padding: 8px;
+  border-radius: 5px;
+  border: 1px solid #ccc;
+}
+
+.category-row {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+}
+
+.percentage-input-wrapper {
+  position: relative;
+  width: 140px;
+}
+.category-percentage-input {
+  width: 100%;
+  padding-right: 28px;
+}
+.percentage-symbol {
+  position: absolute;
+  right: 10px;
+  top: 50%;
+  transform: translateY(-50%);
+  color: #666;
+}
+
+/* Buttons aligned with existing palette */
+.add-category-btn,
+.add-bank-btn,
+.add-user-btn {
+  background: #6a06a7;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  cursor: pointer;
+  padding: 10px;
+}
+.add-user-btn {
+  width: 100%;
+  margin-top: 10px;
+}
+
+.delete-btn-small,
+.delete-btn-tiny {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 50%;
+  cursor: pointer;
+  line-height: 1;
+  font-weight: bold;
+}
+.delete-btn-small {
+  width: 24px;
+  height: 24px;
+}
+.delete-btn-tiny {
+  width: 22px;
+  height: 22px;
+}
+
 @media (max-width: 480px) {
+
+  .user-card, .bank-card {
+    padding: 0;
+}
+  
   .footer-elements {
     flex-direction: column;
     align-items: center;

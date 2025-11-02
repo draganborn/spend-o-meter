@@ -26,3 +26,27 @@ export interface FinanceData {
 
 export type Language = 'ru' | 'en';
 export type Theme = 'light' | 'dark';
+
+// Cashback types
+export interface CashbackCategory {
+  id: string;
+  name: string;
+  percentage: number;
+}
+
+export interface BankCashback {
+  id: string;
+  bankName: string;
+  categories: CashbackCategory[];
+}
+
+export interface UserCashback {
+  id: string;
+  userName: string;
+  banks: BankCashback[];
+}
+
+export interface CashbackData {
+  month: string; // Format: YYYY-MM
+  users: UserCashback[];
+}

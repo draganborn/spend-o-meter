@@ -1,5 +1,6 @@
 export const translations = {
   ru: {
+    navCashback: 'Планировщик кэшбэка',
     navMoney: 'Калькулятор финансов',
     allMyMoneyLabel: 'Все деньги на счете',
     paymentsTitle: 'Обязательные платежи',
@@ -63,8 +64,18 @@ export const translations = {
       daysLeft: 'дн.',
       untilDate: 'до',
     },
+    cashbackPlanner: {
+      title: 'Планировщик кэшбэка',
+      userPlaceholder: 'Имя пользователя',
+      bankPlaceholder: 'Название банка',
+      categoryPlaceholder: 'Категория',
+      addCategory: '+ Добавить категорию',
+      addBank: '+ Добавить банк',
+      addUser: '+ Добавить пользователя',
+    },
   },
   en: {
+    navCashback: 'Cashback Planner',
     navMoney: 'Finance Calculator',
     allMyMoneyLabel: 'All money on account',
     paymentsTitle: 'Required payments',
@@ -128,5 +139,14 @@ export const translations = {
       daysLeft: 'days left',
       untilDate: 'until',
     },
-  },
+    cashbackPlanner: {
+      title: 'Cashback Planner',
+      userPlaceholder: 'User name',
+      bankPlaceholder: 'Bank name',
+      categoryPlaceholder: 'Category',
+      addCategory: '+ Add Category',
+      addBank: '+ Add Bank',
+      addUser: '+ Add User',
+    }
+  }
 };

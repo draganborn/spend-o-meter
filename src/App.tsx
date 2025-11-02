@@ -5,6 +5,7 @@ import { Header } from './components/Header';
 import { FinanceCalculator } from './components/FinanceCalculator';
 import { ProductComparison } from './components/ProductComparison';
 import { FuelComparison } from './components/FuelComparison';
+import { CashbackPlanner } from './components/CashbackPlanner';
 import './App.css';
 
 function App() {
@@ -15,12 +16,16 @@ function App() {
       <LanguageProvider>
         <Header activeTab={activeTab} onTabChange={setActiveTab} />
 
-        <div className={`tool-container ${activeTab === 'money' ? 'active' : ''}`}>
-          <FinanceCalculator />
-        </div>
-
         <div className={`tool-container ${activeTab === 'product' ? 'active' : ''}`}>
           <ProductComparison />
+        </div>
+
+                <div className={`tool-container ${activeTab === 'cashback' ? 'active' : ''}`}>
+          <CashbackPlanner />
+        </div>
+
+                <div className={`tool-container ${activeTab === 'money' ? 'active' : ''}`}>
+          <FinanceCalculator />
         </div>
 
         <div className={`tool-container ${activeTab === 'fuel' ? 'active' : ''}`}>

@@ -166,6 +166,7 @@ export const FinanceCalculator = () => {
         <label id="nextDate">
           {t.nextDate}:
           <input
+          className="nextDate-input"
             type="date"
             value={nextPayDate}
             onChange={(e) => setNextPayDate(e.target.value)}
