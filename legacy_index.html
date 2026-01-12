@@ -1,0 +1,2858 @@
+<!DOCTYPE html>
+<html lang="ru">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Spend-O-Meter</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        margin: 0;
+        padding: 0;
+        background-color: #f4f7fa;
+        color: #333;
+        transition: background 0.3s, color 0.3s;
+      }
+      body.dark {
+        background-color: #1e1e1e;
+        color: #f1f1f1;
+      }
+      .nav, .footer {
+        display: flex;
+        justify-content: center;
+        background-color: #333;
+        padding: 10px;
+        text-align: center;
+        flex-wrap: wrap;
+        gap: 1rem;
+        align-items: center;
+          flex-direction: column;
+      }
+      .nav div, .footer-container {
+        display: flex;
+        justify-content: space-between;
+        gap: 10px;
+        flex-wrap: wrap;
+        width: 100%;
+        max-width: 760px;
+      }
+      .nav button, .footer button {
+        background-color: #555;
+        color: white;
+        border: none;
+        padding: 10px 20px;
+        margin: 0 5px;
+        cursor: pointer;
+        border-radius: 5px;
+        font-size: 16px;
+      }
+      .nav button.active,
+      .nav button:hover {
+        background-color: #007bff;
+      }
+      .tool-container {
+        display: none;
+        padding: 20px;
+        max-width: 800px;
+        margin: 0 auto;
+      }
+      .tool-container.active {
+        display: block;
+      }
+      /* Финансовый калькулятор */
+      .moneyPerMonth-container {
+        background: white;
+        padding: 30px;
+        border-radius: 10px;
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+      }
+      body.dark .moneyPerMonth-container {
+        background-color: #2d2d2d;
+      }
+      .moneyPerMonth-form {
+        display: flex;
+        flex-direction: column;
+        gap: 20px;
+        align-items: center;
+        width: 100%;
+      }
+      #paymentsContainer {
+        display: flex;
+        flex-direction: column;
+        width: 100%;
+      }
+      .moneyPerMonth-h1,
+      .moneyPerMonth-h3 {
+        text-align: center;
+        color: inherit;
+      }
+      .moneyPerMonth-btn-theme {
+        display: block;
+        margin: 10px auto 20px auto;
+        padding: 10px 20px;
+        background-color: #007bff;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        font-size: 14px;
+      }
+      .moneyPerMonth-form label {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex-wrap: wrap;
+        justify-content: center;
+      }
+      .payment-entry {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        margin-bottom: 10px;
+      }
+      #allMyMoney,
+      #nextPayDate,
+      .payment-entry input[type='text'],
+      .payment-entry input[type='number'] {
+        flex: 1;
+        padding: 8px;
+        border: 1px solid #ccc;
+        border-radius: 5px;
+      }
+      .payment-entry button {
+        background-color: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 8px 12px;
+      }
+      .add-payment-btn, .add-btn {
+        background-color: #6a06a7;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      .calculate-btn {
+        background-color: #28a745;
+        color: white;
+        border: none;
+        border-radius: 5px;
+        cursor: pointer;
+        padding: 10px;
+        width: 100%;
+        margin-bottom: 20px;
+      }
+      #moneyPerMonthResult {
+        margin-top: 30px;
+        padding: 20px;
+        background-color: #e9f7ef;
+        border-left: 5px solid #28a745;
+        color: #155724;
+        display: none;
+      }
+      #expensesChart {
+        width: 100%;
+        height: 200px;
+      }
+      body.dark #moneyPerMonthResult {
+        background-color: #3c3c3c;
+        border-left-color: #4caf50;
+        color: #ddd;
+      }
+      canvas {
+        margin-top: 20px;
+      }
+
+      /* Общие стили для сравнения */
+      .card-container {
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      .card {
+        display: flex;
+        flex-direction: column;
+        background: white;
+        padding: 20px;
+        border-radius: 10px;
+        margin: 10px 0;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+      }
+      body.dark .card-container {
+        background-color: #2d2d2d;
+      }
+      body.dark .card {
+        background-color: #2d2d2d;
+      }
+      #productsContainer {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+      }
+      .input-group {
+        margin-bottom: 10px;
+        width: 100%;
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .input-group label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 5px;
+      }
+      .input-group input,
+      .input-group select {
+        /* width: 100%; */
+        padding: 8px;
+        border-radius: 5px;
+        border: 1px solid #ccc;
+      }
+      .btn-group {
+        display: flex;
+        gap: 10px;
+        margin-top: 20px;
+      }
+      .btn-group button {
+        flex: 1;
+        padding: 10px;
+        cursor: pointer;
+        border: none;
+        border-radius: 5px;
+        color: white;
+      }
+      .add-btn {
+    background-color: #6a06a7;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    padding: 10px;
+    width: 100%;
+    margin-bottom: 20px;
+      }
+      .submit-btn {
+        background: #28a745;
+      }
+      .back-btn {
+        background: #007bff;
+      }
+      .delete-btn {
+        background: #dc3545;
+        color: white;
+        border: none;
+        border-radius: 50%;
+        width: 28px;
+        height: 28px;
+        line-height: 1;
+        font-weight: bold;
+        cursor: pointer;
+        float: right;
+        align-self: flex-end;
+      }
+      .result-container {
+        background: #e8f5e9;
+        border-left: 4px solid #2e7d32;
+        padding: 15px;
+        margin-top: 20px;
+        border-radius: 5px;
+      }
+      body.dark .result-container {
+        background: #3c3c3c;
+        color: #f1f1f1;
+      }
+      /* Избранное */
+      .favorites-list {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .favorite-item {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 12px 14px;
+        border-radius: 8px;
+        background: #f7f9fb;
+        border: 1px solid #dce3ed;
+      }
+      body.dark .favorite-item {
+        background: #2d2d2d;
+        border-color: #444;
+      }
+      .favorite-meta {
+        font-size: 14px;
+        color: #555;
+      }
+      body.dark .favorite-meta {
+        color: #ccc;
+      }
+      .favorite-empty {
+        margin-top: 10px;
+        color: #777;
+        text-align: center;
+      }
+      .favorite-actions {
+        display: flex;
+        gap: 10px;
+        margin-top: 10px;
+      }
+      .favorite-btn,
+      .remove-fav-btn,
+      #clearFavoritesBtn {
+        border: none;
+        cursor: pointer;
+        border-radius: 5px;
+        padding: 8px 12px;
+        font-size: 14px;
+      }
+      .favorite-btn {
+        background: #f0f4ff;
+        color: #1d4ed8;
+        align-self: flex-start;
+      }
+      .favorite-btn.active {
+        background: #ffe7a3;
+        color: #b45309;
+      }
+      body.dark .favorite-btn {
+        background: #1f2937;
+        color: #60a5fa;
+      }
+      body.dark .favorite-btn.active {
+        background: #92400e;
+        color: #fff7d6;
+      }
+      .remove-fav-btn {
+        background: #dc3545;
+        color: #fff;
+      }
+      #clearFavoritesBtn {
+        background: #6a06a7;
+        color: #fff;
+      }
+      /* Планировщик кэшбэка */
+      .cashback-actions {
+        display: flex;
+        justify-content: flex-end;
+        margin-bottom: 12px;
+      }
+      .banks-container {
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+      }
+      .cashback-bank {
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        padding: 18px;
+        background: #fff;
+      }
+      body.dark .cashback-bank {
+        background: #2d2d2d;
+        border-color: #444;
+      }
+      .bank-header {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+      }
+      .bank-header input {
+        flex: 1;
+        padding: 10px;
+        border-radius: 8px;
+        border: 1px solid #cbd5f5;
+      }
+      body.dark .bank-header input {
+        background: #1f2937;
+        color: #f1f1f1;
+        border-color: #4b5563;
+      }
+      .delete-bank-btn,
+      .delete-category-btn {
+        border: none;
+        background: #dc3545;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 10px;
+        cursor: pointer;
+      }
+      .categories-list {
+        margin-top: 15px;
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+      }
+      .category-row {
+        display: flex;
+        gap: 10px;
+        flex-wrap: wrap;
+        align-items: center;
+      }
+      .category-row input {
+        flex: 1;
+        min-width: 140px;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #d1d5db;
+      }
+      body.dark .category-row input {
+        background: #1f2937;
+        color: #f1f1f1;
+        border-color: #4b5563;
+      }
+      .category-row input.percent-input {
+        max-width: 140px;
+      }
+      .category-row span {
+        font-weight: 600;
+      }
+      .add-category-btn {
+        border: none;
+        background: #007bff;
+        color: #fff;
+        border-radius: 8px;
+        padding: 8px 12px;
+        cursor: pointer;
+        margin-top: 5px;
+      }
+      .cashback-empty {
+        margin-top: 15px;
+        text-align: center;
+        color: #777;
+      }
+      @media (max-width: 480px) {
+        .payment-entry button {
+          order: 1;
+        }
+        .payment-entry input[type='number'] {
+          order: 2;
+        }
+        .payment-entry input[type='text'] {
+          order: 0;
+        }
+        .nav div {
+          justify-content: center;
+        }
+      }
+    </style>
+
+  </head>
+  <body>
+    <div class="nav">
+      <div>
+        <button id="navMoneyPerMonth" class="active">
+          Калькулятор финансов
+        </button>
+        <button id="navProductCompare">Сравнение товаров</button>
+        <button id="navFuelCompare">Сравнение АЗС</button>
+        <button id="navFavorites">Избранное</button>
+        <button id="navCashback">Планировщик кэшбэка</button>
+      </div>
+      <div>
+        <button id="themeToggle" class="moneyPerMonth-btn-theme">🌓</button>
+
+        <button id="languageToggle" class="moneyPerMonth-btn-theme">🌐</button>
+      </div>
+    </div>
+
+    <div id="favoritesTool" class="tool-container">
+      <div class="card-container">
+        <h2 id="favoritesTitle">Избранные товары</h2>
+        <div class="favorite-actions">
+          <button type="button" id="clearFavoritesBtn">Очистить избранное</button>
+        </div>
+        <div id="favoritesList" class="favorites-list"></div>
+        <p id="favoritesEmpty" class="favorite-empty">Пока нет избранных товаров.</p>
+      </div>
+    </div>
+
+    <div id="cashbackTool" class="tool-container">
+      <div class="card-container">
+        <h2 id="cashbackTitle">Планировщик кэшбэка</h2>
+        <div class="cashback-actions">
+          <button type="button" id="addBankBtn" class="add-btn">+ Банк</button>
+        </div>
+        <div id="banksContainer" class="banks-container"></div>
+        <p id="cashbackEmpty" class="cashback-empty">
+          Пока нет добавленных банков.
+        </p>
+      </div>
+    </div>
+
+    <div id="moneyPerMonthTool" class="tool-container active">
+      <div class="moneyPerMonth-container">
+        <h1 class="moneyPerMonth-h1">Калькулятор финансов</h1>
+
+        <form id="financeForm" class="moneyPerMonth-form">
+          <label id="allMyMoneyLabel"
+            >Все деньги на счете:
+            <input type="number" step="0.01" id="allMyMoney" placeholder="0" />
+          </label>
+          <h3 id="paymentsTitle" class="moneyPerMonth-h3">
+            Обязательные платежи:
+          </h3>
+          <div id="paymentsContainer">
+            <!-- Скрипт создаст поля -->
+          </div>
+          <button type="button" class="add-payment-btn" id="addPaymentBtn">
+            + Добавить платеж
+          </button>
+          <label id="nextDate"
+            >Дата следующего поступления:
+            <input type="date" id="nextPayDate" />
+          </label>
+          <button type="submit" class="calculate-btn">Рассчитать</button>
+        </form>
+        <div id="moneyPerMonthResult"></div>
+        <canvas id="expensesChart"></canvas>
+      </div>
+    </div>
+
+    <div id="productTool" class="tool-container">
+      <div class="card-container">
+        <h2>Сравнение товаров</h2>
+        <form id="productForm">
+          <div id="productsContainer"></div>
+          <div class="btn-group">
+            <button type="button" class="add-btn" id="addProductBtn">
+              + Товар
+            </button>
+            <button id="productCompareBtn" type="submit" class="submit-btn">
+              Сравнить
+            </button>
+          </div>
+        </form>
+        <div
+          class="result-container"
+          id="productResult"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+
+    <div id="fuelTool" class="tool-container">
+      <div class="card-container">
+        <h2>Сравнение АЗС</h2>
+        <form id="fuelForm">
+          <div id="stationsContainer"></div>
+          <div class="btn-group">
+            <button type="button" class="add-btn" id="addStationBtn">
+              + АЗС
+            </button>
+            <button id="fuelCompareBtn" type="submit" class="submit-btn">
+              Сравнить
+            </button>
+          </div>
+        </form>
+        <div
+          class="result-container"
+          id="fuelResult"
+          style="display: none"
+        ></div>
+      </div>
+    </div>
+
+    <footer class="footer">
+      <div class="footer-elements">
+      <a
+      href="https://etherscan.io/address/0x2cC359a7f7e2a21047Ab3D6e20a6ECEF89D6E80d"
+      target="_blank"
+    >
+      <button style="background-color: #6a06a7">donate ETH</button>
+    </a>
+      <p>© <script>document.write(new Date().getFullYear())</script> Spend-O-Meter</p>
+    </div>
+</footer>
+
+<script>
+// ========== КОНСТАНТЫ И КОНФИГУРАЦИЯ ==========
+const CONFIG = {
+  DEFAULT_LANG: 'ru',
+  STORAGE_KEYS: {
+    LANG: 'appLang',
+    THEME: 'appTheme',
+    FINANCE: 'financeData',
+    FAVORITES: 'favoriteProducts',
+    CASHBACK: 'cashbackBanks'
+  },
+  INITIAL_PAYMENTS_COUNT: 3,
+  IS_MOBILE: /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent)
+};
+
+const LANGUAGES = {
+  ru: {
+    nav: {
+      money: 'Калькулятор финансов',
+      product: 'Сравнение товаров',
+      fuel: 'Сравнение АЗС',
+      favorites: 'Избранное',
+      cashback: 'Планировщик кэшбэка'
+    },
+    finance: {
+      title: 'Калькулятор финансов',
+      allMoneyLabel: 'Все деньги на счете',
+      nextDateLabel: 'Дата след. поступления',
+      paymentsTitle: 'Обязательные платежи',
+      addPayment: '+ Добавить платеж',
+      submit: 'Рассчитать',
+      paymentField: {
+        namePlaceholder: 'Название',
+        amountPlaceholder: 'Сумма',
+        deleteTitle: 'Удалить'
+      },
+      result: {
+        totalMoney: 'Всего денег',
+        totalPayments: 'Общие платежи',
+        needReturn: 'Вернуть на счёт',
+        freeMoney: 'Свободные деньги',
+        dailySpend: 'Можно тратить в день',
+        daysLeft: 'дн.',
+        untilDate: 'до'
+      }
+    },
+    product: {
+      title: 'Сравнение товаров',
+      addButton: '+ Товар',
+      compareButton: 'Сравнить',
+      field: {
+        nameLabel: 'Название',
+        namePlaceholder: 'Название',
+        priceLabel: 'Цена (₽)',
+        weightLabel: 'Вес/Кол-во'
+      },
+      result: {
+        better: 'Выгоднее',
+        moreExpensive: 'дороже на',
+        perUnit: '₽/ед.'
+      }
+    },
+    fuel: {
+      title: 'Сравнение АЗС',
+      addButton: '+ АЗС',
+      compareButton: 'Сравнить',
+      field: {
+        typeLabel: 'Название АЗС',
+        priceLabel: 'Цена за литр',
+        discountLabel: 'Тип скидки',
+        cashbackLabel: 'Кэшбэк %',
+        fixedLabel: 'Скидка в ₽',
+        options: ['АИ-92', 'АИ-95', 'АИ-98', 'ДТ'],
+        discounts: {
+          none: 'Нет',
+          cashback: 'Кэшбэк',
+          fixed: 'Фиксированная'
+        }
+      },
+      result: {
+        better: 'Выгоднее',
+        moreExpensive: 'дороже на',
+        perLiter: '₽/л'
+      }
+    },
+    favorites: {
+      title: 'Избранное',
+      empty: 'Пока нет избранных товаров',
+      add: 'В избранное',
+      added: 'В избранном',
+      remove: 'Убрать',
+      clear: 'Очистить',
+      fill: 'Сначала укажите цену и вес',
+      perUnit: '₽/ед.'
+    },
+    cashback: {
+      title: 'Планировщик кэшбэка',
+      addBank: '+ Банк',
+      empty: 'Пока нет банков',
+      bankPlaceholder: 'Название банка',
+      categoryPlaceholder: 'Категория',
+      percentPlaceholder: '% кэшбэка',
+      addCategory: '+ Категорию',
+      deleteBank: 'Удалить',
+      deleteCategory: 'Удалить',
+      percentSymbol: '%'
+    },
+    alerts: {
+      notEnoughProducts: 'Добавьте минимум два товара',
+      notEnoughStations: 'Добавьте минимум две АЗС'
+    },
+    chart: {
+      label: 'Расходы',
+      unnamed: 'Без названия'
+    }
+  },
+  en: {
+    nav: {
+      money: 'Finance',
+      product: 'Products',
+      fuel: 'Gas Stations',
+      favorites: 'Favorites',
+      cashback: 'Cashback'
+    },
+    finance: {
+      title: 'Finance Calculator',
+      allMoneyLabel: 'All money',
+      nextDateLabel: 'Next income',
+      paymentsTitle: 'Payments',
+      addPayment: '+ Add Payment',
+      submit: 'Calculate',
+      paymentField: {
+        namePlaceholder: 'Name',
+        amountPlaceholder: 'Amount',
+        deleteTitle: 'Delete'
+      },
+      result: {
+        totalMoney: 'Total money',
+        totalPayments: 'Total payments',
+        needReturn: 'Need to return',
+        freeMoney: 'Free money',
+        dailySpend: 'Daily spend',
+        daysLeft: 'days',
+        untilDate: 'until'
+      }
+    },
+    product: {
+      title: 'Product Comparison',
+      addButton: '+ Product',
+      compareButton: 'Compare',
+      field: {
+        nameLabel: 'Name',
+        namePlaceholder: 'Name',
+        priceLabel: 'Price',
+        weightLabel: 'Weight/Qty'
+      },
+      result: {
+        better: 'Better',
+        moreExpensive: 'more expensive',
+        perUnit: 'money/unit'
+      }
+    },
+    fuel: {
+      title: 'Fuel Comparison',
+      addButton: '+ Station',
+      compareButton: 'Compare',
+      field: {
+        typeLabel: 'Station name',
+        priceLabel: 'Price per liter',
+        discountLabel: 'Discount type',
+        cashbackLabel: 'Cashback %',
+        fixedLabel: 'Discount',
+        options: ['AI-92', 'AI-95', 'AI-98', 'DT'],
+        discounts: {
+          none: 'None',
+          cashback: 'Cashback',
+          fixed: 'Fixed'
+        }
+      },
+      result: {
+        better: 'Better',
+        moreExpensive: 'more expensive',
+        perLiter: 'money/liter'
+      }
+    },
+    favorites: {
+      title: 'Favorites',
+      empty: 'No favorites',
+      add: 'Add to favorites',
+      added: 'In favorites',
+      remove: 'Remove',
+      clear: 'Clear',
+      fill: 'Enter price and weight',
+      perUnit: 'money/unit'
+    },
+    cashback: {
+      title: 'Cashback',
+      addBank: '+ Bank',
+      empty: 'No banks',
+      bankPlaceholder: 'Bank name',
+      categoryPlaceholder: 'Category',
+      percentPlaceholder: 'Cashback %',
+      addCategory: '+ Category',
+      deleteBank: 'Delete',
+      deleteCategory: 'Delete',
+      percentSymbol: '%'
+    },
+    alerts: {
+      notEnoughProducts: 'Add at least two products',
+      notEnoughStations: 'Add at least two stations'
+    },
+    chart: {
+      label: 'Expenses',
+      unnamed: 'Untitled'
+    }
+  }
+};
+
+// ========== СЛУЖЕБНЫЕ ФУНКЦИИ ==========
+class Utils {
+  static generateId() {
+    return Math.random().toString(36).slice(2, 9) + Date.now().toString(36);
+  }
+  
+  static getLanguage() {
+    return localStorage.getItem(CONFIG.STORAGE_KEYS.LANG) || CONFIG.DEFAULT_LANG;
+  }
+  
+  static getTheme() {
+    return localStorage.getItem(CONFIG.STORAGE_KEYS.THEME) || 'light';
+  }
+  
+  static setLanguage(lang) {
+    localStorage.setItem(CONFIG.STORAGE_KEYS.LANG, lang);
+  }
+  
+  static setTheme(theme) {
+    localStorage.setItem(CONFIG.STORAGE_KEYS.THEME, theme);
+  }
+  
+  static getText(keyPath, lang = null) {
+    const langKey = lang || this.getLanguage();
+    const keys = keyPath.split('.');
+    let value = LANGUAGES[langKey];
+    
+    for (const key of keys) {
+      if (value && value[key] !== undefined) {
+        value = value[key];
+      } else {
+        return keyPath;
+      }
+    }
+    return value;
+  }
+  
+  static debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+      const later = () => {
+        clearTimeout(timeout);
+        func(...args);
+      };
+      clearTimeout(timeout);
+      timeout = setTimeout(later, wait);
+    };
+  }
+  
+  static showToast(message, duration = 3000) {
+    if (CONFIG.IS_MOBILE) {
+      const toast = document.createElement('div');
+      toast.className = 'mobile-toast';
+      toast.textContent = message;
+      toast.style.cssText = `
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        background: rgba(0, 0, 0, 0.8);
+        color: white;
+        padding: 12px 24px;
+        border-radius: 8px;
+        z-index: 10000;
+        font-size: 14px;
+        text-align: center;
+        max-width: 90%;
+        word-break: break-word;
+        animation: fadeInOut 3s ease-in-out;
+      `;
+      
+      document.body.appendChild(toast);
+      
+      setTimeout(() => {
+        if (toast.parentNode) {
+          toast.parentNode.removeChild(toast);
+        }
+      }, duration);
+      
+      return toast;
+    } else {
+      alert(message);
+    }
+  }
+}
+
+// ========== МЕНЕДЖЕР ЯЗЫКА И ТЕМЫ ==========
+class LanguageManager {
+  constructor() {
+    this.currentLang = Utils.getLanguage();
+    this.currentTheme = Utils.getTheme();
+    this.init();
+  }
+  
+  init() {
+    this.applyLanguage();
+    this.applyTheme();
+    this.setupEventListeners();
+  }
+  
+  applyLanguage() {
+    const lang = this.currentLang;
+    
+    // Навигация (мобильная оптимизация)
+    if (CONFIG.IS_MOBILE) {
+      document.getElementById('navMoneyPerMonth').innerHTML = '<span>💰</span>';
+      document.getElementById('navProductCompare').innerHTML = '<span>🛒</span>';
+      document.getElementById('navFuelCompare').innerHTML = '<span>⛽</span>';
+      document.getElementById('navFavorites').innerHTML = '<span>⭐</span>';
+      document.getElementById('navCashback').innerHTML = '<span>💳</span>';
+    } else {
+      document.getElementById('navMoneyPerMonth').textContent = Utils.getText('nav.money', lang);
+      document.getElementById('navProductCompare').textContent = Utils.getText('nav.product', lang);
+      document.getElementById('navFuelCompare').textContent = Utils.getText('nav.fuel', lang);
+      document.getElementById('navFavorites').textContent = Utils.getText('nav.favorites', lang);
+      document.getElementById('navCashback').textContent = Utils.getText('nav.cashback', lang);
+    }
+    
+    // Финансы
+    document.querySelector('.moneyPerMonth-h1').textContent = Utils.getText('finance.title', lang);
+    this.updateLabel('allMyMoneyLabel', Utils.getText('finance.allMoneyLabel', lang));
+    this.updateLabel('nextDate', Utils.getText('finance.nextDateLabel', lang));
+    document.getElementById('addPaymentBtn').textContent = Utils.getText('finance.addPayment', lang);
+    document.querySelector("#financeForm button[type='submit']").textContent = Utils.getText('finance.submit', lang);
+    document.getElementById('paymentsTitle').textContent = Utils.getText('finance.paymentsTitle', lang);
+    
+    // Товары
+    document.querySelector('#productTool h2').textContent = Utils.getText('product.title', lang);
+    document.getElementById('addProductBtn').textContent = Utils.getText('product.addButton', lang);
+    document.getElementById('productCompareBtn').textContent = Utils.getText('product.compareButton', lang);
+    
+    // АЗС
+    document.querySelector('#fuelTool h2').textContent = Utils.getText('fuel.title', lang);
+    document.getElementById('addStationBtn').textContent = Utils.getText('fuel.addButton', lang);
+    document.getElementById('fuelCompareBtn').textContent = Utils.getText('fuel.compareButton', lang);
+    
+    // Избранное
+    document.getElementById('favoritesTitle').textContent = Utils.getText('favorites.title', lang);
+    document.getElementById('clearFavoritesBtn').textContent = Utils.getText('favorites.clear', lang);
+    document.getElementById('favoritesEmpty').textContent = Utils.getText('favorites.empty', lang);
+    
+    // Кэшбэк
+    document.getElementById('cashbackTitle').textContent = Utils.getText('cashback.title', lang);
+    document.getElementById('addBankBtn').textContent = Utils.getText('cashback.addBank', lang);
+    document.getElementById('cashbackEmpty').textContent = Utils.getText('cashback.empty', lang);
+  }
+  
+  updateLabel(elementId, text) {
+    const label = document.getElementById(elementId);
+    if (label && label.childNodes[0]) {
+      label.childNodes[0].nodeValue = `${text}: `;
+    }
+  }
+  
+  applyTheme() {
+    document.body.classList.add(this.currentTheme);
+    if (this.currentTheme === 'dark') {
+      document.body.classList.remove('light');
+    }
+    
+    // Мобильная оптимизация для темной темы
+    if (CONFIG.IS_MOBILE && this.currentTheme === 'dark') {
+      document.body.style.backgroundColor = '#121212';
+      document.body.style.color = '#e0e0e0';
+    }
+  }
+  
+  toggleLanguage() {
+    this.currentLang = this.currentLang === 'ru' ? 'en' : 'ru';
+    Utils.setLanguage(this.currentLang);
+    this.applyLanguage();
+    this.onLanguageChange();
+  }
+  
+  toggleTheme() {
+    document.body.classList.toggle('light');
+    document.body.classList.toggle('dark');
+    this.currentTheme = document.body.classList.contains('dark') ? 'dark' : 'light';
+    Utils.setTheme(this.currentTheme);
+    this.onThemeChange();
+  }
+  
+  setupEventListeners() {
+    const langBtn = document.getElementById('languageToggle');
+    const themeBtn = document.getElementById('themeToggle');
+    
+    if (CONFIG.IS_MOBILE) {
+      // Большие кнопки для мобильных
+      langBtn.style.cssText = 'padding: 12px; font-size: 16px; min-width: 44px; min-height: 44px;';
+      themeBtn.style.cssText = 'padding: 12px; font-size: 16px; min-width: 44px; min-height: 44px;';
+    }
+    
+    langBtn.onclick = () => this.toggleLanguage();
+    themeBtn.onclick = () => this.toggleTheme();
+  }
+  
+  onLanguageChange() {
+    if (typeof window.onLanguageUpdated === 'function') {
+      window.onLanguageUpdated(this.currentLang);
+    }
+  }
+  
+  onThemeChange() {
+    if (typeof window.onThemeUpdated === 'function') {
+      window.onThemeUpdated(this.currentTheme);
+    }
+  }
+}
+
+// ========== МЕНЕДЖЕР ВКЛАДОК ==========
+class TabManager {
+  constructor() {
+    this.tabs = {
+      money: {
+        nav: document.getElementById('navMoneyPerMonth'),
+        tool: document.getElementById('moneyPerMonthTool')
+      },
+      product: {
+        nav: document.getElementById('navProductCompare'),
+        tool: document.getElementById('productTool')
+      },
+      fuel: {
+        nav: document.getElementById('navFuelCompare'),
+        tool: document.getElementById('fuelTool')
+      },
+      favorites: {
+        nav: document.getElementById('navFavorites'),
+        tool: document.getElementById('favoritesTool')
+      },
+      cashback: {
+        nav: document.getElementById('navCashback'),
+        tool: document.getElementById('cashbackTool')
+      }
+    };
+    this.activeTab = 'money';
+    this.init();
+  }
+  
+  init() {
+    this.setupEventListeners();
+    this.optimizeForMobile();
+  }
+  
+  setupEventListeners() {
+    Object.entries(this.tabs).forEach(([name, tab]) => {
+      tab.nav.onclick = (e) => {
+        e.preventDefault();
+        this.showTool(name);
+        // Мобильная оптимизация: скрыть клавиатуру при переключении вкладок
+        if (CONFIG.IS_MOBILE && document.activeElement) {
+          document.activeElement.blur();
+        }
+      };
+    });
+  }
+  
+  showTool(name) {
+    // Скрываем все вкладки
+    document.querySelectorAll('.tool-container').forEach(div => {
+      div.classList.remove('active');
+      if (CONFIG.IS_MOBILE) {
+        div.style.display = 'none';
+      }
+    });
+    document.querySelectorAll('.nav button').forEach(btn => {
+      btn.classList.remove('active');
+      btn.style.fontWeight = 'normal';
+    });
+    
+    // Показываем выбранную
+    const tab = this.tabs[name];
+    if (tab) {
+      tab.tool.classList.add('active');
+      tab.nav.classList.add('active');
+      if (CONFIG.IS_MOBILE) {
+        tab.tool.style.display = 'block';
+        tab.nav.style.fontWeight = 'bold';
+        
+        // Прокрутка к началу вкладки
+        setTimeout(() => {
+          tab.tool.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        }, 10);
+      }
+      this.activeTab = name;
+    }
+  }
+  
+  optimizeForMobile() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    // Стили для мобильной навигации
+    const nav = document.querySelector('.nav');
+    if (nav) {
+      nav.style.cssText = `
+        display: flex;
+        justify-content: space-around;
+        position: fixed;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        background: ${document.body.classList.contains('dark') ? '#1e1e1e' : '#ffffff'};
+        border-top: 1px solid ${document.body.classList.contains('dark') ? '#333' : '#ddd'};
+        z-index: 1000;
+        padding: 8px 0;
+        box-shadow: 0 -2px 10px rgba(0,0,0,0.1);
+      `;
+      
+      document.querySelectorAll('.nav button').forEach(btn => {
+        btn.style.cssText = `
+          flex: 1;
+          padding: 12px 5px;
+          margin: 0 5px;
+          font-size: 12px;
+          min-height: 44px;
+          display: flex;
+          flex-direction: column;
+          align-items: center;
+          justify-content: center;
+          border: none;
+          background: transparent;
+          cursor: pointer;
+          border-radius: 8px;
+          transition: all 0.2s;
+        `;
+        
+        // Добавляем эмодзи в кнопки
+        const span = btn.querySelector('span');
+        if (span) {
+          span.style.fontSize = '20px';
+          span.style.marginBottom = '4px';
+        }
+      });
+    }
+    
+    // Добавляем отступ для нижней навигации
+    const tools = document.querySelectorAll('.tool-container');
+    tools.forEach(tool => {
+      tool.style.paddingBottom = '80px';
+      tool.style.paddingTop = '20px';
+    });
+    
+    // Скрываем все вкладки кроме активной
+    Object.values(this.tabs).forEach(tab => {
+      if (tab.tool !== this.tabs[this.activeTab].tool) {
+        tab.tool.style.display = 'none';
+      }
+    });
+  }
+}
+
+// ========== ФИНАНСОВЫЙ КАЛЬКУЛЯТОР ==========
+class FinanceCalculator {
+  constructor() {
+    this.paymentsContainer = document.getElementById('paymentsContainer');
+    this.addPaymentBtn = document.getElementById('addPaymentBtn');
+    this.financeForm = document.getElementById('financeForm');
+    this.resultDiv = document.getElementById('moneyPerMonthResult');
+    this.chartCtx = document.getElementById('expensesChart')?.getContext('2d');
+    this.chart = null;
+    this.paymentId = 0;
+    this.debouncedCalculate = Utils.debounce(() => this.calculate(), 500);
+    this.init();
+  }
+  
+  init() {
+    this.optimizeForMobile();
+    this.loadData();
+    this.setupEventListeners();
+    this.calculate();
+  }
+  
+  optimizeForMobile() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    // Увеличиваем размер полей ввода
+    const inputs = document.querySelectorAll('#financeForm input');
+    inputs.forEach(input => {
+      input.style.cssText = `
+        padding: 14px;
+        font-size: 16px;
+        min-height: 44px;
+        border-radius: 8px;
+        margin-bottom: 10px;
+      `;
+    });
+    
+    // Увеличиваем кнопки
+    const buttons = document.querySelectorAll('#financeForm button');
+    buttons.forEach(btn => {
+      btn.style.cssText = `
+        padding: 14px 20px;
+        font-size: 16px;
+        min-height: 44px;
+        border-radius: 8px;
+        margin: 8px 0;
+      `;
+    });
+    
+    // Уменьшаем размер графика на мобильных
+    const canvas = document.getElementById('expensesChart');
+    if (canvas) {
+      canvas.style.maxHeight = '200px';
+      canvas.style.width = '100%';
+    }
+    
+    // Оптимизируем контейнер платежей
+    this.paymentsContainer.style.cssText = `
+      max-height: 300px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+    `;
+  }
+  
+  setupEventListeners() {
+    this.addPaymentBtn.onclick = () => {
+      this.createPaymentField();
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Платеж добавлен');
+      }
+    };
+    
+    this.financeForm.onsubmit = (e) => {
+      e.preventDefault();
+      this.calculate();
+      if (CONFIG.IS_MOBILE) {
+        document.activeElement?.blur();
+      }
+    };
+    
+    // Делегирование событий для удаления платежей
+    this.paymentsContainer.addEventListener('click', (e) => {
+      if (e.target.tagName === 'BUTTON' && e.target.textContent === '−') {
+        e.target.closest('.payment-entry').remove();
+        this.saveData();
+        this.debouncedCalculate();
+        if (CONFIG.IS_MOBILE) {
+          Utils.showToast('Платеж удален');
+        }
+      }
+    });
+    
+    // Делегирование для изменений в полях
+    this.paymentsContainer.addEventListener('input', () => {
+      this.saveData();
+      this.debouncedCalculate();
+    });
+    
+    // Мобильная оптимизация: скрытие клавиатуры при нажатии Enter
+    if (CONFIG.IS_MOBILE) {
+      this.paymentsContainer.addEventListener('keypress', (e) => {
+        if (e.key === 'Enter') {
+          document.activeElement?.blur();
+        }
+      });
+    }
+    
+    window.onThemeUpdated = () => {
+      if (this.chart) {
+        this.chart.destroy();
+        this.calculate();
+      }
+    };
+  }
+  
+  createPaymentField(name = '', amount = '') {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('finance.paymentField', lang);
+    
+    this.paymentId++;
+    const div = document.createElement('div');
+    div.className = 'payment-entry';
+    div.dataset.id = this.paymentId;
+    
+    div.innerHTML = `
+      <input type="text" placeholder="${t.namePlaceholder}" value="${name}" required>
+      <input type="number" step="0.01" placeholder="${t.amountPlaceholder}" value="${amount}" required>
+      <button type="button" title="${t.deleteTitle}">−</button>
+    `;
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      div.style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 8px;
+        margin-bottom: 12px;
+        padding: 12px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#f5f5f5'};
+        border-radius: 8px;
+      `;
+      
+      const inputs = div.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.style.cssText = `
+          padding: 12px;
+          font-size: 16px;
+          min-height: 44px;
+          border-radius: 6px;
+          border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#ddd'};
+        `;
+      });
+      
+      const button = div.querySelector('button');
+      button.style.cssText = `
+        padding: 12px;
+        font-size: 18px;
+        min-height: 44px;
+        border-radius: 6px;
+        background: ${document.body.classList.contains('dark') ? '#ff4444' : '#ff6b6b'};
+        color: white;
+        border: none;
+        cursor: pointer;
+      `;
+    }
+    
+    this.paymentsContainer.appendChild(div);
+    this.saveData();
+  }
+  
+  calculate() {
+    const lang = Utils.getLanguage();
+    const tFinance = Utils.getText('finance.result', lang);
+    const tChart = Utils.getText('chart', lang);
+    
+    const allMoney = parseFloat(document.getElementById('allMyMoney').value) || 0;
+    const nextPayDate = new Date(
+      document.getElementById('nextPayDate').value || 
+      new Date().setMonth(new Date().getMonth() + 1)
+    );
+    
+    const today = new Date();
+    const daysLeft = Math.max(
+      1,
+      Math.ceil((nextPayDate - today) / (1000 * 60 * 60 * 24))
+    );
+    
+    const payments = this.getPayments();
+    const total = payments.reduce((sum, p) => sum + p.value, 0);
+    const free = allMoney - total;
+    const perDay = free > 0 ? Math.floor(free / daysLeft) : 0;
+    
+    // Мобильная оптимизация результата
+    let html = `
+      <div class="finance-result">
+        <div class="result-item">
+          <span>${tFinance.totalMoney}:</span>
+          <strong>${allMoney.toLocaleString()} ₽</strong>
+        </div>
+        <div class="result-item">
+          <span>${tFinance.totalPayments}:</span>
+          <strong>${total.toLocaleString()} ₽</strong>
+        </div>
+    `;
+    
+    if (free < 0) {
+      html += `
+        <div class="result-item warning">
+          <span>${tFinance.needReturn}:</span>
+          <strong>${(-free).toLocaleString()} ₽</strong>
+        </div>
+      `;
+    } else {
+      html += `
+        <div class="result-item">
+          <span>${tFinance.freeMoney}:</span>
+          <strong>${free.toLocaleString()} ₽</strong>
+        </div>
+        <div class="result-item highlight">
+          <span>${tFinance.dailySpend}:</span>
+          <strong>${perDay.toLocaleString()} ₽</strong>
+          <small>(${daysLeft} ${tFinance.daysLeft})</small>
+        </div>
+      `;
+    }
+    
+    html += '</div>';
+    
+    this.resultDiv.innerHTML = html;
+    this.resultDiv.style.display = 'block';
+    
+    // Мобильная оптимизация стилей результата
+    if (CONFIG.IS_MOBILE) {
+      this.resultDiv.querySelector('.finance-result').style.cssText = `
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        padding: 16px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#f8f9fa'};
+        border-radius: 12px;
+        margin-top: 16px;
+        font-size: 14px;
+      `;
+      
+      this.resultDiv.querySelectorAll('.result-item').forEach(item => {
+        item.style.cssText = `
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 8px 0;
+          border-bottom: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+        `;
+      });
+    }
+    
+    // Обновляем график
+    this.updateChart(payments, tChart);
+  }
+  
+  getPayments() {
+    return [...this.paymentsContainer.children].map(div => ({
+      name: div.querySelector("input[type='text']").value.trim(),
+      value: parseFloat(div.querySelector("input[type='number']").value) || 0
+    }));
+  }
+  
+  updateChart(payments, tChart) {
+    if (!this.chartCtx || payments.length === 0) return;
+    
+    if (this.chart) {
+      this.chart.destroy();
+    }
+    
+    const isDark = document.body.classList.contains('dark');
+    const isMobile = CONFIG.IS_MOBILE;
+    
+    this.chart = new Chart(this.chartCtx, {
+      type: isMobile ? 'doughnut' : 'bar',
+      data: {
+        labels: payments.map(p => p.name || tChart.unnamed),
+        datasets: [{
+          label: tChart.label,
+          data: payments.map(p => p.value),
+          backgroundColor: isMobile ? 
+            ['#007bff', '#28a745', '#ffc107', '#dc3545', '#6c757d', '#17a2b8'] :
+            (isDark ? '#0056b3' : '#007bff')
+        }]
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: !isMobile,
+        animation: !isMobile,
+        plugins: {
+          legend: {
+            position: isMobile ? 'bottom' : 'top',
+            labels: { 
+              color: isDark ? '#f1f1f1' : '#333',
+              padding: isMobile ? 20 : 10,
+              font: { size: isMobile ? 12 : 14 }
+            }
+          }
+        }
+      }
+    });
+  }
+  
+  saveData() {
+    const data = {
+      allMoney: document.getElementById('allMyMoney').value,
+      nextPayDate: document.getElementById('nextPayDate').value,
+      payments: this.getPayments()
+    };
+    localStorage.setItem(CONFIG.STORAGE_KEYS.FINANCE, JSON.stringify(data));
+  }
+  
+  loadData() {
+    const saved = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.FINANCE) || '{}');
+    
+    if (saved.allMoney !== undefined) {
+      document.getElementById('allMyMoney').value = saved.allMoney;
+    }
+    if (saved.nextPayDate) {
+      document.getElementById('nextPayDate').value = saved.nextPayDate;
+    }
+    
+    this.paymentsContainer.innerHTML = '';
+    if (Array.isArray(saved.payments) && saved.payments.length > 0) {
+      saved.payments.forEach(p => this.createPaymentField(p.name, p.value));
+    } else {
+      for (let i = 0; i < CONFIG.INITIAL_PAYMENTS_COUNT; i++) {
+        this.createPaymentField();
+      }
+    }
+  }
+}
+
+// ========== СРАВНЕНИЕ ТОВАРОВ ==========
+class ProductComparator {
+  constructor() {
+    this.container = document.getElementById('productsContainer');
+    this.form = document.getElementById('productForm');
+    this.resultDiv = document.getElementById('productResult');
+    this.favoritesList = document.getElementById('favoritesList');
+    this.favoritesEmpty = document.getElementById('favoritesEmpty');
+    this.clearFavoritesBtn = document.getElementById('clearFavoritesBtn');
+    this.favoriteProducts = [];
+    this.productId = 0;
+    this.init();
+  }
+  
+  init() {
+    this.optimizeForMobile();
+    this.loadFavorites();
+    this.setupEventListeners();
+    this.addProduct();
+    this.syncFavoriteButtons(); // Инициализируем состояние кнопок
+  }
+  
+  optimizeForMobile() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    // Оптимизация контейнера товаров
+    this.container.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px;
+    `;
+    
+    // Увеличиваем кнопки
+    const buttons = document.querySelectorAll('#productTool button');
+    buttons.forEach(btn => {
+      btn.style.cssText = `
+        padding: 14px 20px;
+        font-size: 16px;
+        min-height: 44px;
+        min-width: 44px;
+        margin: 8px 0;
+        border-radius: 8px;
+      `;
+    });
+    
+    // Оптимизация избранного
+    this.favoritesList.style.cssText = `
+      max-height: 300px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      margin: 16px 0;
+    `;
+  }
+  
+  setupEventListeners() {
+    this.form.onsubmit = (e) => {
+      e.preventDefault();
+      this.compareProducts();
+      if (CONFIG.IS_MOBILE) {
+        document.activeElement?.blur();
+      }
+    };
+    
+    document.getElementById('addProductBtn').onclick = () => {
+      this.addProduct();
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Товар добавлен');
+      }
+    };
+    
+    this.clearFavoritesBtn.onclick = () => {
+      this.clearFavorites();
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Избранное очищено');
+      }
+    };
+    
+    // Делегирование событий для кнопок внутри контейнера товаров
+    this.container.addEventListener('click', (e) => {
+      const target = e.target;
+      
+      // Обработка удаления товара
+      if (target.classList.contains('delete-btn')) {
+        const card = target.closest('.card');
+        if (card) {
+          card.remove();
+          this.syncFavoriteButtons();
+          if (CONFIG.IS_MOBILE) {
+            Utils.showToast('Товар удален');
+          }
+        }
+      }
+      
+      // Обработка добавления в избранное
+      if (target.classList.contains('favorite-btn')) {
+        const card = target.closest('.card');
+        if (card) {
+          this.toggleFavorite(card, target);
+        }
+      }
+    });
+    
+    // Делегирование для input - обновление состояния кнопки избранного
+    this.container.addEventListener('input', () => {
+      this.syncFavoriteButtons();
+    });
+    
+    window.onLanguageUpdated = () => {
+      this.updateProductCardsLanguage();
+      this.renderFavorites();
+      this.syncFavoriteButtons();
+    };
+  }
+  
+  addProduct(name = '', price = '', weight = '') {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('product.field', lang);
+    
+    this.productId++;
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.productId = this.productId;
+    
+    div.innerHTML = `
+      <button type="button" class="delete-btn" title="×">×</button>
+      <div class="input-group">
+        <label>${t.nameLabel}</label>
+        <input type="text" value="${name}" placeholder="${t.namePlaceholder}">
+      </div>
+      <div class="input-group">
+        <label>${t.priceLabel}</label>
+        <input type="number" step="0.01" value="${price}" placeholder="0.00" required>
+      </div>
+      <div class="input-group">
+        <label>${t.weightLabel}</label>
+        <input type="number" step="0.01" value="${weight}" placeholder="0.00" required>
+      </div>
+      <button type="button" class="favorite-btn"></button>
+    `;
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      div.style.cssText = `
+        padding: 16px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#ffffff'};
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        margin-bottom: 12px;
+      `;
+      
+      const inputs = div.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.style.cssText = `
+          padding: 12px;
+          font-size: 16px;
+          min-height: 44px;
+          border-radius: 6px;
+          border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#ddd'};
+          margin-bottom: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        `;
+      });
+      
+      const labels = div.querySelectorAll('label');
+      labels.forEach(label => {
+        label.style.cssText = `
+          display: block;
+          margin-bottom: 6px;
+          font-weight: 500;
+          font-size: 14px;
+          color: ${document.body.classList.contains('dark') ? '#ccc' : '#666'};
+        `;
+      });
+      
+      const deleteBtn = div.querySelector('.delete-btn');
+      deleteBtn.style.cssText = `
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        background: ${document.body.classList.contains('dark') ? '#ff4444' : '#ff6b6b'};
+        color: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+      
+      const favBtn = div.querySelector('.favorite-btn');
+      favBtn.style.cssText = `
+        margin-top: 12px;
+        padding: 12px;
+        font-size: 14px;
+        min-height: 44px;
+        border-radius: 8px;
+        background: ${document.body.classList.contains('dark') ? '#3a3a3a' : '#f8f9fa'};
+        border: 2px solid ${document.body.classList.contains('dark') ? '#555' : '#ddd'};
+        cursor: pointer;
+        width: 100%;
+        box-sizing: border-box;
+      `;
+    }
+    
+    // Устанавливаем начальное состояние кнопки избранного
+    const favBtn = div.querySelector('.favorite-btn');
+    this.setFavoriteBtnState(favBtn, this.extractProductData(div));
+    
+    this.container.appendChild(div);
+  }
+  
+  extractProductData(div) {
+    const inputs = div.querySelectorAll('input');
+    const nameRaw = inputs[0]?.value?.trim();
+    const name = nameRaw || Utils.getText('chart.unnamed');
+    const price = parseFloat(inputs[1]?.value);
+    const weight = parseFloat(inputs[2]?.value);
+    
+    return {
+      name,
+      price,
+      weight,
+      pricePerUnit: price > 0 && weight > 0 ? price / weight : 0
+    };
+  }
+  
+  compareProducts() {
+    const products = [...this.container.children]
+      .map(div => {
+        const inputs = div.querySelectorAll('input');
+        return {
+          name: inputs[0].value || '',
+          price: parseFloat(inputs[1].value),
+          weight: parseFloat(inputs[2].value)
+        };
+      })
+      .filter(p => p.price > 0 && p.weight > 0);
+    
+    if (products.length < 2) {
+      this.resultDiv.style.display = 'none';
+      Utils.showToast(Utils.getText('alerts.notEnoughProducts'));
+      return;
+    }
+    
+    products.sort((a, b) => (a.price / a.weight) - (b.price / b.weight));
+    const best = products[0];
+    const t = Utils.getText('product.result');
+    
+    let result = `
+      <div class="comparison-result">
+        <div class="best-product">
+          <span class="best-label">${t.better}:</span>
+          <strong>${best.name}</strong>
+          <span class="price-unit">(${(best.price / best.weight).toFixed(2)} ${t.perUnit})</span>
+        </div>
+        <div class="other-products">
+    `;
+    
+    for (let i = 1; i < products.length; i++) {
+      const diff = ((products[i].price / products[i].weight) / (best.price / best.weight) - 1) * 100;
+      result += `
+        <div class="product-row">
+          <span>${products[i].name}</span>
+          <span class="diff">${t.moreExpensive} ${diff.toFixed(1)}%</span>
+        </div>
+      `;
+    }
+    
+    result += '</div></div>';
+    
+    this.resultDiv.innerHTML = result;
+    this.resultDiv.style.display = 'block';
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      this.resultDiv.style.cssText = `
+        padding: 16px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#f8f9fa'};
+        border-radius: 12px;
+        margin-top: 16px;
+        font-size: 14px;
+      `;
+      
+      this.resultDiv.querySelectorAll('.product-row').forEach(row => {
+        row.style.cssText = `
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+        `;
+      });
+    }
+  }
+  
+  // ========== ИЗБРАННОЕ ==========
+  loadFavorites() {
+    try {
+      this.favoriteProducts = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.FAVORITES)) || [];
+    } catch (e) {
+      this.favoriteProducts = [];
+    }
+  }
+  
+  saveFavorites() {
+    localStorage.setItem(CONFIG.STORAGE_KEYS.FAVORITES, JSON.stringify(this.favoriteProducts));
+  }
+  
+  isFavoriteMatch(data) {
+    return this.favoriteProducts.some(f => 
+      f.name === data.name &&
+      Number(f.price) === Number(data.price) &&
+      Number(f.weight) === Number(data.weight)
+    );
+  }
+  
+  setFavoriteBtnState(btn, data) {
+    const lang = Utils.getLanguage();
+    const tFav = Utils.getText('favorites', lang);
+    const active = data && this.isFavoriteMatch(data);
+    
+    btn.textContent = `${active ? '★' : '☆'} ${active ? tFav.added : tFav.add}`;
+    btn.classList.toggle('active', active);
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      if (active) {
+        btn.style.background = document.body.classList.contains('dark') ? '#0d6efd' : '#0d6efd';
+        btn.style.color = 'white';
+        btn.style.borderColor = document.body.classList.contains('dark') ? '#0d6efd' : '#0d6efd';
+      } else {
+        btn.style.background = document.body.classList.contains('dark') ? '#3a3a3a' : '#f8f9fa';
+        btn.style.color = 'inherit';
+        btn.style.borderColor = document.body.classList.contains('dark') ? '#555' : '#ddd';
+      }
+    }
+  }
+  
+  toggleFavorite(card, btn) {
+    const lang = Utils.getLanguage();
+    const tFav = Utils.getText('favorites', lang);
+    const data = this.extractProductData(card);
+    
+    if (!(data.price > 0 && data.weight > 0)) {
+      Utils.showToast(tFav.fill);
+      return;
+    }
+    
+    const idx = this.favoriteProducts.findIndex(f => 
+      f.name === data.name &&
+      Number(f.price) === Number(data.price) &&
+      Number(f.weight) === Number(data.weight)
+    );
+    
+    if (idx >= 0) {
+      this.favoriteProducts.splice(idx, 1);
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Удалено из избранного');
+      }
+    } else {
+      this.favoriteProducts.push({
+        name: data.name,
+        price: data.price,
+        weight: data.weight,
+        pricePerUnit: data.pricePerUnit,
+        addedAt: Date.now()
+      });
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Добавлено в избранное');
+      }
+    }
+    
+    this.saveFavorites();
+    this.renderFavorites();
+    this.syncFavoriteButtons();
+  }
+  
+  renderFavorites() {
+    const lang = Utils.getLanguage();
+    const tFav = Utils.getText('favorites', lang);
+    
+    this.favoritesList.innerHTML = '';
+    
+    if (!this.favoriteProducts.length) {
+      this.favoritesEmpty.style.display = 'block';
+      return;
+    }
+    
+    this.favoritesEmpty.style.display = 'none';
+    
+    this.favoriteProducts.forEach((p, index) => {
+      const pricePerUnit = p.pricePerUnit || (p.price && p.weight ? p.price / p.weight : 0);
+      const item = document.createElement('div');
+      item.className = 'favorite-item';
+      item.dataset.favoriteIndex = index;
+      
+      item.innerHTML = `
+        <div class="favorite-content">
+          <div class="favorite-name">${p.name || Utils.getText('chart.unnamed', lang)}</div>
+          <div class="favorite-meta">${p.price} ₽ · ${p.weight} · ${pricePerUnit.toFixed(2)} ${tFav.perUnit}</div>
+        </div>
+        <button type="button" class="remove-fav-btn" data-index="${index}">×</button>
+      `;
+      
+      // Мобильная оптимизация
+      if (CONFIG.IS_MOBILE) {
+        item.style.cssText = `
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          padding: 12px;
+          background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#ffffff'};
+          border-radius: 8px;
+          margin-bottom: 8px;
+          border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+        `;
+        
+        item.querySelector('.favorite-content').style.cssText = `
+          flex: 1;
+          padding-right: 12px;
+        `;
+        
+        item.querySelector('.favorite-name').style.cssText = `
+          font-weight: 500;
+          margin-bottom: 4px;
+          font-size: 14px;
+        `;
+        
+        item.querySelector('.favorite-meta').style.cssText = `
+          font-size: 12px;
+          color: ${document.body.classList.contains('dark') ? '#999' : '#666'};
+        `;
+        
+        const removeBtn = item.querySelector('.remove-fav-btn');
+        removeBtn.style.cssText = `
+          width: 36px;
+          height: 36px;
+          border-radius: 18px;
+          background: ${document.body.classList.contains('dark') ? '#ff4444' : '#ff6b6b'};
+          color: white;
+          border: none;
+          font-size: 20px;
+          cursor: pointer;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+          flex-shrink: 0;
+        `;
+      }
+      
+      // Обработчик для удаления из избранного
+      item.querySelector('.remove-fav-btn').addEventListener('click', () => {
+        const idx = parseInt(item.querySelector('.remove-fav-btn').getAttribute('data-index'));
+        this.favoriteProducts.splice(idx, 1);
+        this.saveFavorites();
+        this.renderFavorites();
+        this.syncFavoriteButtons();
+      });
+      
+      this.favoritesList.appendChild(item);
+    });
+  }
+  
+  syncFavoriteButtons() {
+    document.querySelectorAll('#productsContainer .card').forEach(card => {
+      const btn = card.querySelector('.favorite-btn');
+      if (!btn) return;
+      this.setFavoriteBtnState(btn, this.extractProductData(card));
+    });
+  }
+  
+  clearFavorites() {
+    this.favoriteProducts = [];
+    this.saveFavorites();
+    this.renderFavorites();
+    this.syncFavoriteButtons();
+  }
+  
+  updateProductCardsLanguage() {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('product.field', lang);
+    
+    document.querySelectorAll('#productsContainer .card').forEach(card => {
+      const labels = card.querySelectorAll('.input-group label');
+      
+      if (labels[0]) labels[0].textContent = t.nameLabel;
+      if (labels[1]) labels[1].textContent = t.priceLabel;
+      if (labels[2]) labels[2].textContent = t.weightLabel;
+    });
+  }
+}
+
+// ========== СРАВНЕНИЕ АЗС ==========
+class FuelComparator {
+  constructor() {
+    this.container = document.getElementById('stationsContainer');
+    this.form = document.getElementById('fuelForm');
+    this.resultDiv = document.getElementById('fuelResult');
+    this.stationId = 0;
+    this.init();
+  }
+  
+  init() {
+    this.optimizeForMobile();
+    this.setupEventListeners();
+    this.addStation('Teboil', 0, 'cashback', 0);
+  }
+  
+  optimizeForMobile() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    this.container.style.cssText = `
+      display: flex;
+      flex-direction: column;
+      gap: 16px;
+      max-height: 400px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px;
+    `;
+    
+    const buttons = document.querySelectorAll('#fuelTool button');
+    buttons.forEach(btn => {
+      btn.style.cssText = `
+        padding: 14px 20px;
+        font-size: 16px;
+        min-height: 44px;
+        min-width: 44px;
+        margin: 8px 0;
+        border-radius: 8px;
+      `;
+    });
+    
+    const selects = document.querySelectorAll('#fuelTool select');
+    selects.forEach(select => {
+      select.style.cssText = `
+        padding: 12px;
+        font-size: 16px;
+        min-height: 44px;
+        border-radius: 6px;
+        width: 100%;
+      `;
+    });
+  }
+  
+  setupEventListeners() {
+    document.getElementById('addStationBtn').onclick = () => {
+      this.addStation();
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('АЗС добавлена');
+      }
+    };
+    
+    this.form.onsubmit = (e) => {
+      e.preventDefault();
+      this.compareStations();
+      if (CONFIG.IS_MOBILE) {
+        document.activeElement?.blur();
+      }
+    };
+    
+    // Делегирование для удаления
+    this.container.addEventListener('click', (e) => {
+      if (e.target.classList.contains('delete-btn')) {
+        e.target.closest('.card').remove();
+        if (CONFIG.IS_MOBILE) {
+          Utils.showToast('АЗС удалена');
+        }
+      }
+    });
+    
+    window.onLanguageUpdated = () => this.updateFuelCardsLanguage();
+  }
+  
+  addStation(name = '', price = '', discountType = 'none', cashback = '', fixed = '') {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('fuel.field', lang);
+    
+    this.stationId++;
+    const div = document.createElement('div');
+    div.className = 'card';
+    div.dataset.id = this.stationId;
+    
+    div.innerHTML = `
+      <button type="button" class="delete-btn">×</button>
+      <div class="input-group">
+        <label>${t.typeLabel}</label>
+        <input type="text" class="fuel-name" placeholder="${t.typeLabel}" value="${name}" required>
+      </div>
+      <div class="input-group">
+        <label>${t.priceLabel}</label>
+        <input type="number" step="0.01" class="fuel-price" value="${price}" required>
+      </div>
+      <div class="input-group">
+        <label>${t.discountLabel}</label>
+        <select class="discount-select">
+          <option value="none"${discountType === 'none' ? ' selected' : ''}>${t.discounts.none}</option>
+          <option value="cashback"${discountType === 'cashback' ? ' selected' : ''}>${t.discounts.cashback}</option>
+          <option value="fixed"${discountType === 'fixed' ? ' selected' : ''}>${t.discounts.fixed}</option>
+        </select>
+      </div>
+      <div class="input-group cashback-group" style="display: none;">
+        <label>${t.cashbackLabel}</label>
+        <input type="number" step="0.01" class="cashback-value" value="${cashback}">
+      </div>
+      <div class="input-group fixed-group" style="display: none;">
+        <label>${t.fixedLabel}</label>
+        <input type="number" step="0.01" class="fixed-value" value="${fixed}">
+      </div>
+    `;
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      div.style.cssText = `
+        padding: 16px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#ffffff'};
+        border-radius: 12px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        position: relative;
+        margin-bottom: 12px;
+      `;
+      
+      const inputs = div.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.style.cssText = `
+          padding: 12px;
+          font-size: 16px;
+          min-height: 44px;
+          border-radius: 6px;
+          border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#ddd'};
+          margin-bottom: 8px;
+          width: 100%;
+          box-sizing: border-box;
+        `;
+      });
+      
+      const labels = div.querySelectorAll('label');
+      labels.forEach(label => {
+        label.style.cssText = `
+          display: block;
+          margin-bottom: 6px;
+          font-weight: 500;
+          font-size: 14px;
+          color: ${document.body.classList.contains('dark') ? '#ccc' : '#666'};
+        `;
+      });
+      
+      const select = div.querySelector('select');
+      if (select) {
+        select.style.cssText = `
+          padding: 12px;
+          font-size: 16px;
+          min-height: 44px;
+          border-radius: 6px;
+          border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#ddd'};
+          width: 100%;
+          background: ${document.body.classList.contains('dark') ? '#333' : 'white'};
+          color: inherit;
+          margin-bottom: 8px;
+        `;
+      }
+      
+      const deleteBtn = div.querySelector('.delete-btn');
+      deleteBtn.style.cssText = `
+        position: absolute;
+        top: 8px;
+        right: 8px;
+        width: 36px;
+        height: 36px;
+        border-radius: 18px;
+        background: ${document.body.classList.contains('dark') ? '#ff4444' : '#ff6b6b'};
+        color: white;
+        border: none;
+        font-size: 20px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+      `;
+    }
+    
+    const discountSelect = div.querySelector('.discount-select');
+    const cashbackGroup = div.querySelector('.cashback-group');
+    const fixedGroup = div.querySelector('.fixed-group');
+    
+    const toggleDiscountFields = () => {
+      const type = discountSelect.value;
+      cashbackGroup.style.display = type === 'cashback' ? 'block' : 'none';
+      fixedGroup.style.display = type === 'fixed' ? 'block' : 'none';
+    };
+    
+    toggleDiscountFields();
+    discountSelect.onchange = toggleDiscountFields;
+    
+    this.container.appendChild(div);
+  }
+  
+  compareStations() {
+    const stations = [...this.container.children]
+      .map(div => {
+        const name = div.querySelector('.fuel-name').value.trim();
+        const discountType = div.querySelector('.discount-select').value;
+        const price = parseFloat(div.querySelector('.fuel-price').value);
+        const cashback = parseFloat(div.querySelector('.cashback-value')?.value) || 0;
+        const fixed = parseFloat(div.querySelector('.fixed-value')?.value) || 0;
+        
+        let finalPrice = price;
+        if (discountType === 'cashback') finalPrice = price * (1 - cashback / 100);
+        else if (discountType === 'fixed') finalPrice = price - fixed;
+        
+        return { name, price, finalPrice, discountType, cashback, fixed };
+      })
+      .filter(s => s.price > 0);
+    
+    if (stations.length < 2) {
+      this.resultDiv.style.display = 'none';
+      Utils.showToast(Utils.getText('alerts.notEnoughStations'));
+      return;
+    }
+    
+    stations.sort((a, b) => a.finalPrice - b.finalPrice);
+    const best = stations[0];
+    const t = Utils.getText('fuel.result');
+    
+    let result = `
+      <div class="fuel-comparison-result">
+        <div class="best-station">
+          <span class="best-label">${t.better}:</span>
+          <strong>${best.name}</strong>
+          <span class="price-unit">(${best.finalPrice.toFixed(2)} ${t.perLiter})</span>
+        </div>
+        <div class="other-stations">
+    `;
+    
+    for (let i = 1; i < stations.length; i++) {
+      const diff = (stations[i].finalPrice / best.finalPrice - 1) * 100;
+      result += `
+        <div class="station-row">
+          <span>${stations[i].name}</span>
+          <span class="diff">${t.moreExpensive} ${diff.toFixed(1)}%</span>
+        </div>
+      `;
+    }
+    
+    result += '</div></div>';
+    
+    this.resultDiv.innerHTML = result;
+    this.resultDiv.style.display = 'block';
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      this.resultDiv.style.cssText = `
+        padding: 16px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#f8f9fa'};
+        border-radius: 12px;
+        margin-top: 16px;
+        font-size: 14px;
+      `;
+      
+      this.resultDiv.querySelectorAll('.station-row').forEach(row => {
+        row.style.cssText = `
+          display: flex;
+          justify-content: space-between;
+          padding: 8px 0;
+          border-bottom: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#eee'};
+        `;
+      });
+    }
+  }
+  
+  updateFuelCardsLanguage() {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('fuel.field', lang);
+    
+    document.querySelectorAll('#stationsContainer .card').forEach(card => {
+      const groups = card.querySelectorAll('.input-group');
+      
+      if (groups[0]) {
+        const label = groups[0].querySelector('label');
+        if (label) label.textContent = t.typeLabel;
+      }
+      
+      if (groups[1]) {
+        const label = groups[1].querySelector('label');
+        if (label) label.textContent = t.priceLabel;
+      }
+      
+      if (groups[2]) {
+        const label = groups[2].querySelector('label');
+        if (label) label.textContent = t.discountLabel;
+        
+        const select = groups[2].querySelector('select');
+        if (select && select.options.length >= 3) {
+          select.options[0].textContent = t.discounts.none;
+          select.options[1].textContent = t.discounts.cashback;
+          select.options[2].textContent = t.discounts.fixed;
+        }
+      }
+      
+      const cashbackGroup = card.querySelector('.cashback-group');
+      if (cashbackGroup) {
+        const label = cashbackGroup.querySelector('label');
+        if (label) label.textContent = t.cashbackLabel;
+      }
+      
+      const fixedGroup = card.querySelector('.fixed-group');
+      if (fixedGroup) {
+        const label = fixedGroup.querySelector('label');
+        if (label) label.textContent = t.fixedLabel;
+      }
+    });
+  }
+}
+
+// ========== ПЛАНИРОВЩИК КЭШБЭКА ==========
+class CashbackPlanner {
+  constructor() {
+    this.container = document.getElementById('banksContainer');
+    this.emptyElement = document.getElementById('cashbackEmpty');
+    this.banks = [];
+    this.init();
+  }
+  
+  init() {
+    this.optimizeForMobile();
+    this.loadBanks();
+    this.setupEventListeners();
+  }
+  
+  optimizeForMobile() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    this.container.style.cssText = `
+      max-height: 500px;
+      overflow-y: auto;
+      -webkit-overflow-scrolling: touch;
+      padding: 8px;
+    `;
+    
+    const buttons = document.querySelectorAll('#cashbackTool button');
+    buttons.forEach(btn => {
+      btn.style.cssText = `
+        padding: 14px 20px;
+        font-size: 16px;
+        min-height: 44px;
+        min-width: 44px;
+        margin: 8px 0;
+        border-radius: 8px;
+      `;
+    });
+  }
+  
+  setupEventListeners() {
+    document.getElementById('addBankBtn').onclick = () => {
+      this.addBank();
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Банк добавлен');
+      }
+    };
+    
+    window.onLanguageUpdated = () => this.renderBanks();
+    
+    // Делегирование для удаления
+    this.container.addEventListener('click', (e) => {
+      const target = e.target;
+      
+      if (target.classList.contains('delete-bank-btn')) {
+        const bankId = target.closest('.cashback-bank').dataset.id;
+        this.banks = this.banks.filter(b => b.id !== bankId);
+        this.saveBanks();
+        this.renderBanks();
+        if (CONFIG.IS_MOBILE) {
+          Utils.showToast('Банк удален');
+        }
+      } else if (target.classList.contains('delete-category-btn')) {
+        const categoryRow = target.closest('.category-row');
+        const bankElement = target.closest('.cashback-bank');
+        const bankId = bankElement.dataset.id;
+        const categoryId = categoryRow.dataset.id;
+        
+        const bank = this.banks.find(b => b.id === bankId);
+        if (bank) {
+          bank.categories = bank.categories.filter(c => c.id !== categoryId);
+          this.saveBanks();
+          categoryRow.remove();
+          if (CONFIG.IS_MOBILE) {
+            Utils.showToast('Категория удалена');
+          }
+        }
+      }
+    });
+    
+    // Делегирование для input
+    this.container.addEventListener('input', (e) => {
+      const target = e.target;
+      
+      if (target.type === 'text' || target.type === 'number') {
+        const bankElement = target.closest('.cashback-bank');
+        if (!bankElement) return;
+        
+        const bankId = bankElement.dataset.id;
+        const bank = this.banks.find(b => b.id === bankId);
+        if (!bank) return;
+        
+        if (target.classList.contains('bank-input')) {
+          bank.name = target.value;
+        } else if (target.classList.contains('category-input')) {
+          const categoryRow = target.closest('.category-row');
+          const categoryId = categoryRow.dataset.id;
+          const category = bank.categories.find(c => c.id === categoryId);
+          if (category) category.name = target.value;
+        } else if (target.classList.contains('percent-input')) {
+          const categoryRow = target.closest('.category-row');
+          const categoryId = categoryRow.dataset.id;
+          const category = bank.categories.find(c => c.id === categoryId);
+          if (category) {
+            const val = parseFloat(target.value);
+            category.percent = Number.isFinite(val) ? val : 0;
+          }
+        }
+        
+        this.saveBanks();
+      }
+    });
+  }
+  
+  loadBanks() {
+    try {
+      this.banks = JSON.parse(localStorage.getItem(CONFIG.STORAGE_KEYS.CASHBACK)) || [];
+    } catch (e) {
+      this.banks = [];
+    }
+    
+    let mutated = false;
+    this.banks.forEach(bank => {
+      if (!bank.id) {
+        bank.id = Utils.generateId();
+        mutated = true;
+      }
+      if (!Array.isArray(bank.categories)) {
+        bank.categories = [];
+        mutated = true;
+      }
+      bank.categories.forEach(category => {
+        if (!category.id) {
+          category.id = Utils.generateId();
+          mutated = true;
+        }
+      });
+    });
+    
+    if (mutated) this.saveBanks();
+  }
+  
+  saveBanks() {
+    localStorage.setItem(CONFIG.STORAGE_KEYS.CASHBACK, JSON.stringify(this.banks));
+  }
+  
+  updateEmptyState() {
+    this.emptyElement.style.display = this.banks.length ? 'none' : 'block';
+  }
+  
+  addBank() {
+    const newBank = {
+      id: Utils.generateId(),
+      name: '',
+      categories: []
+    };
+    
+    this.banks.push(newBank);
+    this.saveBanks();
+    this.renderBanks();
+  }
+  
+  createCategoryRow(bank, listEl, category) {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('cashback', lang);
+    
+    const row = document.createElement('div');
+    row.className = 'category-row';
+    row.dataset.id = category.id;
+    
+    row.innerHTML = `
+      <input type="text" class="category-input" placeholder="${t.categoryPlaceholder}" value="${category.name || ''}">
+      <input type="number" step="0.1" class="percent-input" placeholder="${t.percentPlaceholder}" value="${typeof category.percent === 'number' ? category.percent : ''}">
+      <span>${t.percentSymbol}</span>
+      <button type="button" class="delete-category-btn">${t.deleteCategory}</button>
+    `;
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      row.style.cssText = `
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+        align-items: center;
+      `;
+      
+      const inputs = row.querySelectorAll('input');
+      inputs.forEach(input => {
+        input.style.cssText = `
+          padding: 10px;
+          font-size: 14px;
+          min-height: 40px;
+          border-radius: 6px;
+          border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#ddd'};
+          flex: 1;
+        `;
+      });
+      
+      const span = row.querySelector('span');
+      span.style.cssText = `
+        min-width: 20px;
+        text-align: center;
+        font-size: 14px;
+      `;
+      
+      const button = row.querySelector('button');
+      button.style.cssText = `
+        padding: 10px 16px;
+        font-size: 14px;
+        min-height: 40px;
+        border-radius: 6px;
+        background: ${document.body.classList.contains('dark') ? '#ff4444' : '#ff6b6b'};
+        color: white;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+      `;
+    }
+    
+    listEl.appendChild(row);
+  }
+  
+  createBankElement(bank) {
+    const lang = Utils.getLanguage();
+    const t = Utils.getText('cashback', lang);
+    
+    const wrapper = document.createElement('div');
+    wrapper.className = 'cashback-bank';
+    wrapper.dataset.id = bank.id;
+    
+    wrapper.innerHTML = `
+      <div class="bank-header">
+        <input type="text" class="bank-input" placeholder="${t.bankPlaceholder}" value="${bank.name || ''}">
+        <button type="button" class="delete-bank-btn">${t.deleteBank}</button>
+      </div>
+      <div class="categories-list"></div>
+      <button type="button" class="add-category-btn">${t.addCategory}</button>
+    `;
+    
+    // Мобильная оптимизация
+    if (CONFIG.IS_MOBILE) {
+      wrapper.style.cssText = `
+        padding: 16px;
+        background: ${document.body.classList.contains('dark') ? '#2a2a2a' : '#ffffff'};
+        border-radius: 12px;
+        margin-bottom: 16px;
+        box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      `;
+      
+      const header = wrapper.querySelector('.bank-header');
+      header.style.cssText = `
+        display: flex;
+        gap: 8px;
+        margin-bottom: 16px;
+      `;
+      
+      const bankInput = wrapper.querySelector('.bank-input');
+      bankInput.style.cssText = `
+        flex: 1;
+        padding: 12px;
+        font-size: 16px;
+        min-height: 44px;
+        border-radius: 6px;
+        border: 1px solid ${document.body.classList.contains('dark') ? '#444' : '#ddd'};
+        width: 100%;
+      `;
+      
+      const deleteBtn = wrapper.querySelector('.delete-bank-btn');
+      deleteBtn.style.cssText = `
+        padding: 12px 16px;
+        font-size: 14px;
+        min-height: 44px;
+        border-radius: 6px;
+        background: ${document.body.classList.contains('dark') ? '#ff4444' : '#ff6b6b'};
+        color: white;
+        border: none;
+        cursor: pointer;
+        white-space: nowrap;
+      `;
+      
+      const categoriesList = wrapper.querySelector('.categories-list');
+      categoriesList.style.cssText = `
+        margin: 16px 0;
+      `;
+      
+      const addBtn = wrapper.querySelector('.add-category-btn');
+      addBtn.style.cssText = `
+        width: 100%;
+        padding: 12px;
+        font-size: 16px;
+        min-height: 44px;
+        border-radius: 8px;
+        background: ${document.body.classList.contains('dark') ? '#3a3a3a' : '#f8f9fa'};
+        border: 2px solid ${document.body.classList.contains('dark') ? '#555' : '#ddd'};
+        color: inherit;
+        cursor: pointer;
+        margin-top: 8px;
+      `;
+    }
+    
+    const categoriesList = wrapper.querySelector('.categories-list');
+    (bank.categories || []).forEach(category => {
+      this.createCategoryRow(bank, categoriesList, category);
+    });
+    
+    const addCategoryBtn = wrapper.querySelector('.add-category-btn');
+    addCategoryBtn.onclick = () => {
+      const newCategory = {
+        id: Utils.generateId(),
+        name: '',
+        percent: 0
+      };
+      
+      bank.categories.push(newCategory);
+      this.createCategoryRow(bank, categoriesList, newCategory);
+      this.saveBanks();
+      if (CONFIG.IS_MOBILE) {
+        Utils.showToast('Категория добавлена');
+      }
+    };
+    
+    return wrapper;
+  }
+  
+  renderBanks() {
+    this.container.innerHTML = '';
+    this.updateEmptyState();
+    
+    this.banks.forEach(bank => {
+      this.container.appendChild(this.createBankElement(bank));
+    });
+  }
+}
+
+// ========== ИНИЦИАЛИЗАЦИЯ ПРИЛОЖЕНИЯ ==========
+class App {
+  constructor() {
+    this.languageManager = null;
+    this.tabManager = null;
+    this.financeCalculator = null;
+    this.productComparator = null;
+    this.fuelComparator = null;
+    this.cashbackPlanner = null;
+  }
+  
+  init() {
+    this.optimizeGlobalStyles();
+    this.languageManager = new LanguageManager();
+    this.tabManager = new TabManager();
+    this.financeCalculator = new FinanceCalculator();
+    this.productComparator = new ProductComparator();
+    this.fuelComparator = new FuelComparator();
+    this.cashbackPlanner = new CashbackPlanner();
+    
+    this.setupMobileFeatures();
+    console.log('App initialized for mobile:', CONFIG.IS_MOBILE);
+  }
+  
+  optimizeGlobalStyles() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    // Глобальные стили для мобильных
+    document.body.style.cssText = `
+      font-size: 16px;
+      line-height: 1.5;
+      -webkit-text-size-adjust: 100%;
+      -webkit-font-smoothing: antialiased;
+      touch-action: manipulation;
+    `;
+    
+    // Улучшаем скролл
+    document.documentElement.style.cssText = `
+      overflow-y: scroll;
+      -webkit-overflow-scrolling: touch;
+    `;
+    
+    // Улучшаем поля ввода
+    const allInputs = document.querySelectorAll('input, select, textarea, button');
+    allInputs.forEach(el => {
+      if (el.tagName === 'INPUT' || el.tagName === 'TEXTAREA') {
+        el.style.fontSize = '16px'; // Предотвращает масштабирование в iOS
+      }
+    });
+    
+    // Добавляем CSS для toast
+    const style = document.createElement('style');
+    style.textContent = `
+      @keyframes fadeInOut {
+        0% { opacity: 0; transform: translate(-50%, -20px); }
+        10% { opacity: 1; transform: translate(-50%, 0); }
+        90% { opacity: 1; transform: translate(-50%, 0); }
+        100% { opacity: 0; transform: translate(-50%, -20px); }
+      }
+      
+      .mobile-toast {
+        position: fixed !important;
+        top: 20px !important;
+        left: 50% !important;
+        transform: translateX(-50%) !important;
+        background: rgba(0, 0, 0, 0.85) !important;
+        color: white !important;
+        padding: 12px 24px !important;
+        border-radius: 8px !important;
+        z-index: 10000 !important;
+        font-size: 14px !important;
+        text-align: center !important;
+        max-width: 90% !important;
+        word-break: break-word !important;
+        animation: fadeInOut 3s ease-in-out !important;
+        backdrop-filter: blur(10px) !important;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.3) !important;
+      }
+      
+      /* Улучшение скролла для мобильных */
+      * {
+        -webkit-overflow-scrolling: touch;
+      }
+      
+      /* Предотвращение выделения текста при тапе */
+      button, input, select {
+        -webkit-tap-highlight-color: transparent;
+        user-select: none;
+      }
+      
+      /* Стили для активных кнопок избранного */
+      .favorite-btn.active {
+        background-color: #0d6efd !important;
+        color: white !important;
+        border-color: #0d6efd !important;
+      }
+    `;
+    document.head.appendChild(style);
+  }
+  
+  setupMobileFeatures() {
+    if (!CONFIG.IS_MOBILE) return;
+    
+    // Отключение двойного тапа для масштабирования
+    let lastTouchEnd = 0;
+    document.addEventListener('touchend', (e) => {
+      const now = Date.now();
+      if (now - lastTouchEnd <= 300) {
+        e.preventDefault();
+      }
+      lastTouchEnd = now;
+    }, false);
+    
+    // Предотвращение масштабирования на полях ввода
+    document.addEventListener('touchstart', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') {
+        document.body.style.zoom = '1';
+      }
+    });
+    
+    // Закрытие клавиатуры при клике вне поля ввода
+    document.addEventListener('touchstart', (e) => {
+      if (!['INPUT', 'TEXTAREA', 'SELECT'].includes(e.target.tagName)) {
+        document.activeElement?.blur();
+      }
+    });
+    
+    // Предотвращение bounce-эффекта на iOS
+    document.addEventListener('touchmove', (e) => {
+      if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA') {
+        e.preventDefault();
+      }
+    }, { passive: false });
+  }
+}
+
+// Запуск приложения
+document.addEventListener('DOMContentLoaded', () => {
+  // Предотвращаем 300ms задержку на мобильных
+  if ('ontouchstart' in window) {
+    document.addEventListener('touchstart', () => {}, { passive: true });
+  }
+  
+  const app = new App();
+  app.init();
+});
+
+// Добавляем мета-тег для viewport если его нет
+if (!document.querySelector('meta[name="viewport"]')) {
+  const meta = document.createElement('meta');
+  meta.name = 'viewport';
+  meta.content = 'width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no';
+  document.head.appendChild(meta);
+}
+</script>
+
+<style>
+/* Дополнительные мобильные стили */
+@media (max-width: 768px) {
+  .tool-container {
+    padding: 16px !important;
+    margin: 0 !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  
+  h1, h2, h3 {
+    font-size: 1.5rem !important;
+    margin: 1rem 0 !important;
+  }
+  
+  .input-group {
+    margin-bottom: 16px !important;
+  }
+  
+  button {
+    cursor: pointer !important;
+    transition: all 0.2s !important;
+  }
+  
+  button:active {
+    transform: scale(0.98) !important;
+    opacity: 0.9 !important;
+  }
+  
+  /* Улучшение скролла */
+  ::-webkit-scrollbar {
+    width: 6px !important;
+  }
+  
+  ::-webkit-scrollbar-track {
+    background: transparent !important;
+  }
+  
+  ::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2) !important;
+    border-radius: 3px !important;
+  }
+  
+  body.dark ::-webkit-scrollbar-thumb {
+    background: rgba(255,255,255,0.2) !important;
+  }
+  
+  /* Стили для кнопок избранного */
+  .favorite-btn {
+    transition: all 0.3s ease !important;
+  }
+  
+  .favorite-btn:hover {
+    transform: scale(1.05) !important;
+  }
+  
+  .favorite-btn.active {
+    background-color: #0d6efd !important;
+    color: white !important;
+    border-color: #0d6efd !important;
+  }
+}
+</style>
+  </body>
+</html>
