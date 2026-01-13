@@ -120,9 +120,11 @@ export function FinanceCalculator() {
       const normalizedPayments = payments.map(payment => ({
         name: payment.name,
         value: parseFloat(payment.amount) || 0,
+        completed: Boolean(payment.completed),
       }));
 
-      const totalPayments = normalizedPayments.reduce((sum, p) => sum + p.value, 0);
+      const activePayments = normalizedPayments.filter(payment => !payment.completed);
+      const totalPayments = activePayments.reduce((sum, p) => sum + p.value, 0);
       const freeMoney = totalMoney - totalPayments;
       const perDay = freeMoney > 0 ? Math.floor(freeMoney / daysLeft) : 0;
 
@@ -133,7 +135,7 @@ export function FinanceCalculator() {
         perDay,
         daysLeft,
         targetDate,
-        payments: normalizedPayments,
+        payments: activePayments,
       });
 
       persist();
