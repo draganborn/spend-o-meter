@@ -1,5 +1,6 @@
-import { useMemo, useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useLanguage, useTheme } from './context/AppProviders';
+import { useAuth } from './context/AuthProvider';
 import { FinanceCalculator } from './features/Finance/FinanceCalculator';
 import { ProductComparator } from './features/Products/ProductComparator';
 import { FuelComparator } from './features/Fuel/FuelComparator';
@@ -10,7 +11,14 @@ const DONATE_URL = 'https://etherscan.io/address/0x2cC359a7f7e2a21047Ab3D6e20a6E
 function App() {
   const { t, toggleLanguage, language } = useLanguage();
   const { toggleTheme, theme } = useTheme();
+  const { user, isAuthenticated, login, logout, isAuthLoading, error } = useAuth();
   const [activeSection, setActiveSection] = useState('finance');
+  const isGoogleConfigured = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
+
+  const handleLogin = useCallback(() => {
+    if (!isGoogleConfigured || isAuthLoading) return;
+    login();
+  }, [isGoogleConfigured, isAuthLoading, login]);
 
   const sections = useMemo(
     () => [
@@ -43,7 +51,7 @@ function App() {
   return (
     <div className="app-shell">
       <section className="hero-card">
-        <div>
+        <div className="hero-primary">
           <p>{t('nav.money')}</p>
           <h1>Spend-O-Meter</h1>
           <p>
@@ -51,17 +59,56 @@ function App() {
               ? 'Управляйте личными финансами, сравнивайте цены и планируйте кэшбэк в одном современном приложении.'
               : 'Control your finances, compare deals, and plan cashback in a single, modern dashboard.'}
           </p>
+          <div className="controls">
+            <button type="button" className="btn secondary" onClick={toggleLanguage}>
+              {language === 'ru' ? 'Switch to English' : 'Переключить на Русский'}
+            </button>
+            <button type="button" className="btn primary" onClick={toggleTheme}>
+              {theme === 'dark' ? '☀️ Light mode' : '🌙 Dark mode'}
+            </button>
+            <a href={DONATE_URL} target="_blank" rel="noreferrer" className="btn secondary">
+              Donate ETH
+            </a>
+          </div>
         </div>
-        <div className="controls">
-          <button type="button" className="btn secondary" onClick={toggleLanguage}>
-            {language === 'ru' ? 'Switch to English' : 'Переключить на Русский'}
-          </button>
-          <button type="button" className="btn primary" onClick={toggleTheme}>
-            {theme === 'dark' ? '☀️ Light mode' : '🌙 Dark mode'}
-          </button>
-          <a href={DONATE_URL} target="_blank" rel="noreferrer" className="btn secondary">
-            Donate ETH
-          </a>
+        <div className="auth-card">
+          {isAuthenticated ? (
+            <>
+              <div className="user-meta">
+                {user?.picture && <img src={user.picture} alt={user?.name} />}
+                <div>
+                  <p className="eyebrow">{t('user.welcome')}</p>
+                  <strong>{user?.givenName || user?.name}</strong>
+                  <span>{user?.email}</span>
+                </div>
+              </div>
+              <button type="button" className="btn secondary" onClick={logout}>
+                {t('user.signOut')}
+              </button>
+            </>
+          ) : (
+            <>
+              <p>{t('user.prompt')}</p>
+              {error && (
+                <small className="warning" role="alert">
+                  {t('user.error')}
+                </small>
+              )}
+              {!isGoogleConfigured && (
+                <small className="warning" role="alert">
+                  {t('user.configMissing')}
+                </small>
+              )}
+              <button
+                type="button"
+                className="btn primary"
+                onClick={handleLogin}
+                disabled={!isGoogleConfigured || isAuthLoading}
+              >
+                {isAuthLoading ? t('user.signingIn') : t('user.signIn')}
+              </button>
+            </>
+          )}
         </div>
       </section>
 

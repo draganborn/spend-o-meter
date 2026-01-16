@@ -90,6 +90,15 @@ export const LANGUAGES = {
       deleteCategory: 'Удалить',
       percentSymbol: '%',
     },
+    user: {
+      welcome: 'Добро пожаловать,',
+      signIn: 'Войти через Google',
+      signingIn: 'Входим...',
+      signOut: 'Выйти',
+      prompt: 'Войдите, чтобы синхронизировать настройки на всех устройствах.',
+      error: 'Не удалось войти через Google. Попробуйте еще раз.',
+      configMissing: 'Добавьте VITE_GOOGLE_CLIENT_ID в .env, чтобы включить вход.',
+    },
     alerts: {
       notEnoughProducts: 'Добавьте минимум два товара.',
       notEnoughStations: 'Добавьте минимум две АЗС.',
@@ -189,6 +198,15 @@ export const LANGUAGES = {
       deleteBank: 'Delete bank',
       deleteCategory: 'Delete',
       percentSymbol: '%',
+    },
+    user: {
+      welcome: 'Welcome,',
+      signIn: 'Sign in with Google',
+      signingIn: 'Signing in...',
+      signOut: 'Sign out',
+      prompt: 'Sign in to sync settings across devices.',
+      error: 'Google sign-in failed. Please try again.',
+      configMissing: 'Add VITE_GOOGLE_CLIENT_ID to .env to enable sign-in.',
     },
     alerts: {
       notEnoughProducts: 'Add at least two products.',
