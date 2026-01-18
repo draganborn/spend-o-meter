@@ -1,10 +1,15 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { safeStorage } from '../../hooks/useSafeLocalStorage';
 import { useLanguage } from '../../context/AppProviders';
+import { useSheetSync } from '../../hooks/useSheetSync';
+import { objectsToRows, rowsToObjects } from '../../services/googleSheets';
 
 const STORAGE_KEYS = {
   FAVORITES: 'favoriteProducts',
 };
+
+const FAVORITES_RANGE = 'SavedGoods!A:D';
+const FAVORITES_HEADERS = ['ID_saved_product', 'productName', 'productPrice', 'productUnits'];
 
 const defaultProduct = () => ({
   id: crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`,
@@ -13,9 +18,12 @@ const defaultProduct = () => ({
   weight: '',
 });
 
+const createFavoriteId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+
 const normalizeFavorites = stored =>
   Array.isArray(stored)
     ? stored.map(item => ({
+        id: item.id || createFavoriteId(),
         name: item.name || '',
         price: Number(item.price) || 0,
         weight: Number(item.weight) || 0,
@@ -25,6 +33,36 @@ const normalizeFavorites = stored =>
         addedAt: item.addedAt || Date.now(),
       }))
     : [];
+
+const favoritesFromSheet = values => {
+  const rows = rowsToObjects(values, FAVORITES_HEADERS);
+  if (!rows.length) return [];
+  return rows.map(row => {
+    const price = Number(row.productPrice) || 0;
+    const units = Number(row.productUnits) || 0;
+    return {
+      id: row.ID_saved_product || createFavoriteId(),
+      name: row.productName || '',
+      price,
+      weight: units,
+      pricePerUnit: price > 0 && units > 0 ? price / units : 0,
+      addedAt: Date.now(),
+    };
+  });
+};
+
+const favoritesToSheet = favorites => [
+  FAVORITES_HEADERS,
+  ...objectsToRows(
+    favorites.map(item => ({
+      ID_saved_product: item.id || createFavoriteId(),
+      productName: item.name || '',
+      productPrice: item.price ?? '',
+      productUnits: item.weight ?? '',
+    })),
+    FAVORITES_HEADERS,
+  ),
+];
 
 const extractData = product => {
   const price = parseFloat(product.price);
@@ -43,11 +81,89 @@ export function ProductComparator() {
   const [favorites, setFavorites] = useState(() =>
     normalizeFavorites(safeStorage.getJSON(STORAGE_KEYS.FAVORITES)),
   );
+  const [pendingFavorites, setPendingFavorites] = useState(null);
+  const favoritesSyncTimeoutRef = useRef();
   const [result, setResult] = useState(null);
+  const {
+    canSync,
+    pull: pullFavorites,
+    push: pushFavorites,
+    isSyncing: isFavoritesSyncing,
+    syncError: favoritesSyncError,
+    hydratedRef,
+  } = useSheetSync({
+    range: FAVORITES_RANGE,
+    mapFromSheet: favoritesFromSheet,
+    mapToSheet: favoritesToSheet,
+  });
+
+  const scheduleFavoritesSync = useCallback(
+    next => {
+      if (!canSync) return;
+      setPendingFavorites(next);
+    },
+    [canSync],
+  );
+
+  const updateFavorites = useCallback(
+    (updater, { sync = true } = {}) => {
+      setFavorites(prev => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        safeStorage.setJSON(STORAGE_KEYS.FAVORITES, next);
+        if (sync) {
+          scheduleFavoritesSync(next);
+        }
+        return next;
+      });
+    },
+    [scheduleFavoritesSync],
+  );
 
   useEffect(() => {
-    safeStorage.setJSON(STORAGE_KEYS.FAVORITES, favorites);
-  }, [favorites]);
+    if (!canSync || hydratedRef.current) return;
+    let cancelled = false;
+    pullFavorites()
+      .then(remoteFavorites => {
+        if (!remoteFavorites || cancelled) return;
+        updateFavorites(normalizeFavorites(remoteFavorites), { sync: false });
+      })
+      .catch(error => {
+        console.warn('Failed to load favorites from Google Sheets', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canSync, pullFavorites, hydratedRef, updateFavorites]);
+
+  useEffect(() => {
+    if (!canSync || !pendingFavorites) return undefined;
+    if (favoritesSyncTimeoutRef.current) {
+      clearTimeout(favoritesSyncTimeoutRef.current);
+    }
+
+    favoritesSyncTimeoutRef.current = setTimeout(() => {
+      pushFavorites(pendingFavorites)
+        .catch(error => console.warn('Failed to sync favorites to Google Sheets', error))
+        .finally(() => {
+          favoritesSyncTimeoutRef.current = null;
+          setPendingFavorites(null);
+        });
+    }, 1000);
+
+    return () => {
+      if (favoritesSyncTimeoutRef.current) {
+        clearTimeout(favoritesSyncTimeoutRef.current);
+        favoritesSyncTimeoutRef.current = null;
+      }
+    };
+  }, [canSync, pendingFavorites, pushFavorites]);
+
+  useEffect(() => () => {
+    if (favoritesSyncTimeoutRef.current) {
+      clearTimeout(favoritesSyncTimeoutRef.current);
+    }
+  }, []);
 
   const addProduct = () => setProducts(prev => [...prev, defaultProduct()]);
 
@@ -66,7 +182,7 @@ export function ProductComparator() {
       return;
     }
 
-    setFavorites(prev => {
+    updateFavorites(prev => {
       const exists = prev.find(
         favorite =>
           favorite.name === data.name &&
@@ -74,12 +190,13 @@ export function ProductComparator() {
           Number(favorite.weight) === Number(data.weight),
       );
       if (exists) {
-        return prev.filter(favorite => favorite !== exists);
+        return prev.filter(favorite => favorite.id !== exists.id);
       }
       return [
         ...prev,
         {
           ...data,
+          id: createFavoriteId(),
           addedAt: Date.now(),
         },
       ];
@@ -130,7 +247,7 @@ export function ProductComparator() {
         return {
           ...favorite,
           pricePerUnit,
-          id: `${favorite.name}-${favorite.price}-${favorite.weight}-${index}`,
+          id: favorite.id || `${favorite.name}-${favorite.price}-${favorite.weight}-${index}`,
         };
       }),
     [favorites],
@@ -228,11 +345,17 @@ export function ProductComparator() {
           <button
             type="button"
             className="btn secondary"
-            onClick={() => setFavorites([])}
+            onClick={() => updateFavorites([], { sync: true })}
             disabled={favoritesEmpty}
           >
             {t('favorites.clear')}
           </button>
+          {favoritesSyncError && (
+            <small className="warning" role="alert">
+              Google Sheets: {favoritesSyncError}
+            </small>
+          )}
+          {isFavoritesSyncing && <small>{language === 'ru' ? 'Синхронизация…' : 'Syncing…'}</small>}
         </header>
 
         {favoritesEmpty ? (
@@ -243,25 +366,23 @@ export function ProductComparator() {
               <div className="favorite-item" key={item.id}>
                 <div>
                   <strong>{item.name || t('chart.unnamed')}</strong>
-                  <p className="favorite-meta">
-                    {item.price} ₽ · {item.weight} · {item.pricePerUnit.toFixed(2)}{' '}
-                    {t('favorites.perUnit')}
-                  </p>
+                  <div className="favorite-meta">
+                    <span>
+                      {t('favorites.priceLabel')}: <strong>{item.price}</strong> ₽
+                    </span>
+                    <span>
+                      {t('favorites.unitsLabel')}: <strong>{item.weight}</strong>
+                    </span>
+                    <span>
+                      {item.pricePerUnit.toFixed(2)} {t('favorites.perUnit')}
+                    </span>
+                  </div>
                 </div>
                 <button
                   type="button"
                   className="icon-btn danger"
                   onClick={() =>
-                    setFavorites(prev =>
-                      prev.filter(
-                        fav =>
-                          !(
-                            fav.name === item.name &&
-                            Number(fav.price) === Number(item.price) &&
-                            Number(fav.weight) === Number(item.weight)
-                          ),
-                      ),
-                    )
+                    updateFavorites(prev => prev.filter(fav => fav.id !== item.id))
                   }
                 >
                   ×

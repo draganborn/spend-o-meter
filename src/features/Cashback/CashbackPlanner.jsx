@@ -1,10 +1,22 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { safeStorage } from '../../hooks/useSafeLocalStorage';
 import { useLanguage } from '../../context/AppProviders';
+import { useSheetSync } from '../../hooks/useSheetSync';
+import { objectsToRows, rowsToObjects } from '../../services/googleSheets';
 
 const STORAGE_KEY = 'cashbackBanks';
+const CASHBACK_RANGE = 'Cashback!A:E';
+const CASHBACK_HEADERS = [
+  'ID_cashback_element',
+  'cashbackUserName',
+  'bankName',
+  'categoryCashBack',
+  'percentCashback',
+];
 
 const createId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
+
+const slugify = value => (value ? value.toLowerCase().replace(/[^a-z0-9]+/g, '-') : '');
 
 const normalizeBanks = stored =>
   Array.isArray(stored)
@@ -21,18 +33,148 @@ const normalizeBanks = stored =>
       }))
     : [];
 
+const cashbackFromSheet = values => {
+  const rows = rowsToObjects(values, CASHBACK_HEADERS);
+  if (!rows.length) return [];
+
+  const banksMap = new Map();
+
+  rows.forEach(row => {
+    const bankName = row.bankName?.trim() || '';
+    const bankKey = slugify(bankName) || `bank-${row.ID_cashback_element || createId()}`;
+
+    if (!banksMap.has(bankKey)) {
+      banksMap.set(bankKey, {
+        id: bankKey,
+        name: bankName,
+        categories: [],
+      });
+    }
+
+    const percent = Number(row.percentCashback);
+    const hasCategoryData = row.categoryCashBack || Number.isFinite(percent);
+
+    if (hasCategoryData) {
+      banksMap.get(bankKey).categories.push({
+        id: row.ID_cashback_element || createId(),
+        name: row.categoryCashBack || '',
+        percent: Number.isFinite(percent) ? percent : 0,
+      });
+    }
+  });
+
+  return normalizeBanks(Array.from(banksMap.values()));
+};
+
+const cashbackToSheet = banks => {
+  const rows = [];
+
+  banks.forEach(bank => {
+    if (!bank.categories.length) {
+      rows.push({
+        ID_cashback_element: createId(),
+        cashbackUserName: '',
+        bankName: bank.name || '',
+        categoryCashBack: '',
+        percentCashback: '',
+      });
+      return;
+    }
+
+    bank.categories.forEach(category => {
+      rows.push({
+        ID_cashback_element: category.id || createId(),
+        cashbackUserName: '',
+        bankName: bank.name || '',
+        categoryCashBack: category.name || '',
+        percentCashback: category.percent ?? 0,
+      });
+    });
+  });
+
+  return [CASHBACK_HEADERS, ...objectsToRows(rows, CASHBACK_HEADERS)];
+};
+
 export function CashbackPlanner() {
   const { t } = useLanguage();
-  const [banks, setBanks] = useState(() =>
-    normalizeBanks(safeStorage.getJSON(STORAGE_KEY) || []),
+  const [banks, setBanks] = useState(() => normalizeBanks(safeStorage.getJSON(STORAGE_KEY) || []));
+  const [pendingSyncData, setPendingSyncData] = useState(null);
+  const syncTimeoutRef = useRef();
+  const {
+    canSync,
+    pull: pullCashback,
+    push: pushCashback,
+    isSyncing,
+    syncError,
+    hydratedRef,
+  } = useSheetSync({
+    range: CASHBACK_RANGE,
+    mapFromSheet: cashbackFromSheet,
+    mapToSheet: cashbackToSheet,
+  });
+
+  const updateBanks = useCallback(
+    (updater, { sync = true } = {}) => {
+      setBanks(prev => {
+        const next = typeof updater === 'function' ? updater(prev) : updater;
+        safeStorage.setJSON(STORAGE_KEY, next);
+        if (sync && canSync) {
+          setPendingSyncData(next);
+        }
+        return next;
+      });
+    },
+    [canSync],
   );
 
   useEffect(() => {
-    safeStorage.setJSON(STORAGE_KEY, banks);
-  }, [banks]);
+    if (!canSync || !pendingSyncData) return undefined;
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+
+    syncTimeoutRef.current = setTimeout(() => {
+      pushCashback(pendingSyncData)
+        .catch(error => console.warn('Failed to sync cashback planner to Google Sheets', error))
+        .finally(() => {
+          syncTimeoutRef.current = null;
+          setPendingSyncData(null);
+        });
+    }, 1200);
+
+    return () => {
+      if (syncTimeoutRef.current) {
+        clearTimeout(syncTimeoutRef.current);
+        syncTimeoutRef.current = null;
+      }
+    };
+  }, [canSync, pendingSyncData, pushCashback]);
+
+  useEffect(() => () => {
+    if (syncTimeoutRef.current) {
+      clearTimeout(syncTimeoutRef.current);
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!canSync || hydratedRef.current) return;
+    let cancelled = false;
+    pullCashback()
+      .then(remoteBanks => {
+        if (!remoteBanks || cancelled) return;
+        updateBanks(normalizeBanks(remoteBanks), { sync: false });
+      })
+      .catch(error => {
+        console.warn('Failed to load cashback planner from Google Sheets', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canSync, pullCashback, hydratedRef, updateBanks]);
 
   const addBank = () => {
-    setBanks(prev => [
+    updateBanks(prev => [
       ...prev,
       {
         id: createId(),
@@ -42,13 +184,14 @@ export function CashbackPlanner() {
     ]);
   };
 
-  const removeBank = id => setBanks(prev => prev.filter(bank => bank.id !== id));
+  const removeBank = id =>
+    updateBanks(prev => prev.filter(bank => bank.id !== id));
 
   const updateBankName = (id, name) =>
-    setBanks(prev => prev.map(bank => (bank.id === id ? { ...bank, name } : bank)));
+    updateBanks(prev => prev.map(bank => (bank.id === id ? { ...bank, name } : bank)));
 
   const addCategory = bankId =>
-    setBanks(prev =>
+    updateBanks(prev =>
       prev.map(bank =>
         bank.id === bankId
           ? {
@@ -67,7 +210,7 @@ export function CashbackPlanner() {
     );
 
   const updateCategory = (bankId, categoryId, field, value) =>
-    setBanks(prev =>
+    updateBanks(prev =>
       prev.map(bank =>
         bank.id === bankId
           ? {
@@ -86,7 +229,7 @@ export function CashbackPlanner() {
     );
 
   const removeCategory = (bankId, categoryId) =>
-    setBanks(prev =>
+    updateBanks(prev =>
       prev.map(bank =>
         bank.id === bankId
           ? {
@@ -107,6 +250,12 @@ export function CashbackPlanner() {
           <h3>{cashback.title}</h3>
           <p>{cashback.empty}</p>
         </div>
+        {syncError && (
+          <small className="warning" role="alert">
+            Google Sheets: {syncError}
+          </small>
+        )}
+        {isSyncing && <small>{t('user.signingIn') ? 'Syncing…' : 'Syncing…'}</small>}
         <button type="button" className="btn secondary" onClick={addBank}>
           {cashback.addBank}
         </button>

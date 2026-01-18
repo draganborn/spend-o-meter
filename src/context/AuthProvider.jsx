@@ -7,6 +7,32 @@ import { sheetsApi, rowsToObjects } from '../services/googleSheets';
 const STORAGE_KEY = 'auth:user';
 const ACCESS_RANGE = 'Access!A:E';
 const ACCESS_HEADERS = ['ID_user', 'email', 'role', 'active'];
+const DEFAULT_SHEET_ACCESS = { allowed: false, role: null };
+
+const getStoredAuthState = () => {
+  const stored = safeStorage.getJSON(STORAGE_KEY);
+  if (!stored) {
+    return {
+      user: null,
+      token: null,
+      sheetAccess: DEFAULT_SHEET_ACCESS,
+    };
+  }
+
+  if (stored.profile || stored.accessToken || stored.sheetAccess) {
+    return {
+      user: stored.profile ?? null,
+      token: stored.accessToken ?? null,
+      sheetAccess: stored.sheetAccess ?? DEFAULT_SHEET_ACCESS,
+    };
+  }
+
+  return {
+    user: stored,
+    token: null,
+    sheetAccess: DEFAULT_SHEET_ACCESS,
+  };
+};
 
 const AuthContext = createContext();
 
@@ -57,11 +83,12 @@ const readSheetAccess = async (accessToken, email) => {
 };
 
 export const AuthProvider = ({ children }) => {
-  const [user, setUser] = useState(() => safeStorage.getJSON(STORAGE_KEY));
+  const storedAuth = useMemo(() => getStoredAuthState(), []);
+  const [user, setUser] = useState(storedAuth.user);
   const [isAuthLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [accessToken, setAccessToken] = useState(null);
-  const [sheetAccess, setSheetAccess] = useState({ allowed: false, role: null });
+  const [accessToken, setAccessToken] = useState(storedAuth.token);
+  const [sheetAccess, setSheetAccess] = useState(storedAuth.sheetAccess);
 
   const handleProfile = useCallback(async tokenResponse => {
     setAuthLoading(true);
@@ -85,7 +112,11 @@ export const AuthProvider = ({ children }) => {
       setUser(userPayload);
       setAccessToken(token);
       setSheetAccess(access);
-      safeStorage.setJSON(STORAGE_KEY, userPayload);
+      safeStorage.setJSON(STORAGE_KEY, {
+        profile: userPayload,
+        accessToken: token,
+        sheetAccess: access,
+      });
     } catch (err) {
       console.error('Failed to fetch Google profile', err);
       setError('AUTH_PROFILE_ERROR');
@@ -107,7 +138,7 @@ export const AuthProvider = ({ children }) => {
     googleLogout();
     setUser(null);
     setAccessToken(null);
-    setSheetAccess({ allowed: false, role: null });
+    setSheetAccess(DEFAULT_SHEET_ACCESS);
     safeStorage.setJSON(STORAGE_KEY, null);
   }, []);
 
@@ -115,8 +146,13 @@ export const AuthProvider = ({ children }) => {
     if (!accessToken || !user?.email) return { allowed: false, role: null };
     const access = await readSheetAccess(accessToken, user.email);
     setSheetAccess(access);
+    safeStorage.setJSON(STORAGE_KEY, {
+      profile: user,
+      accessToken,
+      sheetAccess: access,
+    });
     return access;
-  }, [accessToken, user?.email]);
+  }, [accessToken, user]);
 
   const contextValue = useMemo(
     () => ({
