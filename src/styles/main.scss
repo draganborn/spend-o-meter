@@ -319,6 +319,8 @@ body[data-theme='dark'] textarea {
 
 body[data-theme='dark'] .payment-entry.completed {
   background: rgba(16, 185, 129, 0.22);
+  border-radius: 14px;
+    padding: 6px;
 }
 
 .payment-entry.completed input[type='text'],
@@ -381,6 +383,8 @@ body[data-theme='dark'] .payment-checkbox {
 
 body[data-theme='dark'] .result-container {
   background: rgba(16, 185, 129, 0.22);
+  border-radius: 14px;
+    padding: 6px;
 }
 
 .warning {
@@ -480,7 +484,7 @@ body[data-theme='dark'] .favorite-meta {
   gap: 24px;
 }
 
-@media (max-width: 768px) {
+@media (max-width: 640px) {
 
   .payment-entry {
     grid-template-columns: auto auto 1fr; /* оставляем 3 колонки */
@@ -490,12 +494,12 @@ body[data-theme='dark'] .favorite-meta {
 
   /* Переносим поле суммы на вторую строку под названием */
   .payment-entry input[type="number"] {
-    grid-column: 1 / -1; /* занимает всю ширину ряда */
+    grid-column: 7 / 1; /* занимает всю ширину ряда */
     max-width: none;
   }
 
   .payment-entry input[type="text"] {
-    grid-column: 1 / -1;
+    grid-column: 7 / 1;
   }
 
   /* Кнопка и чекбокс остаются в первой строке в своих колонках */
