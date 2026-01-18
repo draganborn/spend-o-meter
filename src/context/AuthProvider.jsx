@@ -7,6 +7,7 @@ import { sheetsApi, rowsToObjects } from '../services/googleSheets';
 const STORAGE_KEY = 'auth:user';
 const ACCESS_RANGE = 'Access!A:E';
 const ACCESS_HEADERS = ['ID_user', 'email', 'role', 'active'];
+const GOOGLE_SCOPES = 'openid profile email https://www.googleapis.com/auth/spreadsheets';
 const DEFAULT_SHEET_ACCESS = { allowed: false, role: null };
 
 const getStoredAuthState = () => {
@@ -77,6 +78,9 @@ const readSheetAccess = async (accessToken, email) => {
       entry: match,
     };
   } catch (error) {
+    if (error?.message?.includes('insufficient authentication scopes')) {
+      throw new Error('AUTH_SCOPE_INSUFFICIENT');
+    }
     console.warn('Failed to read Access sheet', error);
     return { allowed: false, role: null, error: error.message };
   }
@@ -126,7 +130,9 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const login = useGoogleLogin({
-    scope: 'openid profile email https://www.googleapis.com/auth/spreadsheets',
+    scope: GOOGLE_SCOPES,
+    prompt: 'consent',
+    include_granted_scopes: true,
     onSuccess: handleProfile,
     onError: err => {
       console.error('Google login error', err);
