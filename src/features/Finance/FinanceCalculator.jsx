@@ -10,11 +10,24 @@ import {
 } from 'chart.js';
 import { safeStorage } from '../../hooks/useSafeLocalStorage';
 import { useLanguage, useTheme } from '../../context/AppProviders';
+import { useSheetSync } from '../../hooks/useSheetSync';
+import { objectsToRows, rowsToObjects } from '../../services/googleSheets';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
 const STORAGE_KEY = 'financeData';
 const INITIAL_PAYMENTS = 3;
+const PAYMENT_RANGE = 'Payments!A:H';
+const PAYMENT_HEADERS = [
+  'ID_required_pay',
+  'name',
+  'amount',
+  'start_date',
+  'end_date',
+  'frequency',
+  'last_paid_at',
+  'is_active',
+];
 
 const generateId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 
@@ -25,15 +38,55 @@ const defaultPayment = () => ({
   completed: false,
 });
 
-const normalizePayments = saved =>
-  Array.isArray(saved?.payments) && saved.payments.length
-    ? saved.payments.map(p => ({
-        id: p.id || generateId(),
-        name: p.name || '',
-        amount: p.amount ?? '',
-        completed: Boolean(p.completed),
-      }))
-    : Array.from({ length: INITIAL_PAYMENTS }, defaultPayment);
+const normalizePayments = source => {
+  if (Array.isArray(source) && source.length) {
+    return source.map(p => ({
+      id: p.id || generateId(),
+      name: p.name || '',
+      amount: p.amount ?? '',
+      completed: Boolean(p.completed),
+    }));
+  }
+
+  if (Array.isArray(source?.payments) && source.payments.length) {
+    return source.payments.map(p => ({
+      id: p.id || generateId(),
+      name: p.name || '',
+      amount: p.amount ?? '',
+      completed: Boolean(p.completed),
+    }));
+  }
+
+  return Array.from({ length: INITIAL_PAYMENTS }, defaultPayment);
+};
+
+const paymentsFromSheet = values => {
+  const rows = rowsToObjects(values, PAYMENT_HEADERS);
+  if (!rows.length) return [];
+  return rows.map(row => ({
+    id: row.ID_required_pay || generateId(),
+    name: row.name || '',
+    amount: row.amount ?? '',
+    completed: `${row.is_active}`.toLowerCase() === 'true',
+  }));
+};
+
+const paymentsToSheet = items => [
+  PAYMENT_HEADERS,
+  ...objectsToRows(
+    items.map(item => ({
+      ID_required_pay: item.id || generateId(),
+      name: item.name || '',
+      amount: item.amount ?? '',
+      start_date: '',
+      end_date: '',
+      frequency: '',
+      last_paid_at: '',
+      is_active: item.completed ? 'TRUE' : 'FALSE',
+    })),
+    PAYMENT_HEADERS,
+  ),
+];
 
 export function FinanceCalculator() {
   const { t, language } = useLanguage();
@@ -42,6 +95,18 @@ export function FinanceCalculator() {
   const [nextPayDate, setNextPayDate] = useState('');
   const [payments, setPayments] = useState(() => normalizePayments());
   const [result, setResult] = useState(null);
+  const {
+    canSync,
+    pull: pullPayments,
+    push: pushPayments,
+    isSyncing,
+    syncError,
+    hydratedRef,
+  } = useSheetSync({
+    range: PAYMENT_RANGE,
+    mapFromSheet: paymentsFromSheet,
+    mapToSheet: paymentsToSheet,
+  });
 
   useEffect(() => {
     const saved = safeStorage.getJSON(STORAGE_KEY);
@@ -54,15 +119,43 @@ export function FinanceCalculator() {
     }
   }, []);
 
+  useEffect(() => {
+    if (!canSync || hydratedRef.current) return;
+    let cancelled = false;
+    pullPayments()
+      .then(remotePayments => {
+        if (!remotePayments || !remotePayments.length || cancelled) return;
+        setPayments(normalizePayments(remotePayments));
+        safeStorage.setJSON(STORAGE_KEY, {
+          allMoney,
+          nextPayDate,
+          payments: remotePayments,
+        });
+      })
+      .catch(error => {
+        console.warn('Failed to load payments from Google Sheets', error);
+      });
+
+    return () => {
+      cancelled = true;
+    };
+  }, [canSync, pullPayments, hydratedRef, allMoney, nextPayDate]);
+
   const persist = useCallback(
-    next => {
-      safeStorage.setJSON(STORAGE_KEY, {
+    (next, { sync = false } = {}) => {
+      const payload = {
         allMoney: next?.allMoney ?? allMoney,
         nextPayDate: next?.nextPayDate ?? nextPayDate,
         payments: next?.payments ?? payments,
-      });
+      };
+      safeStorage.setJSON(STORAGE_KEY, payload);
+      if (sync && canSync) {
+        pushPayments(payload.payments).catch(error =>
+          console.warn('Failed to sync payments to Google Sheets', error),
+        );
+      }
     },
-    [allMoney, nextPayDate, payments],
+    [allMoney, nextPayDate, payments, canSync, pushPayments],
   );
 
   const handlePaymentChange = (id, field, value) => {
@@ -70,7 +163,7 @@ export function FinanceCalculator() {
       const updated = prev.map(payment =>
         payment.id === id ? { ...payment, [field]: value } : payment,
       );
-      persist({ payments: updated });
+      persist({ payments: updated }, { sync: true });
       return updated;
     });
   };
@@ -80,7 +173,7 @@ export function FinanceCalculator() {
       const updated = prev.map(payment =>
         payment.id === id ? { ...payment, completed: !payment.completed } : payment,
       );
-      persist({ payments: updated });
+      persist({ payments: updated }, { sync: true });
       return updated;
     });
   };
@@ -88,7 +181,7 @@ export function FinanceCalculator() {
   const addPayment = () => {
     setPayments(prev => {
       const updated = [...prev, defaultPayment()];
-      persist({ payments: updated });
+      persist({ payments: updated }, { sync: true });
       return updated;
     });
   };
@@ -96,7 +189,7 @@ export function FinanceCalculator() {
   const removePayment = id => {
     setPayments(prev => {
       const updated = prev.filter(payment => payment.id !== id);
-      persist({ payments: updated });
+      persist({ payments: updated }, { sync: true });
       return updated.length ? updated : [defaultPayment()];
     });
   };
@@ -218,6 +311,12 @@ export function FinanceCalculator() {
       <form onSubmit={calculate} className="stack gap-md">
         <div className="section-title">
           <h3>{finance?.paymentsTitle}</h3>
+          {syncError && (
+            <small className="warning" role="alert">
+              Google Sheets: {syncError}
+            </small>
+          )}
+          {isSyncing && <small>{language === 'ru' ? 'Синхронизация…' : 'Syncing…'}</small>}
           <button type="button" className="btn secondary" onClick={addPayment}>
             {finance?.addPayment}
           </button>

@@ -77,8 +77,27 @@ export const sheetsApi = {
 
 export const rowsToObjects = (values = [], expectedHeaders = []) => {
   if (!values.length) return [];
+
+  if (expectedHeaders.length) {
+    const firstRow = values[0] || [];
+    const hasHeaderRow = expectedHeaders.every((header, index) => {
+      const cell = firstRow[index];
+      if (cell === undefined || cell === null) return false;
+      return `${cell}`.trim().toLowerCase() === header.trim().toLowerCase();
+    });
+    const dataRows = hasHeaderRow ? values.slice(1) : values;
+    if (!dataRows.length) return [];
+    return dataRows.map(row => {
+      const entry = {};
+      expectedHeaders.forEach((header, index) => {
+        entry[header] = row[index] ?? '';
+      });
+      return entry;
+    });
+  }
+
   const [headerRow, ...rows] = values;
-  const headers = headerRow?.length ? headerRow : expectedHeaders;
+  const headers = headerRow?.length ? headerRow : [];
   if (!headers.length) return [];
   return rows.map(row => {
     const entry = {};
