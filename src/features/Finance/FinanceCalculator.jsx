@@ -11,7 +11,8 @@ import {
 import { safeStorage } from '../../hooks/useSafeLocalStorage';
 import { useLanguage, useTheme } from '../../context/AppProviders';
 import { useSheetSync } from '../../hooks/useSheetSync';
-import { objectsToRows, rowsToObjects } from '../../services/googleSheets';
+import { useAuth } from '../../context/AuthProvider';
+import { objectsToRows, rowsToObjects, sheetsApi } from '../../services/googleSheets';
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Tooltip, Legend);
 
@@ -28,6 +29,7 @@ const PAYMENT_HEADERS = [
   'last_paid_at',
   'is_active',
 ];
+const ALL_MONEY_CELL = 'Payments!I11';
 
 const generateId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 
@@ -91,6 +93,7 @@ const paymentsToSheet = items => [
 export function FinanceCalculator() {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
+  const { accessToken } = useAuth();
   const [allMoney, setAllMoney] = useState('');
   const [nextPayDate, setNextPayDate] = useState('');
   const [payments, setPayments] = useState(() => normalizePayments());
@@ -107,6 +110,18 @@ export function FinanceCalculator() {
     mapFromSheet: paymentsFromSheet,
     mapToSheet: paymentsToSheet,
   });
+  const writeAllMoney = useCallback(
+    async value => {
+      if (!canSync || !accessToken) return;
+      try {
+        await sheetsApi.write(ALL_MONEY_CELL, [[value ?? '']], accessToken);
+      } catch (error) {
+        console.warn('Failed to sync total money to Google Sheets', error);
+        throw error;
+      }
+    },
+    [accessToken, canSync],
+  );
 
   useEffect(() => {
     const saved = safeStorage.getJSON(STORAGE_KEY);
@@ -141,6 +156,29 @@ export function FinanceCalculator() {
     };
   }, [canSync, pullPayments, hydratedRef, allMoney, nextPayDate]);
 
+  useEffect(() => {
+    if (!canSync || !accessToken) return;
+    let cancelled = false;
+    const fetchAllMoney = async () => {
+      try {
+        const response = await sheetsApi.read(ALL_MONEY_CELL, accessToken);
+        if (cancelled) return;
+        const value = response?.values?.[0]?.[0];
+        if (value !== undefined) {
+          setAllMoney(value);
+          const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+          safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: value });
+        }
+      } catch (error) {
+        console.warn('Failed to load total money from Google Sheets', error);
+      }
+    };
+    fetchAllMoney();
+    return () => {
+      cancelled = true;
+    };
+  }, [canSync, accessToken]);
+
   const persist = useCallback(
     (next, { sync = false } = {}) => {
       const payload = {
@@ -153,9 +191,12 @@ export function FinanceCalculator() {
         pushPayments(payload.payments).catch(error =>
           console.warn('Failed to sync payments to Google Sheets', error),
         );
+        writeAllMoney(payload.allMoney).catch(error =>
+          console.warn('Failed to sync total money to Google Sheets', error),
+        );
       }
     },
-    [allMoney, nextPayDate, payments, canSync, pushPayments],
+    [allMoney, nextPayDate, payments, canSync, pushPayments, writeAllMoney],
   );
 
   const handlePaymentChange = (id, field, value) => {
@@ -291,7 +332,7 @@ export function FinanceCalculator() {
             value={allMoney}
             onChange={e => {
               setAllMoney(e.target.value);
-              persist({ allMoney: e.target.value });
+              persist({ allMoney: e.target.value }, { sync: true });
             }}
           />
         </div>
@@ -328,6 +369,14 @@ export function FinanceCalculator() {
               className={`payment-entry ${payment.completed ? 'completed' : ''}`}
               key={payment.id}
             >
+             <button
+                type="button"
+                className="icon-btn danger"
+                title={finance?.paymentField?.deleteTitle}
+                onClick={() => removePayment(payment.id)}
+              >
+                ×
+              </button>
               <label className="payment-checkbox">
                 <input
                   type="checkbox"
@@ -350,14 +399,7 @@ export function FinanceCalculator() {
                 placeholder={finance?.paymentField?.amountPlaceholder}
                 onChange={e => handlePaymentChange(payment.id, 'amount', e.target.value)}
               />
-              <button
-                type="button"
-                className="icon-btn danger"
-                title={finance?.paymentField?.deleteTitle}
-                onClick={() => removePayment(payment.id)}
-              >
-                ×
-              </button>
+ 
             </div>
           ))}
         </div>

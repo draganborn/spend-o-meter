@@ -243,6 +243,7 @@ textarea {
   background: rgba(248, 250, 252, 0.9);
   font-size: 1rem;
   transition: border 0.2s ease, background 0.2s ease;
+      grid-column: span 3 / span 3;
 }
 
 input:focus,
@@ -261,15 +262,56 @@ body[data-theme='dark'] textarea {
   color: inherit;
 }
 
+// .payment-entry {
+//   display: grid;
+//   grid-template-columns: auto repeat(auto-fit, minmax(160px, 1fr));
+//   gap: 12px;
+//   align-items: center;
+//   padding: 12px;
+//   border-radius: var(--radius-sm);
+//   transition: background 0.2s ease;
+
+// }
+
 .payment-entry {
   display: grid;
-  grid-template-columns: auto repeat(auto-fit, minmax(160px, 1fr));
+  grid-template-columns: auto auto 1fr 160px; /* кнопка, чекбокс, название, сумма */
   gap: 12px;
-  align-items: center;
-  padding: 12px;
-  border-radius: var(--radius-sm);
-  transition: background 0.2s ease;
+  align-items: center; /* вертикальное центрирование всех ячеек */
+  column-gap: 16px;
 }
+
+/* кнопка и чекбокс — фиксированное выравнивание */
+.payment-entry > .icon-btn {
+  justify-self: start; /* по левому краю (или center/end по вкусу) */
+  width: 34px;
+  height: 34px;
+  padding: 0;
+  display: inline-grid;
+  place-items: center;
+}
+
+.payment-entry > .payment-checkbox {
+  justify-self: start;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+
+/* поля — растягиваются */
+.payment-entry input[type="text"] {
+  width: 100%;
+  min-width: 0; /* чтобы не ломать грид при длинных содержимом */
+}
+
+.payment-entry input[type="number"] {
+  width: 100%;
+  max-width: 160px; /* фиксированная ширина для суммы на десктопе */
+  min-width: 0;
+}
+
+
+
 
 .payment-entry.completed {
   background: rgba(16, 185, 129, 0.12);
@@ -294,6 +336,7 @@ body[data-theme='dark'] .payment-entry.completed {
   border-radius: 50%;
   background: rgba(15, 23, 42, 0.05);
   cursor: pointer;
+  grid-column-start: 6;
 }
 
 body[data-theme='dark'] .payment-checkbox {
@@ -438,6 +481,27 @@ body[data-theme='dark'] .favorite-meta {
 }
 
 @media (max-width: 768px) {
+
+  .payment-entry {
+    grid-template-columns: auto auto 1fr; /* оставляем 3 колонки */
+    grid-template-rows: auto auto; /* две строки */
+    grid-auto-flow: row;
+  }
+
+  /* Переносим поле суммы на вторую строку под названием */
+  .payment-entry input[type="number"] {
+    grid-column: 1 / -1; /* занимает всю ширину ряда */
+    max-width: none;
+  }
+
+  .payment-entry input[type="text"] {
+    grid-column: 1 / -1;
+  }
+
+  /* Кнопка и чекбокс остаются в первой строке в своих колонках */
+  .payment-entry > .icon-btn { align-self: center; }
+  .payment-entry > .payment-checkbox { align-self: center; }
+  
   .hero-card {
     flex-direction: column;
   }
