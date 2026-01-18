@@ -75,7 +75,14 @@ function App() {
           {isAuthenticated ? (
             <>
               <div className="user-meta">
-                {user?.picture && <img src={user.picture} alt={user?.name} />}
+                {user?.picture && (
+  <img
+    src={user.picture}
+    alt={user?.name}
+    referrerPolicy="no-referrer"
+    onError={e => { e.currentTarget.src = '/avatar-fallback.svg'; }}
+  />
+)}
                 <div>
                   <p className="eyebrow">{t('user.welcome')}</p>
                   <strong>{user?.givenName || user?.name}</strong>
