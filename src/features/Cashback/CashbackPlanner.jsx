@@ -256,9 +256,7 @@ export function CashbackPlanner() {
           </small>
         )}
         {isSyncing && <small>{t('user.signingIn') ? 'Syncing…' : 'Syncing…'}</small>}
-        <button type="button" className="btn secondary" onClick={addBank}>
-          {cashback.addBank}
-        </button>
+
       </header>
 
       {isEmpty ? (
@@ -326,6 +324,9 @@ export function CashbackPlanner() {
           ))}
         </div>
       )}
+              <button type="button" className="btn secondary" onClick={addBank}>
+          {cashback.addBank}
+        </button>
     </section>
   );
 }

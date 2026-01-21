@@ -358,9 +358,7 @@ export function FinanceCalculator() {
             </small>
           )}
           {isSyncing && <small>{language === 'ru' ? 'Синхронизация…' : 'Syncing…'}</small>}
-          <button type="button" className="btn secondary" onClick={addPayment}>
-            {finance?.addPayment}
-          </button>
+
         </div>
 
         <div className="stack gap-sm">
@@ -402,6 +400,9 @@ export function FinanceCalculator() {
  
             </div>
           ))}
+                    <button type="button" className="btn secondary" onClick={addPayment}>
+            {finance?.addPayment}
+          </button>
         </div>
 
         <button type="submit" className="btn primary">

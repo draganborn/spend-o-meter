@@ -70,9 +70,7 @@ export function FuelComparator() {
     <section className="card">
       <header className="section-header">
         <h3>{fuel.title}</h3>
-        <button type="button" className="btn secondary" onClick={addStation}>
-          {fuel.addButton}
-        </button>
+
       </header>
 
       <form className="stack gap-md" onSubmit={compare}>
@@ -165,6 +163,9 @@ export function FuelComparator() {
           ))}
         </div>
       )}
+      <button type="button" className="btn secondary" onClick={addStation}>
+          {fuel.addButton}
+        </button>
     </section>
   );
 }
