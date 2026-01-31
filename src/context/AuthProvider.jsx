@@ -9,6 +9,12 @@ const ACCESS_RANGE = 'Access!A:E';
 const ACCESS_HEADERS = ['ID_user', 'email', 'role', 'active'];
 const GOOGLE_SCOPES = 'openid profile email https://www.googleapis.com/auth/spreadsheets';
 const DEFAULT_SHEET_ACCESS = { allowed: false, role: null };
+const TOKEN_EXPIRY_GRACE_MS = 60_000; // renew 1 min earlier to avoid borderline 401
+
+const isExpired = expiresAt => {
+  if (!expiresAt) return true;
+  return Date.now() >= expiresAt;
+};
 
 const getStoredAuthState = () => {
   const stored = safeStorage.getJSON(STORAGE_KEY);
@@ -20,17 +26,19 @@ const getStoredAuthState = () => {
     };
   }
 
+  const tokenExpired = isExpired(stored.expiresAt);
+
   if (stored.profile || stored.accessToken || stored.sheetAccess) {
     return {
       user: stored.profile ?? null,
-      token: stored.accessToken ?? null,
+      token: tokenExpired ? null : stored.accessToken ?? null,
       sheetAccess: stored.sheetAccess ?? DEFAULT_SHEET_ACCESS,
     };
   }
 
   return {
     user: stored,
-    token: null,
+    token: tokenExpired ? null : stored,
     sheetAccess: DEFAULT_SHEET_ACCESS,
   };
 };
@@ -103,6 +111,11 @@ export const AuthProvider = ({ children }) => {
         throw new Error('Missing Google access token');
       }
 
+      const issuedAt = Date.now();
+      const expiresAt = tokenResponse?.expires_in
+        ? issuedAt + tokenResponse.expires_in * 1000 - TOKEN_EXPIRY_GRACE_MS
+        : null;
+
       const profile = await fetchGoogleProfile(token);
       const access = await readSheetAccess(token, profile.email);
       const userPayload = {
@@ -119,6 +132,7 @@ export const AuthProvider = ({ children }) => {
       safeStorage.setJSON(STORAGE_KEY, {
         profile: userPayload,
         accessToken: token,
+        expiresAt,
         sheetAccess: access,
       });
     } catch (err) {
