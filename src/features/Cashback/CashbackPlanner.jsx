@@ -27,7 +27,7 @@ const normalizeBanks = stored =>
           ? bank.categories.map(category => ({
               id: category.id || createId(),
               name: category.name || '',
-              percent: Number.isFinite(category.percent) ? category.percent : 0,
+              percent: Number.isFinite(category.percent) ? category.percent : '',
             }))
           : [],
       }))
@@ -58,7 +58,7 @@ const cashbackFromSheet = values => {
       banksMap.get(bankKey).categories.push({
         id: row.ID_cashback_element || createId(),
         name: row.categoryCashBack || '',
-        percent: Number.isFinite(percent) ? percent : 0,
+        percent: Number.isFinite(percent) ? percent : '',
       });
     }
   });
@@ -87,7 +87,7 @@ const cashbackToSheet = banks => {
         cashbackUserName: '',
         bankName: bank.name || '',
         categoryCashBack: category.name || '',
-        percentCashback: category.percent ?? 0,
+        percentCashback: category.percent === '' ? '' : category.percent ?? 0,
       });
     });
   });
@@ -201,7 +201,7 @@ export function CashbackPlanner() {
                 {
                   id: createId(),
                   name: '',
-                  percent: 0,
+                  percent: '',
                 },
               ],
             }
@@ -219,7 +219,12 @@ export function CashbackPlanner() {
                 category.id === categoryId
                   ? {
                       ...category,
-                      [field]: field === 'percent' ? Number(value) || 0 : value,
+                      [field]:
+                        field === 'percent'
+                          ? value === ''
+                            ? ''
+                            : Number(value) || ''
+                          : value,
                     }
                   : category,
               ),
