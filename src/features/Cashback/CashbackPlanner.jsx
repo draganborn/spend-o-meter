@@ -41,7 +41,8 @@ const cashbackFromSheet = values => {
 
   rows.forEach(row => {
     const bankName = row.bankName?.trim() || '';
-    const bankKey = slugify(bankName) || `bank-${row.ID_cashback_element || createId()}`;
+    const bankId = row.cashbackUserName?.trim() || '';
+    const bankKey = bankId || slugify(bankName) || `bank-${row.ID_cashback_element || createId()}`;
 
     if (!banksMap.has(bankKey)) {
       banksMap.set(bankKey, {
@@ -73,7 +74,7 @@ const cashbackToSheet = banks => {
     if (!bank.categories.length) {
       rows.push({
         ID_cashback_element: createId(),
-        cashbackUserName: '',
+        cashbackUserName: bank.id || createId(),
         bankName: bank.name || '',
         categoryCashBack: '',
         percentCashback: '',
@@ -84,7 +85,7 @@ const cashbackToSheet = banks => {
     bank.categories.forEach(category => {
       rows.push({
         ID_cashback_element: category.id || createId(),
-        cashbackUserName: '',
+        cashbackUserName: bank.id || createId(),
         bankName: bank.name || '',
         categoryCashBack: category.name || '',
         percentCashback: category.percent === '' ? '' : category.percent ?? 0,
