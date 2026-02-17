@@ -12,6 +12,7 @@ export const LANGUAGES = {
       allMoneyLabel: 'Все деньги на счете',
       nextDateLabel: 'Дата следующего поступления',
       paymentsTitle: 'Обязательные платежи',
+      sync: 'Обновить из Google Sheets',
       addPayment: '+ Добавить платеж',
       submit: 'Рассчитать',
       paymentField: {
@@ -79,6 +80,7 @@ export const LANGUAGES = {
       priceLabel: 'Цена',
       unitsLabel: 'Единицы',
       perUnit: 'за единицу',
+      sync: 'Обновить из Google Sheets',
     },
     cashback: {
       title: 'Планировщик кэшбэка',
@@ -91,6 +93,7 @@ export const LANGUAGES = {
       deleteBank: 'Удалить банк',
       deleteCategory: 'Удалить',
       percentSymbol: '%',
+      sync: 'Обновить из Google Sheets',
     },
     user: {
       welcome: 'Добро пожаловать,',
@@ -123,6 +126,7 @@ export const LANGUAGES = {
       allMoneyLabel: 'All money on account',
       nextDateLabel: 'Next income date',
       paymentsTitle: 'Required payments',
+      sync: 'Refresh from Google Sheets',
       addPayment: '+ Add Payment',
       submit: 'Calculate',
       paymentField: {
@@ -190,6 +194,7 @@ export const LANGUAGES = {
       priceLabel: 'Price',
       unitsLabel: 'Units',
       perUnit: 'per unit',
+      sync: 'Refresh from Google Sheets',
     },
     cashback: {
       title: 'Cashback planner',
@@ -202,6 +207,7 @@ export const LANGUAGES = {
       deleteBank: 'Delete bank',
       deleteCategory: 'Delete',
       percentSymbol: '%',
+      sync: 'Refresh from Google Sheets',
     },
     user: {
       welcome: 'Welcome,',

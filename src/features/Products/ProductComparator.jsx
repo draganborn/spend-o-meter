@@ -346,6 +346,22 @@ export function ProductComparator() {
           <button
             type="button"
             className="btn secondary"
+            disabled={!canSync || isFavoritesSyncing}
+            onClick={async () => {
+              try {
+                const remoteFavorites = await pullFavorites();
+                if (remoteFavorites) {
+                  updateFavorites(normalizeFavorites(remoteFavorites), { sync: false });
+                }
+              } catch (error) {
+              }
+            }}
+          >
+            {t('favorites.sync')}
+          </button>
+          <button
+            type="button"
+            className="btn secondary"
             onClick={() => updateFavorites([], { sync: true })}
             disabled={favoritesEmpty}
           >

@@ -352,6 +352,39 @@ export function FinanceCalculator() {
       <form onSubmit={calculate} className="stack gap-md">
         <div className="section-title">
           <h3>{finance?.paymentsTitle}</h3>
+          <button
+            type="button"
+            className="btn secondary"
+            disabled={!canSync || isSyncing}
+            onClick={async () => {
+              try {
+                const remotePayments = await pullPayments();
+                if (remotePayments && remotePayments.length) {
+                  setPayments(normalizePayments(remotePayments));
+                  safeStorage.setJSON(STORAGE_KEY, {
+                    allMoney,
+                    nextPayDate,
+                    payments: remotePayments,
+                  });
+                }
+                if (canSync && accessToken) {
+                  try {
+                    const response = await sheetsApi.read(ALL_MONEY_CELL, accessToken);
+                    const value = response?.values?.[0]?.[0];
+                    if (value !== undefined) {
+                      setAllMoney(value);
+                      const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+                      safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: value });
+                    }
+                  } catch (error) {
+                  }
+                }
+              } catch (error) {
+              }
+            }}
+          >
+            {finance?.sync}
+          </button>
           {syncError && (
             <small className="warning" role="alert">
               Google Sheets: {syncError}

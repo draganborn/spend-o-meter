@@ -256,13 +256,30 @@ export function CashbackPlanner() {
           <h3>{cashback.title}</h3>
           <p>{cashback.empty}</p>
         </div>
-        {syncError && (
-          <small className="warning" role="alert">
-            Google Sheets: {syncError}
-          </small>
-        )}
-        {isSyncing && <small>{t('user.signingIn') ? 'Syncing…' : 'Syncing…'}</small>}
-
+        <div className="stack horizontal gap-sm">
+          <button
+            type="button"
+            className="btn secondary"
+            disabled={!canSync || isSyncing}
+            onClick={async () => {
+              try {
+                const remoteBanks = await pullCashback();
+                if (remoteBanks) {
+                  updateBanks(normalizeBanks(remoteBanks), { sync: false });
+                }
+              } catch (error) {
+              }
+            }}
+          >
+            {cashback.sync}
+          </button>
+          {syncError && (
+            <small className="warning" role="alert">
+              Google Sheets: {syncError}
+            </small>
+          )}
+          {isSyncing && <small>{t('user.signingIn') ? 'Syncing…' : 'Syncing…'}</small>}
+        </div>
       </header>
 
       {isEmpty ? (
