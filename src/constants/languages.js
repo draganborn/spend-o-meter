@@ -103,6 +103,11 @@ export const LANGUAGES = {
       prompt: 'Войдите, чтобы синхронизировать настройки на всех устройствах.',
       error: 'Не удалось войти через Google. Попробуйте еще раз.',
       configMissing: 'Добавьте VITE_GOOGLE_CLIENT_ID в .env, чтобы включить вход.',
+      sheetAccessCheck: 'Проверить доступ к таблице',
+      sheetAccessAllowed: 'Доступ к таблице есть',
+      sheetAccessDenied: 'Нет доступа к таблице. Проверьте лист Access или войдите заново.',
+      sheetAccessRolePrefix: 'Роль:',
+      sheetAccessErrorPrefix: 'Ошибка доступа к таблице:',
     },
     alerts: {
       notEnoughProducts: 'Добавьте минимум два товара.',
@@ -217,6 +222,11 @@ export const LANGUAGES = {
       prompt: 'Sign in to sync settings across devices.',
       error: 'Google sign-in failed. Please try again.',
       configMissing: 'Add VITE_GOOGLE_CLIENT_ID to .env to enable sign-in.',
+      sheetAccessCheck: 'Check sheet access',
+      sheetAccessAllowed: 'Sheet access is allowed',
+      sheetAccessDenied: 'No access to sheet. Check Access tab or sign in again.',
+      sheetAccessRolePrefix: 'Role:',
+      sheetAccessErrorPrefix: 'Sheet access error:',
     },
     alerts: {
       notEnoughProducts: 'Add at least two products.',

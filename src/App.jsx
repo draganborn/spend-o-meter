@@ -11,14 +11,36 @@ const DONATE_URL = 'https://etherscan.io/address/0x2cC359a7f7e2a21047Ab3D6e20a6E
 function App() {
   const { t, toggleLanguage, language } = useLanguage();
   const { toggleTheme, theme } = useTheme();
-  const { user, isAuthenticated, login, logout, isAuthLoading, error } = useAuth();
+  const { user, isAuthenticated, login, logout, isAuthLoading, error, sheetAccess, refreshSheetAccess } = useAuth();
   const [activeSection, setActiveSection] = useState('finance');
+  const [isCheckingAccess, setCheckingAccess] = useState(false);
+  const [accessStatus, setAccessStatus] = useState(null);
   const isGoogleConfigured = Boolean(import.meta.env.VITE_GOOGLE_CLIENT_ID);
 
   const handleLogin = useCallback(() => {
     if (!isGoogleConfigured || isAuthLoading) return;
     login();
   }, [isGoogleConfigured, isAuthLoading, login]);
+
+  const handleCheckAccess = useCallback(async () => {
+    if (!isAuthenticated || isCheckingAccess) return;
+    setCheckingAccess(true);
+    setAccessStatus(null);
+    try {
+      const access = await refreshSheetAccess();
+      if (!access) {
+        setAccessStatus({ type: 'denied' });
+      } else if (access.allowed) {
+        setAccessStatus({ type: 'allowed', role: access.role, error: access.error });
+      } else {
+        setAccessStatus({ type: 'denied', error: access.error });
+      }
+    } catch (e) {
+      setAccessStatus({ type: 'error', message: e.message || String(e) });
+    } finally {
+      setCheckingAccess(false);
+    }
+  }, [isAuthenticated, isCheckingAccess, refreshSheetAccess]);
 
   const sections = useMemo(
     () => [
@@ -89,9 +111,53 @@ function App() {
                   <span>{user?.email}</span>
                 </div>
               </div>
-              <button type="button" className="btn secondary" onClick={logout}>
-                {t('user.signOut')}
-              </button>
+              <div className="stack gap-sm">
+                <button
+                  type="button"
+                  className="btn secondary"
+                  onClick={handleCheckAccess}
+                  disabled={isCheckingAccess}
+                >
+                  {isCheckingAccess ? t('user.signingIn') : t('user.sheetAccessCheck')}
+                </button>
+                {accessStatus && (
+                  <small
+                    className={
+                      accessStatus.type === 'allowed'
+                        ? 'success'
+                        : accessStatus.type === 'error'
+                          ? 'warning'
+                          : 'warning'
+                    }
+                    role="status"
+                  >
+                    {accessStatus.type === 'allowed' && (
+                      <>
+                        {t('user.sheetAccessAllowed')}{' '}
+                        {accessStatus.role && (
+                          <>
+                            {t('user.sheetAccessRolePrefix')} {accessStatus.role}
+                          </>
+                        )}
+                      </>
+                    )}
+                    {accessStatus.type === 'denied' && (
+                      <>
+                        {t('user.sheetAccessDenied')}
+                        {accessStatus.error && ` (${t('user.sheetAccessErrorPrefix')} ${accessStatus.error})`}
+                      </>
+                    )}
+                    {accessStatus.type === 'error' && (
+                      <>
+                        {t('user.sheetAccessErrorPrefix')} {accessStatus.message}
+                      </>
+                    )}
+                  </small>
+                )}
+                <button type="button" className="btn secondary" onClick={logout}>
+                  {t('user.signOut')}
+                </button>
+              </div>
             </>
           ) : (
             <>

@@ -9,12 +9,7 @@ const ACCESS_RANGE = 'Access!A:E';
 const ACCESS_HEADERS = ['ID_user', 'email', 'role', 'active'];
 const GOOGLE_SCOPES = 'openid profile email https://www.googleapis.com/auth/spreadsheets';
 const DEFAULT_SHEET_ACCESS = { allowed: false, role: null };
-const TOKEN_EXPIRY_GRACE_MS = 60_000; // renew 1 min earlier to avoid borderline 401
-
-const isExpired = expiresAt => {
-  if (!expiresAt) return true;
-  return Date.now() >= expiresAt;
-};
+const TOKEN_EXPIRY_GRACE_MS = 60_000; // kept for potential future use
 
 const getStoredAuthState = () => {
   const stored = safeStorage.getJSON(STORAGE_KEY);
@@ -26,19 +21,17 @@ const getStoredAuthState = () => {
     };
   }
 
-  const tokenExpired = isExpired(stored.expiresAt);
-
   if (stored.profile || stored.accessToken || stored.sheetAccess) {
     return {
       user: stored.profile ?? null,
-      token: tokenExpired ? null : stored.accessToken ?? null,
+      token: stored.accessToken ?? null,
       sheetAccess: stored.sheetAccess ?? DEFAULT_SHEET_ACCESS,
     };
   }
 
   return {
     user: stored,
-    token: tokenExpired ? null : stored,
+    token: stored,
     sheetAccess: DEFAULT_SHEET_ACCESS,
   };
 };
