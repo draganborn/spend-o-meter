@@ -3,8 +3,8 @@ import { useAuth } from '../context/AuthProvider';
 import { sheetsApi } from '../services/googleSheets';
 
 export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }) => {
-  const { accessToken, sheetAccess } = useAuth();
-  const canSync = Boolean(accessToken) && sheetAccess?.allowed && enabled;
+  const { accessToken, googleSub, sheetAccess } = useAuth();
+  const canSync = sheetAccess?.allowed && enabled && (Boolean(googleSub) || Boolean(accessToken));
 
   const [isSyncing, setSyncing] = useState(false);
   const [syncError, setSyncError] = useState(null);
@@ -14,8 +14,32 @@ export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }
     if (!canSync) return null;
     setSyncing(true);
     try {
-      const data = await sheetsApi.read(range, accessToken);
-      const mapped = mapFromSheet(data?.values ?? []);
+      let values;
+      if (googleSub) {
+        const response = await fetch('/.netlify/functions/sheets-read', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            google_sub: googleSub,
+            range,
+          }),
+        });
+
+        if (!response.ok) {
+          const text = await response.text();
+          throw new Error(text || 'Не удалось получить данные Google Sheets через backend');
+        }
+
+        const json = await response.json();
+        values = json?.values ?? [];
+      } else {
+        const data = await sheetsApi.read(range, accessToken);
+        values = data?.values ?? [];
+      }
+
+      const mapped = mapFromSheet(values);
       hydratedRef.current = true;
       setSyncError(null);
       return mapped;
@@ -26,7 +50,7 @@ export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }
     } finally {
       setSyncing(false);
     }
-  }, [canSync, range, accessToken, mapFromSheet]);
+  }, [canSync, range, googleSub, accessToken, mapFromSheet]);
 
   const push = useCallback(
     async items => {
@@ -37,8 +61,29 @@ export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }
       setSyncing(true);
       try {
         const rows = mapToSheet(items);
-        await sheetsApi.clear(range, accessToken);
-        await sheetsApi.write(range, rows, accessToken);
+
+        if (googleSub) {
+          const response = await fetch('/.netlify/functions/sheets-write', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              google_sub: googleSub,
+              range,
+              values: rows,
+            }),
+          });
+
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Не удалось сохранить данные в Google Sheets через backend');
+          }
+        } else {
+          await sheetsApi.clear(range, accessToken);
+          await sheetsApi.write(range, rows, accessToken);
+        }
+
         setSyncError(null);
       } catch (error) {
         setSyncError(error.message || 'Не удалось сохранить данные в Google Sheets');
@@ -47,7 +92,7 @@ export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }
         setSyncing(false);
       }
     },
-    [canSync, range, accessToken, mapToSheet],
+    [canSync, range, googleSub, accessToken, mapToSheet],
   );
 
   const resetHydration = useCallback(() => {

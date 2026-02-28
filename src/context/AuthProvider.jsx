@@ -1,21 +1,20 @@
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import PropTypes from 'prop-types';
-import { useGoogleLogin, googleLogout } from '@react-oauth/google';
+import { googleLogout } from '@react-oauth/google';
 import { safeStorage } from '../hooks/useSafeLocalStorage';
-import { sheetsApi, rowsToObjects } from '../services/googleSheets';
+import { rowsToObjects } from '../services/googleSheets';
 
 const STORAGE_KEY = 'auth:user';
 const ACCESS_RANGE = 'Access!A:E';
 const ACCESS_HEADERS = ['ID_user', 'email', 'role', 'active'];
-const GOOGLE_SCOPES = 'openid profile email https://www.googleapis.com/auth/spreadsheets';
 const DEFAULT_SHEET_ACCESS = { allowed: false, role: null };
-const TOKEN_EXPIRY_GRACE_MS = 60_000; // kept for potential future use
 
 const getStoredAuthState = () => {
   const stored = safeStorage.getJSON(STORAGE_KEY);
   if (!stored) {
     return {
       user: null,
+      googleSub: null,
       token: null,
       sheetAccess: DEFAULT_SHEET_ACCESS,
     };
@@ -24,6 +23,7 @@ const getStoredAuthState = () => {
   if (stored.profile || stored.accessToken || stored.sheetAccess) {
     return {
       user: stored.profile ?? null,
+      googleSub: stored.googleSub ?? stored.profile?.id ?? null,
       token: stored.accessToken ?? null,
       sheetAccess: stored.sheetAccess ?? DEFAULT_SHEET_ACCESS,
     };
@@ -31,26 +31,13 @@ const getStoredAuthState = () => {
 
   return {
     user: stored,
+    googleSub: stored?.id ?? null,
     token: stored,
     sheetAccess: DEFAULT_SHEET_ACCESS,
   };
 };
 
 const AuthContext = createContext();
-
-const fetchGoogleProfile = async accessToken => {
-  const response = await fetch('https://www.googleapis.com/oauth2/v3/userinfo', {
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-    },
-  });
-
-  if (!response.ok) {
-    throw new Error('Failed to fetch Google profile');
-  }
-
-  return response.json();
-};
 
 const parseBoolean = value => {
   if (typeof value === 'boolean') return value;
@@ -59,13 +46,29 @@ const parseBoolean = value => {
   return normalized === 'true' || normalized === '1';
 };
 
-const readSheetAccess = async (accessToken, email) => {
-  if (!accessToken || !email || !import.meta.env.VITE_GOOGLE_SHEET_ID) {
+const readSheetAccess = async (googleSub, email) => {
+  if (!googleSub || !email) {
     return { allowed: false, role: null };
   }
 
   try {
-    const sheetResponse = await sheetsApi.read(ACCESS_RANGE, accessToken);
+    const response = await fetch('/.netlify/functions/sheets-read', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        google_sub: googleSub,
+        range: ACCESS_RANGE,
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(errorText || 'Failed to read Access sheet');
+    }
+
+    const sheetResponse = await response.json();
     const rows = rowsToObjects(sheetResponse?.values ?? [], ACCESS_HEADERS);
     const match = rows.find(entry => entry.email?.toLowerCase() === email.toLowerCase());
     if (!match) {
@@ -93,79 +96,94 @@ export const AuthProvider = ({ children }) => {
   const [isAuthLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState(null);
   const [accessToken, setAccessToken] = useState(storedAuth.token);
+  const [googleSub, setGoogleSub] = useState(storedAuth.googleSub);
   const [sheetAccess, setSheetAccess] = useState(storedAuth.sheetAccess);
-
-  const handleProfile = useCallback(async tokenResponse => {
+  
+  const initializeFromAuthPayload = useCallback(async authPayload => {
     setAuthLoading(true);
     setError(null);
     try {
-      const token = tokenResponse?.access_token;
-      if (!token) {
-        throw new Error('Missing Google access token');
-      }
-
-      const issuedAt = Date.now();
-      const expiresAt = tokenResponse?.expires_in
-        ? issuedAt + tokenResponse.expires_in * 1000 - TOKEN_EXPIRY_GRACE_MS
-        : null;
-
-      const profile = await fetchGoogleProfile(token);
-      const access = await readSheetAccess(token, profile.email);
       const userPayload = {
-        id: profile.sub,
-        name: profile.name,
-        email: profile.email,
-        picture: profile.picture,
-        givenName: profile.given_name,
-        familyName: profile.family_name,
+        id: authPayload.google_sub,
+        name: authPayload.name,
+        email: authPayload.email,
+        picture: authPayload.picture,
+        givenName: authPayload.given_name,
+        familyName: authPayload.family_name,
       };
+
+      const access = await readSheetAccess(authPayload.google_sub, authPayload.email);
+
       setUser(userPayload);
-      setAccessToken(token);
+      setGoogleSub(authPayload.google_sub);
+      setAccessToken(null);
       setSheetAccess(access);
+
       safeStorage.setJSON(STORAGE_KEY, {
         profile: userPayload,
-        accessToken: token,
-        expiresAt,
+        googleSub: authPayload.google_sub,
+        accessToken: null,
         sheetAccess: access,
       });
     } catch (err) {
-      console.error('Failed to fetch Google profile', err);
+      console.error('Failed to initialize auth from backend payload', err);
       setError('AUTH_PROFILE_ERROR');
     } finally {
       setAuthLoading(false);
     }
   }, []);
 
-  const login = useGoogleLogin({
-    scope: GOOGLE_SCOPES,
-    prompt: 'consent',
-    include_granted_scopes: true,
-    onSuccess: handleProfile,
-    onError: err => {
-      console.error('Google login error', err);
-      setError('AUTH_LOGIN_ERROR');
-    },
-  });
+  useEffect(() => {
+    if (typeof window === 'undefined') return;
+
+    const url = new URL(window.location.href);
+    const authParam = url.searchParams.get('auth');
+    if (!authParam) return;
+
+    try {
+      const decoded = decodeURIComponent(authParam);
+      const payload = JSON.parse(decoded);
+      if (payload?.google_sub && payload?.email) {
+        initializeFromAuthPayload(payload);
+      }
+    } catch (err) {
+      console.error('Failed to parse auth payload from URL', err);
+      setError('AUTH_PROFILE_ERROR');
+    } finally {
+      url.searchParams.delete('auth');
+      const newUrl = `${url.pathname}${url.search ? `?${url.searchParams.toString()}` : ''}${url.hash}`;
+      window.history.replaceState({}, '', newUrl);
+    }
+  }, [initializeFromAuthPayload]);
+
+  const login = useCallback(() => {
+    if (typeof window === 'undefined') return;
+    setAuthLoading(true);
+    setError(null);
+    window.location.href = '/.netlify/functions/auth-start';
+  }, []);
 
   const logout = useCallback(() => {
     googleLogout();
     setUser(null);
+    setGoogleSub(null);
     setAccessToken(null);
     setSheetAccess(DEFAULT_SHEET_ACCESS);
     safeStorage.setJSON(STORAGE_KEY, null);
   }, []);
 
   const refreshSheetAccess = useCallback(async () => {
-    if (!accessToken || !user?.email) return { allowed: false, role: null };
-    const access = await readSheetAccess(accessToken, user.email);
+    if (!googleSub || !user?.email) return { allowed: false, role: null };
+    const access = await readSheetAccess(googleSub, user.email);
     setSheetAccess(access);
     safeStorage.setJSON(STORAGE_KEY, {
       profile: user,
+      googleSub,
       accessToken,
       sheetAccess: access,
     });
     return access;
-  }, [accessToken, user]);
+  }, [googleSub, user, accessToken]);
 
   const contextValue = useMemo(
     () => ({
@@ -176,10 +194,11 @@ export const AuthProvider = ({ children }) => {
       isAuthLoading,
       error,
       accessToken,
+      googleSub,
       sheetAccess,
       refreshSheetAccess,
     }),
-    [user, login, logout, isAuthLoading, error, accessToken, sheetAccess, refreshSheetAccess],
+    [user, login, logout, isAuthLoading, error, accessToken, googleSub, sheetAccess, refreshSheetAccess],
   );
 
   return <AuthContext.Provider value={contextValue}>{children}</AuthContext.Provider>;
