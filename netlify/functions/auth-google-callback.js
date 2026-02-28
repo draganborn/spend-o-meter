@@ -31,16 +31,18 @@ export async function handler(event) {
     const { data: userInfo } = await oauth2.userinfo.get();
     const { sub: google_sub, email, name, picture, given_name, family_name } = userInfo;
 
-    // Upsert refresh token in Neon DB
-    await sql`
-      INSERT INTO user_tokens (google_sub, email, refresh_token, updated_at)
-      VALUES (${google_sub}, ${email}, ${refresh_token}, NOW())
-      ON CONFLICT (google_sub)
-      DO UPDATE SET
-        refresh_token = EXCLUDED.refresh_token,
-        email = EXCLUDED.email,
-        updated_at = NOW()
-    `;
+    // Upsert refresh token in Neon DB (only if we actually received one)
+    if (refresh_token) {
+      await sql`
+        INSERT INTO user_tokens (google_sub, email, refresh_token, updated_at)
+        VALUES (${google_sub}, ${email}, ${refresh_token}, NOW())
+        ON CONFLICT (google_sub)
+        DO UPDATE SET
+          refresh_token = EXCLUDED.refresh_token,
+          email = EXCLUDED.email,
+          updated_at = NOW()
+      `;
+    }
 
     // Return user info + a simple session token (could be JWT later)
     const sessionPayload = {
@@ -68,7 +70,10 @@ export async function handler(event) {
     console.error('OAuth callback error:', error);
     return {
       statusCode: 500,
-      body: JSON.stringify({ error: 'Failed to complete authentication' }),
+      body: JSON.stringify({
+        error: 'Failed to complete authentication',
+        message: error.message,
+      }),
     };
   }
 }
