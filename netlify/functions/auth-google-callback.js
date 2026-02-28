@@ -34,8 +34,8 @@ export async function handler(event) {
     const { data: userInfo } = await oauth2.userinfo.get();
     const { sub: google_sub, email, name, picture, given_name, family_name } = userInfo;
 
-    // Upsert refresh token in Neon DB (only if we actually received one)
-    if (refresh_token) {
+    // Upsert refresh token in Neon DB (only if we actually received one and have a google_sub)
+    if (refresh_token && google_sub) {
       await sql`
         INSERT INTO user_tokens (google_sub, email, refresh_token, updated_at)
         VALUES (${google_sub}, ${email}, ${refresh_token}, NOW())
