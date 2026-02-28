@@ -32,7 +32,10 @@ export async function handler(event) {
 
     const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
     const { data: userInfo } = await oauth2.userinfo.get();
-    const { sub: google_sub, email, name, picture, given_name, family_name } = userInfo;
+
+    // v2 userinfo may expose user id as "id" rather than "sub"; prefer sub but fall back to id
+    const google_sub = userInfo.sub || userInfo.id;
+    const { email, name, picture, given_name, family_name } = userInfo;
 
     // Upsert refresh token in Neon DB (only if we actually received one and have a google_sub)
     if (refresh_token && google_sub) {
