@@ -9,7 +9,7 @@ async function getAccessTokenForUser(google_sub) {
   if (!rows.length) throw new Error('User not found');
   const { refresh_token } = rows[0];
 
-  const oauth2Client = new google.auth.OAuth2Client(
+  const oauth2Client = new google.auth.OAuth2(
     process.env.VITE_GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
   );
