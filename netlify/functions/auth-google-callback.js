@@ -27,6 +27,9 @@ export async function handler(event) {
     const { tokens } = await oauth2Client.getToken(code);
     const { refresh_token, access_token } = tokens;
 
+    // Make sure the OAuth client is configured with the received tokens
+    oauth2Client.setCredentials(tokens);
+
     const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
     const { data: userInfo } = await oauth2.userinfo.get();
     const { sub: google_sub, email, name, picture, given_name, family_name } = userInfo;
