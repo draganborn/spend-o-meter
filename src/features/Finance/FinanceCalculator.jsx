@@ -29,7 +29,8 @@ const PAYMENT_HEADERS = [
   'last_paid_at',
   'is_active',
 ];
-const ALL_MONEY_CELL = 'Payments!I11';
+const ALL_MONEY_CELL = 'Payments!I1';
+const NEXT_PAY_DATE_CELL = 'Payments!I2';
 
 const generateId = () => crypto.randomUUID?.() || `${Date.now()}-${Math.random()}`;
 
@@ -93,7 +94,7 @@ const paymentsToSheet = items => [
 export function FinanceCalculator() {
   const { t, language } = useLanguage();
   const { theme } = useTheme();
-  const { accessToken } = useAuth();
+  const { accessToken, googleSub } = useAuth();
   const [allMoney, setAllMoney] = useState('');
   const [nextPayDate, setNextPayDate] = useState('');
   const [payments, setPayments] = useState(() => normalizePayments());
@@ -112,15 +113,64 @@ export function FinanceCalculator() {
   });
   const writeAllMoney = useCallback(
     async value => {
-      if (!canSync || !accessToken) return;
+      if (!canSync) return;
       try {
-        await sheetsApi.write(ALL_MONEY_CELL, [[value ?? '']], accessToken);
+        if (googleSub) {
+          const response = await fetch('/.netlify/functions/sheets-write', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              google_sub: googleSub,
+              range: ALL_MONEY_CELL,
+              values: [[value ?? '']],
+            }),
+          });
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Failed to sync total money via backend');
+          }
+        } else if (accessToken) {
+          await sheetsApi.write(ALL_MONEY_CELL, [[value ?? '']], accessToken);
+        }
       } catch (error) {
         console.warn('Failed to sync total money to Google Sheets', error);
         throw error;
       }
     },
-    [accessToken, canSync],
+    [accessToken, canSync, googleSub],
+  );
+
+  const writeNextPayDate = useCallback(
+    async value => {
+      if (!canSync) return;
+      try {
+        if (googleSub) {
+          const response = await fetch('/.netlify/functions/sheets-write', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              google_sub: googleSub,
+              range: NEXT_PAY_DATE_CELL,
+              values: [[value ?? '']],
+            }),
+          });
+          if (!response.ok) {
+            const text = await response.text();
+            throw new Error(text || 'Failed to sync next pay date via backend');
+          }
+        } else if (accessToken) {
+          await sheetsApi.write(NEXT_PAY_DATE_CELL, [[value ?? '']], accessToken);
+        }
+      } catch (error) {
+        console.warn('Failed to sync next pay date to Google Sheets', error);
+        throw error;
+      }
+    },
+    [accessToken, canSync, googleSub],
   );
 
   useEffect(() => {
@@ -157,27 +207,89 @@ export function FinanceCalculator() {
   }, [canSync, pullPayments, hydratedRef, allMoney, nextPayDate]);
 
   useEffect(() => {
-    if (!canSync || !accessToken) return;
+    if (!canSync) return;
     let cancelled = false;
-    const fetchAllMoney = async () => {
+
+    const fetchAllMoneyAndDate = async () => {
       try {
-        const response = await sheetsApi.read(ALL_MONEY_CELL, accessToken);
-        if (cancelled) return;
-        const value = response?.values?.[0]?.[0];
-        if (value !== undefined) {
-          setAllMoney(value);
-          const cached = safeStorage.getJSON(STORAGE_KEY) || {};
-          safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: value });
+        if (googleSub) {
+          const [moneyResponse, dateResponse] = await Promise.all([
+            fetch('/.netlify/functions/sheets-read', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                google_sub: googleSub,
+                range: ALL_MONEY_CELL,
+              }),
+            }),
+            fetch('/.netlify/functions/sheets-read', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+              },
+              body: JSON.stringify({
+                google_sub: googleSub,
+                range: NEXT_PAY_DATE_CELL,
+              }),
+            }),
+          ]);
+
+          if (cancelled) return;
+
+          if (moneyResponse.ok) {
+            const moneyJson = await moneyResponse.json();
+            const moneyValue = moneyJson?.values?.[0]?.[0];
+            if (moneyValue !== undefined) {
+              setAllMoney(moneyValue);
+              const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+              safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: moneyValue });
+            }
+          }
+
+          if (dateResponse.ok) {
+            const dateJson = await dateResponse.json();
+            const dateValue = dateJson?.values?.[0]?.[0];
+            if (dateValue !== undefined) {
+              setNextPayDate(dateValue);
+              const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+              safeStorage.setJSON(STORAGE_KEY, { ...cached, nextPayDate: dateValue });
+            }
+          }
+        } else if (accessToken) {
+          const [moneyResponse, dateResponse] = await Promise.all([
+            sheetsApi.read(ALL_MONEY_CELL, accessToken),
+            sheetsApi.read(NEXT_PAY_DATE_CELL, accessToken),
+          ]);
+
+          if (cancelled) return;
+
+          const moneyValue = moneyResponse?.values?.[0]?.[0];
+          if (moneyValue !== undefined) {
+            setAllMoney(moneyValue);
+            const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+            safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: moneyValue });
+          }
+
+          const dateValue = dateResponse?.values?.[0]?.[0];
+          if (dateValue !== undefined) {
+            setNextPayDate(dateValue);
+            const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+            safeStorage.setJSON(STORAGE_KEY, { ...cached, nextPayDate: dateValue });
+          }
         }
       } catch (error) {
-        console.warn('Failed to load total money from Google Sheets', error);
+        console.warn('Failed to load total money or next pay date from Google Sheets', error);
       }
     };
-    fetchAllMoney();
+
+    fetchAllMoneyAndDate();
+
     return () => {
       cancelled = true;
     };
-  }, [canSync, accessToken]);
+  }, [canSync, googleSub, accessToken]);
 
   const persist = useCallback(
     (next, { sync = false } = {}) => {
@@ -194,9 +306,12 @@ export function FinanceCalculator() {
         writeAllMoney(payload.allMoney).catch(error =>
           console.warn('Failed to sync total money to Google Sheets', error),
         );
+        writeNextPayDate(payload.nextPayDate).catch(error =>
+          console.warn('Failed to sync next pay date to Google Sheets', error),
+        );
       }
     },
-    [allMoney, nextPayDate, payments, canSync, pushPayments, writeAllMoney],
+    [allMoney, nextPayDate, payments, canSync, pushPayments, writeAllMoney, writeNextPayDate],
   );
 
   const handlePaymentChange = (id, field, value) => {
@@ -343,7 +458,7 @@ export function FinanceCalculator() {
             value={nextPayDate}
             onChange={e => {
               setNextPayDate(e.target.value);
-              persist({ nextPayDate: e.target.value });
+              persist({ nextPayDate: e.target.value }, { sync: true });
             }}
           />
         </div>
@@ -367,16 +482,73 @@ export function FinanceCalculator() {
                     payments: remotePayments,
                   });
                 }
-                if (canSync && accessToken) {
+                if (canSync) {
                   try {
-                    const response = await sheetsApi.read(ALL_MONEY_CELL, accessToken);
-                    const value = response?.values?.[0]?.[0];
-                    if (value !== undefined) {
-                      setAllMoney(value);
-                      const cached = safeStorage.getJSON(STORAGE_KEY) || {};
-                      safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: value });
+                    if (googleSub) {
+                      const [moneyResponse, dateResponse] = await Promise.all([
+                        fetch('/.netlify/functions/sheets-read', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            google_sub: googleSub,
+                            range: ALL_MONEY_CELL,
+                          }),
+                        }),
+                        fetch('/.netlify/functions/sheets-read', {
+                          method: 'POST',
+                          headers: {
+                            'Content-Type': 'application/json',
+                          },
+                          body: JSON.stringify({
+                            google_sub: googleSub,
+                            range: NEXT_PAY_DATE_CELL,
+                          }),
+                        }),
+                      ]);
+
+                      if (moneyResponse.ok) {
+                        const moneyJson = await moneyResponse.json();
+                        const moneyValue = moneyJson?.values?.[0]?.[0];
+                        if (moneyValue !== undefined) {
+                          setAllMoney(moneyValue);
+                          const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+                          safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: moneyValue });
+                        }
+                      }
+
+                      if (dateResponse.ok) {
+                        const dateJson = await dateResponse.json();
+                        const dateValue = dateJson?.values?.[0]?.[0];
+                        if (dateValue !== undefined) {
+                          setNextPayDate(dateValue);
+                          const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+                          safeStorage.setJSON(STORAGE_KEY, { ...cached, nextPayDate: dateValue });
+                        }
+                      }
+                    } else if (accessToken) {
+                      const [moneyResponse, dateResponse] = await Promise.all([
+                        sheetsApi.read(ALL_MONEY_CELL, accessToken),
+                        sheetsApi.read(NEXT_PAY_DATE_CELL, accessToken),
+                      ]);
+
+                      const moneyValue = moneyResponse?.values?.[0]?.[0];
+                      if (moneyValue !== undefined) {
+                        setAllMoney(moneyValue);
+                        const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+                        safeStorage.setJSON(STORAGE_KEY, { ...cached, allMoney: moneyValue });
+                      }
+
+                      const dateValue = dateResponse?.values?.[0]?.[0];
+                      if (dateValue !== undefined) {
+                        setNextPayDate(dateValue);
+                        const cached = safeStorage.getJSON(STORAGE_KEY) || {};
+                        safeStorage.setJSON(STORAGE_KEY, { ...cached, nextPayDate: dateValue });
+                      }
                     }
                   } catch (error) {
+                    // swallow sync errors in manual sync button
                   }
                 }
               } catch (error) {
