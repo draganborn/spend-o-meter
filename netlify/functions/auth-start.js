@@ -1,8 +1,10 @@
+/* global process */
+
 const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID;
 const REDIRECT_URI = `${process.env.URL}/.netlify/functions/auth-google-callback`;
 const SCOPES = 'openid profile email https://www.googleapis.com/auth/spreadsheets';
 
-export async function handler(event) {
+export async function handler() {
   const authUrl = `https://accounts.google.com/o/oauth2/v2/auth?` +
     `client_id=${encodeURIComponent(GOOGLE_CLIENT_ID)}&` +
     `redirect_uri=${encodeURIComponent(REDIRECT_URI)}&` +

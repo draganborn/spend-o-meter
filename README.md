@@ -32,6 +32,8 @@ npm run dev
 ```
 VITE_GOOGLE_CLIENT_ID=<OAuth client ID>
 VITE_GOOGLE_SHEET_ID=<Spreadsheet ID из URL>
+DATABASE_URL=<postgres connection string, см. ниже>  # пример: postgres://user:pass@host:5432/spendo
+GOOGLE_CLIENT_SECRET=<OAuth client secret>           # нужен только для Netlify Functions
 ```
 
 ## Настройка Google Cloud
@@ -54,6 +56,36 @@ VITE_GOOGLE_SHEET_ID=<Spreadsheet ID из URL>
 
 > ⚠️ Строка заголовков обязательна. Приложение автоматически добавляет значения, сопоставляя их по именам колонок.
 
+## Собственная PostgreSQL (Ubuntu, за NAT)
+
+1. Установите сервер и клиент PostgreSQL:
+   ```bash
+   sudo apt update
+   sudo apt install -y postgresql postgresql-client
+   ```
+2. Создайте пользователя и базу:
+   ```bash
+   sudo -u postgres psql -c "CREATE USER spendo WITH PASSWORD 'change-me';"
+   sudo -u postgres psql -c "CREATE DATABASE spendo OWNER spendo;"
+   ```
+3. Примените схему:
+   ```bash
+   DATABASE_URL=postgres://spendo:change-me@localhost:5432/spendo ./netlify/db/migrate.sh
+   ```
+4. Проброс порта без белого IP (выберите один вариант):
+   - **ngrok (TCP)**: `ngrok config add-authtoken <token>` → `ngrok tcp 5432`. В `DATABASE_URL` подставьте хост/порт, например `postgres://spendo:change-me@0.tcp.ngrok.io:12345/spendo?sslmode=disable`. Для постоянной работы создайте systemd unit:
+     ```
+     [Unit]
+     Description=ngrok postgres tunnel
+     After=network-online.target
+     [Service]
+     ExecStart=/usr/bin/ngrok tcp 5432
+     Restart=always
+     [Install]
+     WantedBy=multi-user.target
+     ```
+   - **playit.gg (TCP)**: скачайте агент с https://playit.gg/download, выполните `./playit`. В веб-консоли выдаётся стабильный TCP-адрес; используйте его в `DATABASE_URL` так же, как выше (добавьте `?sslmode=disable`). Агент тоже можно запустить через systemd (`ExecStart=/usr/local/bin/playit`).
+5. В Netlify/локальном `.env` выставьте `DATABASE_URL` (или `NETLIFY_DATABASE_URL` — поддерживается для обратной совместимости) и `GOOGLE_CLIENT_SECRET`. Для локальных туннелей используйте `sslmode=disable`, для облачных сервисов с TLS — `sslmode=require`.
 ## Локальное хранение
 
 - `auth:user` — профиль, токен и права доступа.

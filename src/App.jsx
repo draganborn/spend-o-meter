@@ -11,7 +11,7 @@ const DONATE_URL = 'https://etherscan.io/address/0x2cC359a7f7e2a21047Ab3D6e20a6E
 function App() {
   const { t, toggleLanguage, language } = useLanguage();
   const { toggleTheme, theme } = useTheme();
-  const { user, isAuthenticated, login, logout, isAuthLoading, error, sheetAccess, refreshSheetAccess } = useAuth();
+  const { user, isAuthenticated, login, logout, isAuthLoading, error, refreshSheetAccess } = useAuth();
   const [activeSection, setActiveSection] = useState('finance');
   const [isCheckingAccess, setCheckingAccess] = useState(false);
   const [accessStatus, setAccessStatus] = useState(null);

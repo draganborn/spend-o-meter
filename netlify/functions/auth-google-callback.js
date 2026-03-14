@@ -1,5 +1,6 @@
+/* global process */
 import { google } from 'googleapis';
-import { neon } from '@neondatabase/serverless';
+import { query } from '../db/client.js';
 
 const GOOGLE_CLIENT_ID = process.env.VITE_GOOGLE_CLIENT_ID;
 const GOOGLE_CLIENT_SECRET = process.env.GOOGLE_CLIENT_SECRET;
@@ -11,21 +12,20 @@ const oauth2Client = new google.auth.OAuth2(
   REDIRECT_URI,
 );
 
-const sql = neon(process.env.NETLIFY_DATABASE_URL);
 
 export async function handler(event) {
   if (event.httpMethod !== 'GET') {
     return { statusCode: 405, body: 'Method Not Allowed' };
   }
 
-  const { code, state } = event.queryStringParameters;
+  const { code } = event.queryStringParameters;
   if (!code) {
     return { statusCode: 400, body: 'Missing authorization code' };
   }
 
   try {
     const { tokens } = await oauth2Client.getToken(code);
-    const { refresh_token, access_token } = tokens;
+    const { refresh_token } = tokens;
 
     // Make sure the OAuth client is configured with the received tokens
     oauth2Client.setCredentials(tokens);
@@ -37,17 +37,18 @@ export async function handler(event) {
     const google_sub = userInfo.sub || userInfo.id;
     const { email, name, picture, given_name, family_name } = userInfo;
 
-    // Upsert refresh token in Neon DB (only if we actually received one and have a google_sub)
+    // Upsert refresh token in Postgres (only if we actually received one and have a google_sub)
     if (refresh_token && google_sub) {
-      await sql`
-        INSERT INTO user_tokens (google_sub, email, refresh_token, updated_at)
-        VALUES (${google_sub}, ${email}, ${refresh_token}, NOW())
-        ON CONFLICT (google_sub)
-        DO UPDATE SET
-          refresh_token = EXCLUDED.refresh_token,
-          email = EXCLUDED.email,
-          updated_at = NOW()
-      `;
+      await query(
+        `INSERT INTO user_tokens (google_sub, email, refresh_token, updated_at)
+         VALUES ($1, $2, $3, NOW())
+         ON CONFLICT (google_sub)
+         DO UPDATE SET
+           refresh_token = EXCLUDED.refresh_token,
+           email = EXCLUDED.email,
+           updated_at = NOW()`,
+        [google_sub, email, refresh_token],
+      );
     }
 
     // Return user info + a simple session token (could be JWT later)

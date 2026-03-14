@@ -268,6 +268,7 @@ export function CashbackPlanner() {
                   updateBanks(normalizeBanks(remoteBanks), { sync: false });
                 }
               } catch (error) {
+                console.error('Failed to pull cashback', error);
               }
             }}
           >

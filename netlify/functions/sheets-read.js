@@ -1,11 +1,13 @@
+/* global process */
 import { google } from 'googleapis';
-import { neon } from '@neondatabase/serverless';
-
-const sql = neon(process.env.NETLIFY_DATABASE_URL);
+import { query } from '../db/client.js';
 
 // Helper: get fresh access token via refresh token
 async function getAccessTokenForUser(google_sub) {
-  const rows = await sql`SELECT refresh_token FROM user_tokens WHERE google_sub = ${google_sub}`;
+  const { rows } = await query(
+    'SELECT refresh_token FROM user_tokens WHERE google_sub = $1',
+    [google_sub],
+  );
   if (!rows.length) throw new Error('User not found');
   const { refresh_token } = rows[0];
 

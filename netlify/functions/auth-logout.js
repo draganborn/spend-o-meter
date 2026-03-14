@@ -1,4 +1,4 @@
-export async function handler(event) {
+export async function handler() {
   return {
     statusCode: 302,
     headers: {

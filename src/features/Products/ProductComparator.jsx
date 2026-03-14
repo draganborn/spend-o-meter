@@ -354,6 +354,7 @@ export function ProductComparator() {
                   updateFavorites(normalizeFavorites(remoteFavorites), { sync: false });
                 }
               } catch (error) {
+                console.error('Failed to pull favorites', error);
               }
             }}
           >

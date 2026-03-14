@@ -548,10 +548,11 @@ export function FinanceCalculator() {
                       }
                     }
                   } catch (error) {
-                    // swallow sync errors in manual sync button
+                    console.error('Manual sync (sheetsApi) failed', error);
                   }
                 }
               } catch (error) {
+                console.error('Manual sync (pullPayments) failed', error);
               }
             }}
           >
