@@ -80,6 +80,11 @@ export async function handler(event) {
       body: JSON.stringify({
         error: 'Failed to complete authentication',
         message: error.message,
+        debug: {
+          redirectUri: REDIRECT_URI,
+          googleError: error.response?.data,
+          hasCode: !!code,
+        },
       }),
     };
   }
