@@ -1,5 +1,5 @@
-import { google } from 'googleapis';
 import { createQuery } from '../_db/client.js';
+import { exchangeCodeForTokens, getUserInfo } from '../_lib/google.js';
 
 export async function onRequestGet(context) {
   const { request, env } = context;
@@ -11,25 +11,11 @@ export async function onRequestGet(context) {
     return new Response('Missing authorization code', { status: 400 });
   }
 
-  const GOOGLE_CLIENT_ID = env.VITE_GOOGLE_CLIENT_ID;
-  const GOOGLE_CLIENT_SECRET = env.GOOGLE_CLIENT_SECRET;
-  const REDIRECT_URI = `${env.URL}/api/auth-google-callback`;
-
-  const oauth2Client = new google.auth.OAuth2(
-    GOOGLE_CLIENT_ID,
-    GOOGLE_CLIENT_SECRET,
-    REDIRECT_URI,
-  );
-
   try {
-    const { tokens } = await oauth2Client.getToken(code);
-    const { refresh_token } = tokens;
+    const tokens = await exchangeCodeForTokens(env, code);
+    const { access_token, refresh_token } = tokens;
 
-    oauth2Client.setCredentials(tokens);
-
-    const oauth2 = google.oauth2({ version: 'v2', auth: oauth2Client });
-    const { data: userInfo } = await oauth2.userinfo.get();
-
+    const userInfo = await getUserInfo(access_token);
     const google_sub = userInfo.sub || userInfo.id;
     const { email, name, picture, given_name, family_name } = userInfo;
 

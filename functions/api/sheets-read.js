@@ -1,5 +1,5 @@
-import { google } from 'googleapis';
 import { createQuery } from '../_db/client.js';
+import { refreshAccessToken } from '../_lib/google.js';
 
 async function getAccessTokenForUser(env, google_sub) {
   const query = createQuery(env);
@@ -8,16 +8,7 @@ async function getAccessTokenForUser(env, google_sub) {
     [google_sub],
   );
   if (!rows.length) throw new Error('User not found');
-  const { refresh_token } = rows[0];
-
-  const oauth2Client = new google.auth.OAuth2(
-    env.VITE_GOOGLE_CLIENT_ID,
-    env.GOOGLE_CLIENT_SECRET,
-  );
-  oauth2Client.setCredentials({ refresh_token });
-
-  const { credentials } = await oauth2Client.refreshAccessToken();
-  return credentials.access_token;
+  return refreshAccessToken(env, rows[0].refresh_token);
 }
 
 export async function onRequestPost(context) {
@@ -34,20 +25,13 @@ export async function onRequestPost(context) {
   try {
     const accessToken = await getAccessTokenForUser(env, google_sub);
 
-    const oauth2Client = new google.auth.OAuth2(
-      env.VITE_GOOGLE_CLIENT_ID,
-      env.GOOGLE_CLIENT_SECRET,
-    );
-    oauth2Client.setCredentials({ access_token: accessToken });
-
-    const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-    const response = await sheets.spreadsheets.values.get({
-      spreadsheetId: env.VITE_GOOGLE_SHEET_ID,
-      range,
-      majorDimension: 'ROWS',
+    const url = `https://sheets.googleapis.com/v4/spreadsheets/${env.VITE_GOOGLE_SHEET_ID}/values/${encodeURIComponent(range)}?majorDimension=ROWS`;
+    const res = await fetch(url, {
+      headers: { Authorization: `Bearer ${accessToken}` },
     });
+    const data = await res.json();
 
-    return new Response(JSON.stringify({ values: response.data.values }), {
+    return new Response(JSON.stringify({ values: data.values }), {
       status: 200,
       headers: { 'Content-Type': 'application/json' },
     });

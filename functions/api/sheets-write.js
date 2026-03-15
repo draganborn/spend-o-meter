@@ -1,5 +1,5 @@
-import { google } from 'googleapis';
 import { createQuery } from '../_db/client.js';
+import { refreshAccessToken } from '../_lib/google.js';
 
 async function getAccessTokenForUser(env, google_sub) {
   const query = createQuery(env);
@@ -8,16 +8,7 @@ async function getAccessTokenForUser(env, google_sub) {
     [google_sub],
   );
   if (!rows.length) throw new Error('User not found');
-  const { refresh_token } = rows[0];
-
-  const oauth2Client = new google.auth.OAuth2(
-    env.VITE_GOOGLE_CLIENT_ID,
-    env.GOOGLE_CLIENT_SECRET,
-  );
-  oauth2Client.setCredentials({ refresh_token });
-
-  const { credentials } = await oauth2Client.refreshAccessToken();
-  return credentials.access_token;
+  return refreshAccessToken(env, rows[0].refresh_token);
 }
 
 export async function onRequestPost(context) {
@@ -33,26 +24,23 @@ export async function onRequestPost(context) {
 
   try {
     const accessToken = await getAccessTokenForUser(env, google_sub);
+    const sheetId = env.VITE_GOOGLE_SHEET_ID;
+    const encodedRange = encodeURIComponent(range);
+    const authHeader = { Authorization: `Bearer ${accessToken}` };
 
-    const oauth2Client = new google.auth.OAuth2(
-      env.VITE_GOOGLE_CLIENT_ID,
-      env.GOOGLE_CLIENT_SECRET,
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodedRange}:clear`,
+      { method: 'POST', headers: authHeader },
     );
-    oauth2Client.setCredentials({ access_token: accessToken });
 
-    const sheets = google.sheets({ version: 'v4', auth: oauth2Client });
-
-    await sheets.spreadsheets.values.clear({
-      spreadsheetId: env.VITE_GOOGLE_SHEET_ID,
-      range,
-    });
-
-    await sheets.spreadsheets.values.update({
-      spreadsheetId: env.VITE_GOOGLE_SHEET_ID,
-      range,
-      valueInputOption: 'RAW',
-      resource: { values, majorDimension: 'ROWS' },
-    });
+    await fetch(
+      `https://sheets.googleapis.com/v4/spreadsheets/${sheetId}/values/${encodedRange}?valueInputOption=RAW`,
+      {
+        method: 'PUT',
+        headers: { ...authHeader, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ values, majorDimension: 'ROWS' }),
+      },
+    );
 
     return new Response(JSON.stringify({ success: true }), {
       status: 200,
