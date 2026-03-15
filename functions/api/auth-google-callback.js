@@ -1,4 +1,4 @@
-import { createQuery } from '../_db/client.js';
+import { createSupabaseClient } from '../_db/client.js';
 import { exchangeCodeForTokens, getUserInfo } from '../_lib/google.js';
 
 export async function onRequestGet(context) {
@@ -22,16 +22,10 @@ export async function onRequestGet(context) {
     const { email, name, picture, given_name, family_name } = userInfo;
 
     if (refresh_token && google_sub) {
-      const query = createQuery(env);
-      await query(
-        `INSERT INTO user_tokens (google_sub, email, refresh_token, updated_at)
-         VALUES ($1, $2, $3, NOW())
-         ON CONFLICT (google_sub)
-         DO UPDATE SET
-           refresh_token = EXCLUDED.refresh_token,
-           email = EXCLUDED.email,
-           updated_at = NOW()`,
-        [google_sub, email, refresh_token],
+      const supabase = createSupabaseClient(env);
+      await supabase.from('user_tokens').upsert(
+        { google_sub, email, refresh_token, updated_at: new Date().toISOString() },
+        { onConflict: 'google_sub' },
       );
     }
 

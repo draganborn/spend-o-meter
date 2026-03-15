@@ -1,37 +1,13 @@
-import pg from 'pg';
+import { createClient } from '@supabase/supabase-js';
 
-const { Pool } = pg;
+export function createSupabaseClient(env) {
+  // Extract project ID from DATABASE_URL: postgresql://...@db.{id}.supabase.co:5432/...
+  const match = env.DATABASE_URL?.match(/@db\.([^.]+)\.supabase\.co/);
+  const supabaseUrl = match
+    ? `https://${match[1]}.supabase.co`
+    : env.SUPABASE_URL;
 
-export function createQuery(env) {
-  const rawConnectionString = env.DATABASE_URL;
-
-  if (!rawConnectionString) {
-    throw new Error('DATABASE_URL is not set');
-  }
-
-  const sslRequired = /sslmode=require|ssl=true/i.test(rawConnectionString);
-
-  let connectionString = rawConnectionString;
-  if (sslRequired) {
-    try {
-      const url = new URL(rawConnectionString);
-      url.searchParams.delete('sslmode');
-      url.searchParams.delete('ssl');
-      connectionString = url.toString();
-    } catch {
-      connectionString = rawConnectionString;
-    }
-  }
-
-  const ssl = sslRequired ? { rejectUnauthorized: false } : false;
-
-  const pool = new Pool({
-    connectionString,
-    ssl,
-    max: 1,
-    connectionTimeoutMillis: 5_000,
-    idleTimeoutMillis: 10_000,
+  return createClient(supabaseUrl, env.SUPABASE_SERVICE_ROLE_KEY, {
+    auth: { persistSession: false },
   });
-
-  return (text, params) => pool.query(text, params);
 }

@@ -1,14 +1,15 @@
-import { createQuery } from '../_db/client.js';
+import { createSupabaseClient } from '../_db/client.js';
 import { refreshAccessToken } from '../_lib/google.js';
 
 async function getAccessTokenForUser(env, google_sub) {
-  const query = createQuery(env);
-  const { rows } = await query(
-    'SELECT refresh_token FROM user_tokens WHERE google_sub = $1',
-    [google_sub],
-  );
-  if (!rows.length) throw new Error('User not found');
-  return refreshAccessToken(env, rows[0].refresh_token);
+  const supabase = createSupabaseClient(env);
+  const { data, error } = await supabase
+    .from('user_tokens')
+    .select('refresh_token')
+    .eq('google_sub', google_sub)
+    .single();
+  if (error || !data) throw new Error('User not found');
+  return refreshAccessToken(env, data.refresh_token);
 }
 
 export async function onRequestPost(context) {
