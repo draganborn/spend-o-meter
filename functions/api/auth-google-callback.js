@@ -11,8 +11,10 @@ export async function onRequestGet(context) {
     return new Response('Missing authorization code', { status: 400 });
   }
 
+  const redirectUri = `${url.origin}/api/auth-google-callback`;
+
   try {
-    const tokens = await exchangeCodeForTokens(env, code);
+    const tokens = await exchangeCodeForTokens(env, code, redirectUri);
     const { access_token, refresh_token } = tokens;
 
     const userInfo = await getUserInfo(access_token);
@@ -38,7 +40,7 @@ export async function onRequestGet(context) {
     return new Response(JSON.stringify({ success: true, user: sessionPayload }), {
       status: 302,
       headers: {
-        Location: `${env.URL}/?auth=${encodeURIComponent(JSON.stringify(sessionPayload))}`,
+        Location: `${url.origin}/?auth=${encodeURIComponent(JSON.stringify(sessionPayload))}`,
         'Content-Type': 'application/json',
       },
     });

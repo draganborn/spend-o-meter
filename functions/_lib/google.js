@@ -1,7 +1,7 @@
 /**
  * Exchange OAuth2 authorization code for tokens.
  */
-export async function exchangeCodeForTokens(env, code) {
+export async function exchangeCodeForTokens(env, code, redirectUri) {
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
@@ -9,7 +9,7 @@ export async function exchangeCodeForTokens(env, code) {
       code,
       client_id: env.VITE_GOOGLE_CLIENT_ID,
       client_secret: env.GOOGLE_CLIENT_SECRET,
-      redirect_uri: `${env.URL}/api/auth-google-callback`,
+      redirect_uri: redirectUri,
       grant_type: 'authorization_code',
     }),
   });

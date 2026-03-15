@@ -1,7 +1,8 @@
 export async function onRequestGet(context) {
-  const { env } = context;
+  const { request, env } = context;
   const GOOGLE_CLIENT_ID = env.VITE_GOOGLE_CLIENT_ID;
-  const REDIRECT_URI = `${env.URL}/api/auth-google-callback`;
+  const origin = new URL(request.url).origin;
+  const REDIRECT_URI = `${origin}/api/auth-google-callback`;
   const SCOPES = 'openid profile email https://www.googleapis.com/auth/spreadsheets';
 
   const authUrl =
