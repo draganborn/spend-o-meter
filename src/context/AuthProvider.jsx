@@ -52,7 +52,7 @@ const readSheetAccess = async (googleSub, email) => {
   }
 
   try {
-    const response = await fetch('/.netlify/functions/sheets-read', {
+    const response = await fetch('/api/sheets-read', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -160,7 +160,7 @@ export const AuthProvider = ({ children }) => {
     if (typeof window === 'undefined') return;
     setAuthLoading(true);
     setError(null);
-    window.location.href = '/.netlify/functions/auth-start';
+    window.location.href = '/api/auth-start';
   }, []);
 
   const logout = useCallback(() => {

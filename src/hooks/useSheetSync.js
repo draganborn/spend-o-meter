@@ -16,7 +16,7 @@ export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }
     try {
       let values;
       if (googleSub) {
-        const response = await fetch('/.netlify/functions/sheets-read', {
+        const response = await fetch('/api/sheets-read', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -63,7 +63,7 @@ export const useSheetSync = ({ range, mapFromSheet, mapToSheet, enabled = true }
         const rows = mapToSheet(items);
 
         if (googleSub) {
-          const response = await fetch('/.netlify/functions/sheets-write', {
+          const response = await fetch('/api/sheets-write', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',

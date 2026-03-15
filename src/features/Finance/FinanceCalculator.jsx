@@ -116,7 +116,7 @@ export function FinanceCalculator() {
       if (!canSync) return;
       try {
         if (googleSub) {
-          const response = await fetch('/.netlify/functions/sheets-write', {
+          const response = await fetch('/api/sheets-write', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -147,7 +147,7 @@ export function FinanceCalculator() {
       if (!canSync) return;
       try {
         if (googleSub) {
-          const response = await fetch('/.netlify/functions/sheets-write', {
+          const response = await fetch('/api/sheets-write', {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
@@ -214,7 +214,7 @@ export function FinanceCalculator() {
       try {
         if (googleSub) {
           const [moneyResponse, dateResponse] = await Promise.all([
-            fetch('/.netlify/functions/sheets-read', {
+            fetch('/api/sheets-read', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -224,7 +224,7 @@ export function FinanceCalculator() {
                 range: ALL_MONEY_CELL,
               }),
             }),
-            fetch('/.netlify/functions/sheets-read', {
+            fetch('/api/sheets-read', {
               method: 'POST',
               headers: {
                 'Content-Type': 'application/json',
@@ -486,7 +486,7 @@ export function FinanceCalculator() {
                   try {
                     if (googleSub) {
                       const [moneyResponse, dateResponse] = await Promise.all([
-                        fetch('/.netlify/functions/sheets-read', {
+                        fetch('/api/sheets-read', {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
@@ -496,7 +496,7 @@ export function FinanceCalculator() {
                             range: ALL_MONEY_CELL,
                           }),
                         }),
-                        fetch('/.netlify/functions/sheets-read', {
+                        fetch('/api/sheets-read', {
                           method: 'POST',
                           headers: {
                             'Content-Type': 'application/json',
